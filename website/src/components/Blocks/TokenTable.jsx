@@ -25,7 +25,6 @@ import { useNetwork } from '../../contexts/networkContext';
 import { TransactionList } from './TransactionList';
 
 import { getDataByCoinID } from '../../hooks/action';
-import { usePortfolio } from '../../contexts/portfolioContext';
 import Card from '../Research/card';
 import Loader from '../Research/load';
 
