@@ -34,12 +34,12 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   address public feeReceiver;                 // beneficiary address for collected fees
 
   uint256 public reserveInUSDCin6dec;         // end user USDC on deposit
-  uint256 USDCscaleFactor = 1000000;          // 6 decimals scale of USDC crypto currency
-  uint256 USDCcentsScaleFactor = 10000;       // 4 decimals scale of USDC crypto currency cents
-  uint256 public blocksPerDay = 2;            // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
+  uint256 USDCscaleFactor =      1000000;     // 6 decimals scale of USDC crypto currency
+  uint256 USDCcentsScaleFactor =   10000;     // 4 decimals scale of USDC crypto currency cents
+  uint256 public blocksPerDay =        2;     // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
   uint8   private _decimals;                  // storing BNJI decimals, set to 0 in constructor
      
-  uint256 public curveFactor = 8000000;       // Inverse slope of the bonding curve.
+  uint256 public curveFactor =   8000000;     // Inverse slope of the bonding curve.
   uint16  public baseFeeTimes10k = 10000;     // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
 
   struct lockbox {
@@ -50,28 +50,155 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     string testMessage; // TODO: take out, only for testing
   }
 
+  // counter going forward, giving each lockbox an unique identifier
   uint256 lockboxIDcounter;  // TODO: probably improve, use OZ counter mechanism
 
+  // amount of lockboxes for each
   mapping (address => uint8) amountOfLockboxesForUser;
   
   // double mapping, user to position to lockbox
   mapping ( address => mapping (uint256 => lockbox) ) usersLockboxes;
 
+  // amount of users total BNJI in lockboxes 
+  mapping (address => uint256) usersBNJIinLockboxes; // todo: discuss if we should have this
+
   // global mapping of all lockboxIDs to their position (key) in their owner's mapping 
   mapping (uint256 => uint8) positionInUsersMapping;
 
-  mapping (address => uint256) historicLockedBNJIblocksForUser; // TODO: implement, one historic and other at the moment
+  // each user's amount of locked BNJI blocks which are not currently in an active lockbox
+  mapping (address => uint256) historicLockedBNJIblocksForUser; 
 
-  function getLBpositionInUsersMapping(uint256 lockboxID) public view returns(uint256 posOfLBinUsersMapping) {
-    return positionInUsersMapping[lockboxID];
+  // event for withdrawGains function
+  // availableIn6dec shows how many USDC were available to withdraw, in 6 decimals format
+  // amountUSDCin6dec shows how many USDC were withdrawn, in 6 decimals format
+  event ProfitTaken(uint256 availableIn6dec, uint256 amountUSDCin6dec);
+
+  // event for deposits into the lending pool
+  event LendingPoolDeposit (uint256 amountUSDCin6dec, address payer);
+
+  // event for withdrawals from the lending pool
+  event LendingPoolWithdrawal (uint256 amountUSDCBeforeFeein6dec, address payee);
+
+  // event for updating these addresses: feeReceiver, polygonUSDC, polygonAMUSDC
+  event AddressUpdate(address newAddress, string typeOfUpdate); 
+
+  // event for updating the amounts of blocks mined on Polygon network per day
+  event BlocksPerDayUpdate(uint256 newAmountOfBlocksPerDay);
+
+  // event for updating the contract's approval to Aave's USDC lending pool
+  event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
+
+  // event for creating a lockbox
+  event LockboxCreated(uint256 lockboxID, address owner, uint256 lockedBNJI, uint256 createdTimestamp, string testingMessage);
+
+  // event for unlocking and destroying a lockbox 
+  event LockboxDestroyed(uint256 lockboxID, address owner, uint256 unlockedBNJI, uint256 destroyedTimestamp);
+
+  // event for exchanging USDC and BNJI // TODO:include mint or burn bool or type string 
+  event Exchanged(
+    address fromAddress,
+    address toAddress,
+    uint256 inTokens,
+    uint256 beforeFeeUSDCin6dec,
+    uint256 feeUSDCin6dec
+  );
+
+  // owner overrides paused.
+  modifier whenAvailable() {        
+    require(!paused() || (msg.sender == owner()), "Benjamins is paused.");
+    _;
   }
 
-  function calcLockedBNJIblocksForActiveLB(address _userToCheck, uint8 position) public view returns(uint256 stillActiveLockedBNJIblocksForLockbox) {
-        
+  // checking that account has sufficient funds
+  modifier hasTheBenjamins(uint256 want2Spend) {
+    require(balanceOf(msg.sender) >= want2Spend, "Insufficient Benjamins.");
+    _;
+  }
+
+  // Redundant reserveInUSDCin6dec protection vs. user withdraws. TODO: clean up
+  modifier wontBreakTheBank(uint256 amountBNJItoBurn) {        
+    // calculating the USDC value of the BNJI tokens to burn, and rounding them to full cents
+    uint256 beforeFeesNotRoundedIn6dec = quoteUSDC(amountBNJItoBurn, false);        
+    uint256 beforeFeesRoundedDownIn6dec = beforeFeesNotRoundedIn6dec - (beforeFeesNotRoundedIn6dec % USDCcentsScaleFactor);
+    // if the USDC reserve counter shows less than what is needed, check the existing amUSDC balance of the contract
+    if(reserveInUSDCin6dec < beforeFeesRoundedDownIn6dec) {
+      uint256 fundsOnTab = polygonAMUSDC.balanceOf(address(this));
+      // if there are enough amUSDC available, set the tracker to allow the transfer 
+      if (fundsOnTab >= beforeFeesRoundedDownIn6dec ) {
+        reserveInUSDCin6dec = beforeFeesRoundedDownIn6dec;                
+      }
+    }
+    // if there are not enough amUSDC, throw an error 
+    require(reserveInUSDCin6dec >= beforeFeesRoundedDownIn6dec, "BNJ: wontBreakTheBank threw");
+    _;
+  }
+
+  constructor() ERC20("Benjamins", "BNJI") {
+    // Manage Benjamins
+    _decimals = 0;                          // Benjamins have 0 decimals, only full tokens exist.
+    reserveInUSDCin6dec = 0;                // upon contract creation, the reserve in USDC is 0
+
+    // setting addresses for feeReceiver, USDC-, amUSDC- and Aave lending pool contracts
+    feeReceiver = 0xE51c8401fe1E70f78BBD3AC660692597D33dbaFF;
+    polygonUSDC = IERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
+    polygonAMUSDC = IERC20(0x1a13F4Ca1d028320A707D99520AbFefca3998b7F);
+    polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
+    
+    // calling OpenZeppelin's (pausable) pause function for initial preparations after deployment
+    pause();
+  }
+  
+  // pausing funcionality from OpenZeppelin's Pausable
+  function pause() public onlyOwner {
+    _pause();
+  }
+
+  // unpausing funcionality from OpenZeppelin's Pausable
+  function unpause() public onlyOwner {
+    _unpause();
+  }
+
+  // Overriding OpenZeppelin's ERC20 function
+  function decimals() public view override returns (uint8) {
+    return _decimals;
+  }
+
+  function getLBpositionInUsersMapping(uint256 _lockboxID) public view returns(uint8 posOfLBinUsersMapping) {
+    return positionInUsersMapping[_lockboxID];
+  }
+
+  function lockedBalanceOf (address _userToCheck) public view returns(uint256 lockedBNJIofUser) {
+    return usersBNJIinLockboxes[_userToCheck];
+  }
+
+  // TODO: should this be merged with discount level calculation function?
+  // TODO: recheck for re-entrancy and malicious intent protections
+  function getUsersTotalDiscountScore (address _userToCheck) public view whenAvailable returns (uint256 usersTotalDiscountScore) {
+    uint256 usersHistoricScore = getHistoricLockedBNJIblocksForUser(_userToCheck);
+
+    uint256 usersActiveScore = calcUsersActiveLockedBNJIBlocks(_userToCheck);
+
+    uint256 totalScore = usersHistoricScore + usersActiveScore;
+
+    return totalScore;
+  }  
+
+  function calcLockedBNJIblocksForActiveLB(address _userToCheck, uint256 _lockboxID ) public view returns(uint256 stillActiveLockedBNJIblocksForLockbox) {
+
+    uint8 position = getLBpositionInUsersMapping(_lockboxID);
+
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
 
     lockbox memory foundBox =  usersLockboxes[_userToCheck][position];
+   
+    // redundant security checks    
+    // lockboxID inside the lockbox must be equal to _lockboxID
+    require (foundBox.lockboxID == _lockboxID);
+    // msg.sender must be owner of lockbox
+    require (foundBox.ownerOfLockbox == _userToCheck);    
+    // at least 10 blocks must have passed since lockbox was created
+    require((foundBox.createdTimestamp +10) <= blockHeightNow, 'Bad-Actor-Protection: Lockbox must exist for at least 10 blocks to be counted.'); 
 
     uint256 foundBNJIinBox = foundBox.amountOfBNJIlocked;
     uint256 blocksLocked = blockHeightNow - foundBox.createdTimestamp;
@@ -94,17 +221,14 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
  
   function calcUsersActiveLockedBNJIBlocks(address _userToCheck) public view returns (uint256 stillActiveLockedBNJIblocksForUser) {
     
-    // this is the counter for amount of BNJI locked in the lockbox that's beeing looked at, 
-    // multiplied by the amount of blocks this lockbox existed so far.
+    // counter of users active lockedBNJIBlocks    
     uint256 activeLockedBNJIBlocksForUser = 0; 
 
     // going through all existing lockboxes for this user
-    // TODO: update description and variable names etc
-    // TODO: indexes of lockboxes must get set and updated correctly upon creating and deleting (change boxID)
-    // TODO: UPDATE this is not 0 index based, works with amountOfLockboxesForUser, if user has 3 lockboxes, the key values for them 
-    // inlockedInMapping[_userToCheck] should be 1,2,3. This way they can be found though they are in a mapping, not an array
-    for (uint8 position = 1; position <= amountOfLockboxesForUser[_userToCheck]; position++) {
+    // TODO: test: this is not 0 index based, works with amountOfLockboxesForUser, if user has 3 lockboxes, the key values for them     
+    // in positionInUsersMapping[_userToCheck] should be 1,2,3. This way they can be found though they are in a mapping, not an array
 
+    for (uint8 position = 1; position <= amountOfLockboxesForUser[_userToCheck]; position++) {
       // add each lockbox's result to total active counter
       activeLockedBNJIBlocksForUser += calcLockedBNJIblocksForActiveLB(_userToCheck, position);  
     }
@@ -113,14 +237,19 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return activeLockedBNJIBlocksForUser;
   }
 
-  // todo: check if allowance is needed
-  // todo: take out testingmessage
-  // todo: probably put in reentrancyGuard here and in destroy lockbox function, against flashloan attacks, cant both be called in same block 
-  function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage) public whenAvailable hasTheBenjamins(_amountOfBNJItoLock) {
-   
-   require(amountOfLockboxesForUser[msg.sender] <= 4, "Only up to 4 lockboxes per user. Consider unlocking one and creating a new one then.");
-    
 
+
+
+
+
+
+
+
+  // todo: take out testingmessage   
+  function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage) public whenAvailable nonReentrant hasTheBenjamins(_amountOfBNJItoLock) {
+   
+    require(amountOfLockboxesForUser[msg.sender] <= 4, "Only up to 4 lockboxes per user. Consider unlocking one and creating a new one then.");
+    
     // transferring BNJI from msg.sender to this contract
     transfer(address(this), _amountOfBNJItoLock);                       // TODO: check if caller is correct, should be msg.sender, might need transferFrom
     
@@ -153,6 +282,9 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     // saving the position to global mapping of lockboxIDs
     positionInUsersMapping[newLockboxID] = position;
+
+    // increasing counter of user's locked BNJI
+    usersBNJIinLockboxes[msg.sender] += _amountOfBNJItoLock;
 
     // emitting event with all related useful details
     emit LockboxCreated (newLockboxID, msg.sender, _amountOfBNJItoLock, blockHeightNow, testingMessage);
@@ -223,11 +355,9 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     }
 
     return result;
-    
-
   }  
 
-  function unlockAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable {
+  function unlockAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable nonReentrant{
 
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
@@ -240,7 +370,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // msg.sender must be owner of lockbox
     require (_lockboxtoDestroy.ownerOfLockbox == msg.sender);    
     // at least 10 blocks must have passed since lockbox was created
-    require((_lockboxtoDestroy.createdTimestamp +10) <= blockHeightNow, 'Flashloan-Protection: Lockbox must exist for at least 10 blocks.');   
+    require((_lockboxtoDestroy.createdTimestamp +10) <= blockHeightNow, 'Flashloan-Protection: Lockbox must exist for at least 10 blocks to be unlocked.');   
 
     uint256 amountOfBNJIunlocked = _lockboxtoDestroy.amountOfBNJIlocked;
     
@@ -266,6 +396,9 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // decreasing user's counter of lockboxes
     amountOfLockboxesForUser[msg.sender] -= 1;
 
+    // decreasing counter of user's locked BNJI
+    usersBNJIinLockboxes[msg.sender] -= amountOfBNJIunlocked;
+
     // this contract approves msg.sender to use transferFrom and pull in amountOfBNJIunlocked BNJI
     _approve(address(this), msg.sender, amountOfBNJIunlocked);    
 
@@ -287,106 +420,15 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
   }
 
-  constructor() ERC20("Benjamins", "BNJI") {
-    // Manage Benjamins
-    _decimals = 0;                          // Benjamins have 0 decimals, only full tokens exist.
-    reserveInUSDCin6dec = 0;                // upon contract creation, the reserve in USDC is 0
-
-    // setting addresses for feeReceiver, USDC-, amUSDC- and Aave lending pool contracts
-    feeReceiver = 0xE51c8401fe1E70f78BBD3AC660692597D33dbaFF;
-    polygonUSDC = IERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
-    polygonAMUSDC = IERC20(0x1a13F4Ca1d028320A707D99520AbFefca3998b7F);
-    polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
-    
-    // calling OpenZeppelin's (pausable) pause function for initial preparations after deployment
-    pause();
-  }
-    
-  // event for engaging and disengaging the account's discount locking features
-  event LockStatus(address account, bool acccountIsLocked);   
-
-  event LockboxCreated(uint256 lockboxID, address owner, uint256 lockedBNJI, uint256 createdTimestamp, string testingMessage);
-
-  event LockboxDestroyed(uint256 lockboxID, address owner, uint256 unlockedBNJI, uint256 destroyedTimestamp);
-
-  // event for exchanging USDC and BNJI // TODO:include mint or burn bool or type string 
-  event Exchanged(
-    address fromAddress,
-    address toAddress,
-    uint256 inTokens,
-    uint256 beforeFeeUSDCin6dec,
-    uint256 feeUSDCin6dec
-  );
-
-  // event for withdrawGains function
-  // availableIn6dec shows how many USDC were available to withdraw, in 6 decimals format
-  // amountUSDCin6dec shows how many USDC were withdrawn, in 6 decimals format
-  event ProfitTaken(uint256 availableIn6dec, uint256 amountUSDCin6dec);
-
-  // event for deposits into the lending pool
-  event LendingPoolDeposit (uint256 amountUSDCin6dec, address payer);
-
-  // event for withdrawals from the lending pool
-  event LendingPoolWithdrawal (uint256 amountUSDCBeforeFeein6dec, address payee);
-
-  // event for updating these addresses: feeReceiver, polygonUSDC, polygonAMUSDC
-  event AddressUpdate(address newAddress, string typeOfUpdate); 
-
-  // event for updating the amounts of blocks mined on Polygon network per day
-  event BlocksPerDayUpdate(uint256 newAmountOfBlocksPerDay);
-
-  // event for updating the contract's approval to Aave's USDC lending pool
-  event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
-
-  // owner overrides paused.
-  modifier whenAvailable() {        
-    require(!paused() || (msg.sender == owner()), "Benjamins is paused.");
-    _;
-  }
-
-  // checking that account has sufficient funds
-  modifier hasTheBenjamins(uint256 want2Spend) {
-    require(balanceOf(msg.sender) >= want2Spend, "Insufficient Benjamins.");
-    _;
-  }
 
 
-  // Redundant reserveInUSDCin6dec protection vs. user withdraws. TODO: clean up
-  modifier wontBreakTheBank(uint256 amountBNJItoBurn) {        
-    // calculating the USDC value of the BNJI tokens to burn, and rounding them to full cents
-    uint256 beforeFeesNotRoundedIn6dec = quoteUSDC(amountBNJItoBurn, false);        
-    uint256 beforeFeesRoundedDownIn6dec = beforeFeesNotRoundedIn6dec - (beforeFeesNotRoundedIn6dec % USDCcentsScaleFactor);
-    // if the USDC reserve counter shows less than what is needed, check the existing amUSDC balance of the contract
-    if(reserveInUSDCin6dec < beforeFeesRoundedDownIn6dec) {
-      uint256 fundsOnTab = polygonAMUSDC.balanceOf(address(this));
-      // if there are enough amUSDC available, set the tracker to allow the transfer 
-      if (fundsOnTab >= beforeFeesRoundedDownIn6dec ) {
-        reserveInUSDCin6dec = beforeFeesRoundedDownIn6dec;                
-      }
-    }
-    // if there are not enough amUSDC, throw an error 
-    require(reserveInUSDCin6dec >= beforeFeesRoundedDownIn6dec, "BNJ: wontBreakTheBank threw");
-    _;
-  }
-
-  // pausing funcionality from OpenZeppelin's Pausable
-  function pause() public onlyOwner {
-    _pause();
-  }
-
-  // unpausing funcionality from OpenZeppelin's Pausable
-  function unpause() public onlyOwner {
-    _unpause();
-  }
-
-  // Overriding OpenZeppelin's ERC20 function
-  function decimals() public view override returns (uint8) {
-    return _decimals;
-  }
 
 
-  // Modified ERC20 transfer()     
-  // Cannot send until holding time has passed for sender, if sender has discountLock engaged    
+
+  
+
+
+  // Modified ERC20 transfer()   
   function transfer(address recipient, uint256 amount)
     public
     override
@@ -399,10 +441,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return true;
   }
 
-  // modified ERC20 transferFrom() 
-  // Cannot send until holding time is passed for sender.
-  // Creates possible lockout time for receiver.
-  // USDC approval must be given as in transfer function, see above
+  // modified ERC20 transferFrom()   
   function transferFrom(address sender, address recipient, uint256 amountBNJI)
     public
     override
