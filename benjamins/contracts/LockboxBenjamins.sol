@@ -66,7 +66,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // amount of users total BNJI in lockboxes 
   mapping (address => uint256) usersBNJIinLockboxes; // todo: discuss if we should have this
 
-  // global mapping of all lockboxIDs to their position (key) in their owner's mapping 
+  // global mapping of all lockboxIDs to their position (key) in their owner's mapping // todo: discuss if we should create this as a double mapping, just for readability (lockboxID to user to position)
   mapping (uint256 => uint8) positionInUsersMapping;
 
   // each user's discount score
@@ -175,10 +175,55 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return usersBNJIinLockboxes[_userToCheck];
   }
 
-  function getDiscountScore (address _userToCheck) public view returns(uint256 usersDiscountScore){
+  function getLockboxIDcounter() public view returns(uint256){
+    return lockboxIDcounter;
+  }
+
+  function getUsersDiscountScore (address _userToCheck) public view returns(uint256 usersDiscountScore){
     return discountScore[_userToCheck];
   }
 
+  function getBoxDiscountScore (uint256 _lockboxID, address _owner) public view returns(uint256 discountScoreInBox) {
+    
+    uint8 positionToLookUp = positionInUsersMapping[_lockboxID];
+
+    lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
+
+    // lockboxID inside the lockbox must be equal to _lockboxID
+    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for.");
+
+    return foundBox.boxDiscountScore;
+  }
+    
+  function getAmountOfUsersLockboxes(address _userToCheck) public view returns (uint8 amountOfBoxesForUser) {
+    return amountOfLockboxesForUser[_userToCheck];
+  }
+
+  function getUsersLockboxIDs(address _userToCheck)  public view returns (uint256[] memory lockboxIDsOfUser) {
+
+    require(_userToCheck != address(0), "Query for the zero address");
+
+    uint256 lockboxAmount = getAmountOfUsersLockboxes(_userToCheck);
+
+    if (lockboxAmount == 0) {
+      // Return an empty array
+      return new uint256[](0);
+    }
+
+    uint256[] memory result = new uint256[](lockboxAmount);
+
+    uint256 counter;
+
+    for (counter = 0; counter < lockboxAmount; counter++) {
+
+      lockbox memory foundBox = usersLockboxes[_userToCheck][counter];
+
+      result[counter] = foundBox.lockboxID;
+    }
+
+    return result;
+  }  
+  
   function howManyBlocksUntilUnlockForBox (uint256 _lockboxID, address _owner) public view returns(uint256 timeLeftForBoxInBlocks) {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
@@ -186,6 +231,9 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint8 positionToLookUp = positionInUsersMapping[_lockboxID];
 
     lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
+
+    // lockboxID inside the lockbox must be equal to _lockboxID
+    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for.");
 
     uint256 willUnlockAtThisBlockheight = foundBox.createdTimestamp + foundBox.lockupTimeInBlocks;     
 
@@ -199,10 +247,8 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   }
 
-
-
   // todo: take out testingmessage   
-  function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage, uint256 _lockupTimeInBlocks) public whenAvailable nonReentrant hasTheBenjamins(_amountOfBNJItoLock) {
+  function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage, uint256 _lockupTimeInBlocks) public whenAvailable hasTheBenjamins(_amountOfBNJItoLock) {
    
     require(amountOfLockboxesForUser[msg.sender] <= 12, "Only up to 12 lockboxes per user at the same time.");
 
@@ -295,38 +341,6 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     );
   }
   
-  function getUsersDiscountScore(address _userToCheck) public view returns (uint256 usersDiscountScore) {
-    return discountScore[_userToCheck];
-  }
-
-  function getAmountOfUsersLockboxes(address _userToCheck) public view returns (uint8 amountOfBoxesForUser) {
-    return amountOfLockboxesForUser[_userToCheck];
-  }
-
-  function getUsersLockboxIDs(address _userToCheck)  public view returns (uint256[] memory lockboxIDsOfUser) {
-
-    require(_userToCheck != address(0), "Query for the zero address");
-
-    uint256 lockboxAmount = getAmountOfUsersLockboxes(_userToCheck);
-
-    if (lockboxAmount == 0) {
-      // Return an empty array
-      return new uint256[](0);
-    }
-
-    uint256[] memory result = new uint256[](lockboxAmount);
-
-    uint256 counter;
-
-    for (counter = 0; counter < lockboxAmount; counter++) {
-
-      lockbox memory foundBox = usersLockboxes[_userToCheck][counter];
-
-      result[counter] = foundBox.lockboxID;
-    }
-
-    return result;
-  }  
 
   function openAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable nonReentrant{
 
@@ -343,7 +357,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // msg.sender must be owner of lockbox
     require (_lockboxtoDestroy.ownerOfLockbox == msg.sender);    
     // at least 10 blocks must have passed since lockbox was created
-    require((_lockboxtoDestroy.createdTimestamp + lockupTimeInBlocks) <= blockHeightNow, 'This lockbox cannot be opened yet.');   // TODO: add function that shows how long the box is still locked for
+    require((_lockboxtoDestroy.createdTimestamp + lockupTimeInBlocks) <= blockHeightNow, 'This lockbox cannot be opened yet. You can check howManyBlocksUntilUnlockForBox.');   // TODO: add function that shows how long the box is still locked for
 
     // as this lockbox gets destroyed, the discountScore it was generating is substracted again from user's discountScore
     uint256 discountScoreToSubtract = _lockboxtoDestroy.boxDiscountScore;
