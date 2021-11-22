@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: NONE
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.0;  // TODO: put in fixed version for deployment
 
 // importing interface for Aave's lending pool
 import "./ILendingPool.sol";
@@ -42,10 +42,14 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint256 public curveFactor =   8000000;     // Inverse slope of the bonding curve.
   uint16  public baseFeeTimes10k = 10000;     // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
 
+
+
   struct lockbox {
     uint256 lockboxID;
     uint256 createdTimestamp;
-    uint256 amountOfBNJIlocked;    
+    uint256 amountOfBNJIlocked; 
+    uint256 lockupTimeInBlocks;   
+    uint256 boxDiscountScore;
     address ownerOfLockbox;
     string testMessage; // TODO: take out, only for testing
   }
@@ -65,8 +69,8 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // global mapping of all lockboxIDs to their position (key) in their owner's mapping 
   mapping (uint256 => uint8) positionInUsersMapping;
 
-  // each user's amount of locked BNJI blocks which are not currently in an active lockbox
-  mapping (address => uint256) historicLockedBNJIblocksForUser; 
+  // each user's discount score
+  mapping (address => uint256) discountScore;
 
   // event for withdrawGains function
   // availableIn6dec shows how many USDC were available to withdraw, in 6 decimals format
@@ -89,10 +93,10 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
 
   // event for creating a lockbox
-  event LockboxCreated(uint256 lockboxID, address owner, uint256 lockedBNJI, uint256 createdTimestamp, string testingMessage);
-
+  event LockboxCreated(uint256 lockboxID, address owner, uint256 createdTimestamp, uint256 lockedBNJI, uint256 lockupTimeInBlocks, uint256 boxDiscountScore, string testingMessage); // TODO: take out message
+  
   // event for unlocking and destroying a lockbox 
-  event LockboxDestroyed(uint256 lockboxID, address owner, uint256 unlockedBNJI, uint256 destroyedTimestamp);
+  event LockboxDestroyed(uint256 lockboxID, address owner, uint256 destroyedTimestamp, uint256 unlockedBNJI, uint256 lockupTimeInBlocks, uint256 boxDiscountScore); // TODO: fix order of arguments, also in emit of course
 
   // event for exchanging USDC and BNJI // TODO:include mint or burn bool or type string 
   event Exchanged(
@@ -171,84 +175,38 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return usersBNJIinLockboxes[_userToCheck];
   }
 
-  // TODO: should this be merged with discount level calculation function?
-  // TODO: recheck for re-entrancy and malicious intent protections
-  function getUsersTotalDiscountScore (address _userToCheck) public view whenAvailable returns (uint256 usersTotalDiscountScore) {
-    uint256 usersHistoricScore = getHistoricLockedBNJIblocksForUser(_userToCheck);
+  function getDiscountScore (address _userToCheck) public view returns(uint256 usersDiscountScore){
+    return discountScore[_userToCheck];
+  }
 
-    uint256 usersActiveScore = calcUsersActiveLockedBNJIBlocks(_userToCheck);
-
-    uint256 totalScore = usersHistoricScore + usersActiveScore;
-
-    return totalScore;
-  }  
-
-  function calcLockedBNJIblocksForActiveLB(address _userToCheck, uint256 _lockboxID ) public view returns(uint256 stillActiveLockedBNJIblocksForLockbox) {
-
-    uint8 position = getLBpositionInUsersMapping(_lockboxID);
-
+  function howManyBlocksUntilUnlockForBox (uint256 _lockboxID, address _owner) public view returns(uint256 timeLeftForBoxInBlocks) {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
 
-    lockbox memory foundBox =  usersLockboxes[_userToCheck][position];
-   
-    // redundant security checks    
-    // lockboxID inside the lockbox must be equal to _lockboxID
-    require (foundBox.lockboxID == _lockboxID);
-    // msg.sender must be owner of lockbox
-    require (foundBox.ownerOfLockbox == _userToCheck);    
-    // at least 10 blocks must have passed since lockbox was created
-    require((foundBox.createdTimestamp +10) <= blockHeightNow, 'Bad-Actor-Protection: Lockbox must exist for at least 10 blocks to be counted.'); 
+    uint8 positionToLookUp = positionInUsersMapping[_lockboxID];
 
-    uint256 foundBNJIinBox = foundBox.amountOfBNJIlocked;
-    uint256 blocksLocked = blockHeightNow - foundBox.createdTimestamp;
+    lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
 
-    // this is the counter for amount of BNJI locked in the lockbox that's beeing looked at, 
-    // multiplied by the amount of blocks this lockbox existed so far.
-    uint256 blocksTimesBNJIlocked = foundBNJIinBox*blocksLocked; 
-    /*
-    console.log(foundBox.lockboxID, 'lockbox ID,  calcLockedBNJIblocksForActiveLB');
-    console.log(_userToCheck, '_userToCheck,  calcLockedBNJIblocksForActiveLB');
-    console.log(foundBox.ownerOfLockbox, 'ownerOfLockbox,  calcLockedBNJIblocksForActiveLB');
-    console.log(foundBox.testMessage, 'testmessage in box,  calcLockedBNJIblocksForActiveLB');
-    console.log(foundBNJIinBox, 'this many BNJI were found in the box,  calcLockedBNJIblocksForActiveLB');
-    console.log(blocksLocked, 'this box was locked for this many blocks,  calcLockedBNJIblocksForActiveLB');    
+    uint256 willUnlockAtThisBlockheight = foundBox.createdTimestamp + foundBox.lockupTimeInBlocks;     
 
-    console.log(blocksTimesBNJIlocked, 'blocks * BNJIlocked,  calcLockedBNJIblocksForActiveLB');   
-    */
-    return blocksTimesBNJIlocked;
-  }
- 
-  function calcUsersActiveLockedBNJIBlocks(address _userToCheck) public view returns (uint256 stillActiveLockedBNJIblocksForUser) {
-    
-    // counter of users active lockedBNJIBlocks    
-    uint256 activeLockedBNJIBlocksForUser = 0; 
+    int256 amountOfBlocksStillLocked = int256(willUnlockAtThisBlockheight) - int256(blockHeightNow);
 
-    // going through all existing lockboxes for this user
-    // TODO: test: this is not 0 index based, works with amountOfLockboxesForUser, if user has 3 lockboxes, the key values for them     
-    // in positionInUsersMapping[_userToCheck] should be 1,2,3. This way they can be found though they are in a mapping, not an array
-
-    for (uint8 position = 1; position <= amountOfLockboxesForUser[_userToCheck]; position++) {
-      // add each lockbox's result to total active counter
-      activeLockedBNJIBlocksForUser += calcLockedBNJIblocksForActiveLB(_userToCheck, position);  
+    if (amountOfBlocksStillLocked < 0 ) {
+      return 0;
+    } else {
+      return uint256(amountOfBlocksStillLocked);
     }
 
-    // return total amount of lockedBNJIblocks for user, which are still locked up in lockboxes
-    return activeLockedBNJIBlocksForUser;
   }
-
-
-
-
-
-
 
 
 
   // todo: take out testingmessage   
-  function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage) public whenAvailable nonReentrant hasTheBenjamins(_amountOfBNJItoLock) {
+  function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage, uint256 _lockupTimeInBlocks) public whenAvailable nonReentrant hasTheBenjamins(_amountOfBNJItoLock) {
    
-    require(amountOfLockboxesForUser[msg.sender] <= 4, "Only up to 4 lockboxes per user. Consider unlocking one and creating a new one then.");
+    require(amountOfLockboxesForUser[msg.sender] <= 12, "Only up to 12 lockboxes per user at the same time.");
+
+    require(_lockupTimeInBlocks >= 10 && (_lockupTimeInBlocks <= 365 * blocksPerDay) , "Mimimum lockup time is 10 blocks, maximum is 365 days.");
     
     // transferring BNJI from msg.sender to this contract
     transfer(address(this), _amountOfBNJItoLock);                       // TODO: check if caller is correct, should be msg.sender, might need transferFrom
@@ -262,13 +220,18 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // updated lockboxIDcounter is saved as lockboxID into lockbox
     uint256 newLockboxID = lockboxIDcounter;  
 
+    // calculating and saving this lockebox's generatedDiscountScore into lockbox
+    uint256 generatedDiscountScore = _amountOfBNJItoLock * _lockupTimeInBlocks;
+
     // creating new lockbox
     lockbox memory newLockbox = lockbox ({  
-      lockboxID:          uint256(newLockboxID),        // unique identifier
-      createdTimestamp:   uint256(blockHeightNow),      // timestamp of creation
-      amountOfBNJIlocked: uint256(_amountOfBNJItoLock), // amount of BNJI that were locked in
-      ownerOfLockbox:     address(msg.sender),          // msg.sender is owner of lockbox
-      testMessage:        string(testingMessage)        // just for testing, to see if keeping track works as intended
+      lockboxID:          uint256(newLockboxID),            // unique identifier
+      createdTimestamp:   uint256(blockHeightNow),          // timestamp of creation
+      amountOfBNJIlocked: uint256(_amountOfBNJItoLock),     // amount of BNJI that were locked in
+      lockupTimeInBlocks: uint256 (_lockupTimeInBlocks),    // amount of blocks that the lockbox will be locked for
+      boxDiscountScore:   uint256(generatedDiscountScore),  // discountScore that is generated by this box, as long as it's unopened
+      ownerOfLockbox:     address(msg.sender),              // msg.sender is owner of lockbox
+      testMessage:        string(testingMessage)            // just for testing, to see if keeping track works as intended
     });   
     
     // increasing user's counter of lockboxes
@@ -286,17 +249,22 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // increasing counter of user's locked BNJI
     usersBNJIinLockboxes[msg.sender] += _amountOfBNJItoLock;
 
+    // adding this lockebox's generatedDiscountScore to user's discountScore   
+    discountScore[msg.sender] += generatedDiscountScore;
+
     // emitting event with all related useful details
-    emit LockboxCreated (newLockboxID, msg.sender, _amountOfBNJItoLock, blockHeightNow, testingMessage);
+    emit LockboxCreated (newLockboxID, msg.sender, blockHeightNow, _amountOfBNJItoLock, _lockupTimeInBlocks, generatedDiscountScore, testingMessage);  
   }
 
-  function findLockboxByIDforUser (address _userToCheck, uint256 _lockboxIDtoFind) 
+  function showLockboxByIDforUser (address _userToCheck, uint256 _lockboxIDtoFind) 
     public 
     view 
   returns (
     uint256 foundLockboxID,
     uint256 foundCreatedTimestamp,
     uint256 foundAmountOfBNJIlocked,
+    uint256 foundLockupTimeInBlocks,
+    uint256 foundBoxDiscountScore,
     address foundOwnerOfLockbox,
     string memory foundTestingMessage
     )
@@ -306,26 +274,29 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     lockbox memory foundBox = usersLockboxes[_userToCheck][positionToLookUp];
 
-    console.log(positionToLookUp, 'positionToLookUp in owners mapping, queried positionInUsersMapping[_lockboxIDtoFind],  findLockboxByIDforUser');
+    console.log(positionToLookUp, 'positionToLookUp in owners mapping, queried positionInUsersMapping[_lockboxIDtoFind],  showLockboxByIDforUser');
 
-    console.log(foundBox.lockboxID, 'lockboxID,  findLockboxByIDforUser');
-    console.log(foundBox.createdTimestamp, 'createdTimestamp,  findLockboxByIDforUser');
-    console.log(foundBox.amountOfBNJIlocked, 'amountOfBNJIlocked,  findLockboxByIDforUser');
-    console.log(foundBox.ownerOfLockbox, 'ownerOfLockbox,  findLockboxByIDforUser');
-    console.log(foundBox.testMessage, 'testMessage,  findLockboxByIDforUser');
+    console.log(foundBox.lockboxID, 'lockboxID,  showLockboxByIDforUser');
+    console.log(foundBox.createdTimestamp, 'createdTimestamp,  showLockboxByIDforUser');
+    console.log(foundBox.amountOfBNJIlocked, 'amountOfBNJIlocked,  showLockboxByIDforUser');
+    console.log(foundBox.lockupTimeInBlocks, 'lockupTimeInBlocks,  showLockboxByIDforUser');
+    console.log(foundBox.boxDiscountScore, 'boxDiscountScore,  showLockboxByIDforUser');    
+    console.log(foundBox.ownerOfLockbox, 'ownerOfLockbox,  showLockboxByIDforUser');
+    console.log(foundBox.testMessage, 'testMessage,  showLockboxByIDforUser');
     
     return(
       foundBox.lockboxID,
       foundBox.createdTimestamp,
       foundBox.amountOfBNJIlocked,
+      foundBox.lockupTimeInBlocks,
+      foundBox.boxDiscountScore,
       foundBox.ownerOfLockbox,
       foundBox.testMessage
     );
-
   }
   
-  function getHistoricLockedBNJIblocksForUser(address _userToCheck) public view returns (uint256 historicLockedBNJIblocksForAddress) {
-    return historicLockedBNJIblocksForUser[_userToCheck];
+  function getUsersDiscountScore(address _userToCheck) public view returns (uint256 usersDiscountScore) {
+    return discountScore[_userToCheck];
   }
 
   function getAmountOfUsersLockboxes(address _userToCheck) public view returns (uint8 amountOfBoxesForUser) {
@@ -357,7 +328,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return result;
   }  
 
-  function unlockAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable nonReentrant{
+  function openAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable nonReentrant{
 
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
@@ -365,21 +336,24 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint8 positionToRefill = positionInUsersMapping[_lockboxIDtoDestroy];
     lockbox memory _lockboxtoDestroy = usersLockboxes[msg.sender][positionToRefill];
 
+    uint256 lockupTimeInBlocks = _lockboxtoDestroy.lockupTimeInBlocks;
+
     // lockboxID inside the lockbox must be equal to _lockboxIDtoDestroy
     require (_lockboxtoDestroy.lockboxID == _lockboxIDtoDestroy);
     // msg.sender must be owner of lockbox
     require (_lockboxtoDestroy.ownerOfLockbox == msg.sender);    
     // at least 10 blocks must have passed since lockbox was created
-    require((_lockboxtoDestroy.createdTimestamp +10) <= blockHeightNow, 'Flashloan-Protection: Lockbox must exist for at least 10 blocks to be unlocked.');   
+    require((_lockboxtoDestroy.createdTimestamp + lockupTimeInBlocks) <= blockHeightNow, 'This lockbox cannot be opened yet.');   // TODO: add function that shows how long the box is still locked for
+
+    // as this lockbox gets destroyed, the discountScore it was generating is substracted again from user's discountScore
+    uint256 discountScoreToSubtract = _lockboxtoDestroy.boxDiscountScore;
+    discountScore[msg.sender] -= discountScoreToSubtract;
 
     uint256 amountOfBNJIunlocked = _lockboxtoDestroy.amountOfBNJIlocked;
     
     uint8 lastLockboxPositionOfUser = getAmountOfUsersLockboxes(msg.sender);    
 
     uint8 positionOfLockboxToDestroy = positionToRefill;
-
-    // calculating how many lockedBNJIblocks this lockbox has accumulated so far
-    uint256 lockedBNJIblocksInThisBox = calcLockedBNJIblocksForActiveLB(msg.sender, positionOfLockboxToDestroy);
 
     // When the lockbox to destroy is the already in the user's mapping's last position, the swap operation is unnecessary
     if (positionOfLockboxToDestroy != lastLockboxPositionOfUser) {
@@ -402,21 +376,18 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // this contract approves msg.sender to use transferFrom and pull in amountOfBNJIunlocked BNJI
     _approve(address(this), msg.sender, amountOfBNJIunlocked);    
 
-    // checking allowance for BNJI 
+    // checking allowance for BNJI // TODO: take out
     uint256 fromThisContractToCallerBNJIAllowance = allowance(address(this), msg.sender);
-    console.log(fromThisContractToCallerBNJIAllowance, 'this many BNJI are allowed by this contract to user' );  
-
-    //adding the accumulated lockedBNJIblocks from this box to the historic amount
-    historicLockedBNJIblocksForUser[msg.sender] += lockedBNJIblocksInThisBox;
+    console.log(fromThisContractToCallerBNJIAllowance, 'this many BNJI are allowed by this contract to user' );      
 
     // this contract pushes msg.sender amountOfBNJIunlocked to msg.sender
     transferFrom(address(this), msg.sender, amountOfBNJIunlocked);
 
-    // rechecking allowance for BNJI 
+    // rechecking allowance for BNJI // TODO: take out
     uint256 fromThisContractToCallerBNJIAllowanceNow = allowance(address(this), msg.sender);
     console.log(fromThisContractToCallerBNJIAllowanceNow, 'this many BNJI are allowed by this contract to user after transferFrom' );
 
-    emit LockboxDestroyed(_lockboxIDtoDestroy, msg.sender, amountOfBNJIunlocked, blockHeightNow);   
+    emit LockboxDestroyed(_lockboxIDtoDestroy, msg.sender, blockHeightNow, amountOfBNJIunlocked, lockupTimeInBlocks, discountScoreToSubtract);   
     
   }
 
