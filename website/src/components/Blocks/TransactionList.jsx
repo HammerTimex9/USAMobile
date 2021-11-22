@@ -42,7 +42,6 @@ export const TransactionList = (props) => {
     NativeTxs,
     props.tokenAddress,
   ]);
-
   return (
     <Table size="small" aria-label="purchases">
       <TableHead>
