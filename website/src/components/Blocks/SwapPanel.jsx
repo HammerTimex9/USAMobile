@@ -17,6 +17,7 @@ export const SwapPanel = () => {
   const { quoteValid, setQuote } = useQuote();
   useEffect(() => {
     setQuote();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
   return (
     <Box

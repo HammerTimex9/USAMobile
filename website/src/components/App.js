@@ -37,7 +37,7 @@ const CryptoRoute = ({ component: Component, address, ...rest }) => {
 
 function App() {
   const { isAuthenticated, Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
-  const { user, setUserData, isUserUpdating } = useMoralis();
+  const { user, isUserUpdating } = useMoralis();
   const { positions, isLoading } = usePositions();
   const { setAccounts, setNetworkId, isPolygon } = useNetwork();
   const { setDialog } = useExperts();
