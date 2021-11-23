@@ -50,7 +50,7 @@ export const usePolygonNetwork = () => {
     }
   };
   const switchNetworkToPolygon = () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+    if (MetaMaskOnboarding.isMetaMaskInstalled() && isAuthenticated) {
       Moralis.switchNetwork(CHAIN_ID)
         .then(
           (success) => {

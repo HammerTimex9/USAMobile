@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import { Button, Drawer, Tooltip } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
@@ -19,6 +19,17 @@ export const AuthButton = () => {
   const onCloseDrawer = () => {
     console.log('OnClose Drawer.');
   };
+
+  useEffect(() => {
+    return () => {
+      window.addEventListener('beforeunload', function (e) {
+        let confirmationMessage = 'o/';
+        (e || window.event).returnValue = confirmationMessage;
+        if (isAuthenticated) logout();
+        return confirmationMessage;
+      });
+    };
+  });
 
   return (
     <>
