@@ -17,7 +17,7 @@ import { SwapTrade } from './Screens/SwapTrade';
 import { BuySell } from './Screens/BuySell';
 import { SendReceive } from './Screens/SendReceive';
 import { BottomFooter } from './Screens/BottomFooter';
-import { usePositions } from '../hooks/usePositions';
+import { usePositions } from '../contexts/portfolioContext';
 
 import { useNetwork } from '../contexts/networkContext';
 import { useExperts } from '../contexts/expertsContext';

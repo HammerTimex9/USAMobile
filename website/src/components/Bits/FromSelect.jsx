@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
-import { usePositions } from '../../hooks/usePositions';
+import { usePositions } from '../../contexts/portfolioContext';
 import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
