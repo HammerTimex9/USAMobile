@@ -8,6 +8,7 @@
 
 /* dapp-begin */
 const { Platform, LogBox } = require('react-native');
+import 'react-native-gesture-handler';
 
 if (Platform.OS !== 'web') {
   require('react-native-get-random-values');

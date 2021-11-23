@@ -19,17 +19,14 @@ const styles = StyleSheet.create({
 	},
 	bodyWrapper:{
 		flex: 2,
-		alignItems: 'center',
 		justifyContent:'space-around'
 	},
+	textWrapper:{},
 	pageLabel: {
 		textAlign:'center'
 	},
 	buttonsWrapper:{
-		display: 'flex',
-		width: '80%',
-		alignItems: 'center',
-		padding: 8
+		paddingHorizontal: 8
 		
 	}
 });

@@ -10,16 +10,16 @@ const INITIAL_ROUTE_NAME = 'Portfolio';
 
 const TabsNavigator = () => {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false
+      }}
+    >
       <Tab.Screen
         name="Portfolio"
         component={PortfolioPricesScreen}
         options={{
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName = focused ? 'eye': 'eye';
-            // You can return any component that you like here!
-            return <Ionicons name={iconName} size={size} color={color} />;
-          },
+          tabBarIcon: ({ focused, color, size }) => {let iconName = focused ? 'eye': 'eye';return <Ionicons name={iconName} size={size} color={color} />}
         }}
       />
       <Tab.Screen

@@ -7,13 +7,13 @@ import styles from './styles';
 
 
 // Interfaces
-interface IProps {}
+interface IProps { }
 
 
 const Welcome: React.FC<IProps> = () => {
   const navigation = useNavigation();
 
-  const handleButtonClick = (screenName) =>{
+  const handleButtonClick = (screenName) => {
     navigation.navigate(screenName);
   }
 
@@ -23,11 +23,13 @@ const Welcome: React.FC<IProps> = () => {
         <Image style={styles.logo} source={require('../../../media/logo.png')} />
       </View>
       <View style={styles.bodyWrapper}>
-        <Text style={styles.pageLabel}>This is Our Welcome Page, We will add Slider/Explorer Slides here.</Text>
-         <View style={styles.buttonsWrapper}>
-           <Button label="Create Account" touchableStyle={{marginBottom: 5}} onPress={() => handleButtonClick('Signup')} />
-           <Button label="Login" onPress={() => handleButtonClick('Login')} />
-         </View>
+        <View style={styles.textWrapper}>
+          <Text style={styles.pageLabel}>This is Our Welcome Page, We will add Slider/Explorer Slides here.</Text>
+        </View>
+        <View style={styles.buttonsWrapper}>
+          <Button label="Create Account" touchableStyle={{ marginBottom: 5 }} onPress={() => handleButtonClick('Signup')} />
+          <Button label="Login" onPress={() => handleButtonClick('Login')} />
+        </View>
       </View>
     </View>
   );

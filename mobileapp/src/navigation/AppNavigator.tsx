@@ -3,12 +3,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useMoralis } from 'react-moralis';
 
-import { AuthNavigator, TabsNavigator } from './';
+import { AuthNavigator, DrawerNavigator, TabsNavigator } from './';
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
-	const [isSignedIn, setSignedIn] = useState(false);
+	const [isSignedIn, setSignedIn] = useState(true);
 	const { isAuthenticated } = useMoralis();
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -26,7 +26,7 @@ const AppNavigator = () => {
 				}}>
 				{
 					isAuthenticated ? (
-						<Stack.Screen name="Tabs" component={TabsNavigator} />
+						<Stack.Screen name="Drawer" component={DrawerNavigator} />
 					) : (
 						<Stack.Screen name="Auth" component={AuthNavigator} />
 					)
