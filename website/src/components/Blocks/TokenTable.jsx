@@ -25,14 +25,12 @@ import { useNetwork } from '../../contexts/networkContext';
 import { TransactionList } from './TransactionList';
 
 import { getDataByCoinID } from '../../hooks/action';
-import { usePortfolio } from '../../contexts/portfolioContext';
 import Card from '../Research/card';
 import Loader from '../Research/load';
 
 export const TokenTable = () => {
-  const { isLoading, totalValue } = usePositions();
+  const { isLoading, totalValue, positions } = usePositions();
   const { networkName } = useNetwork();
-  const { positions } = usePortfolio();
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedCoin, setSelectedCoin] = useState(null);
 
@@ -103,7 +101,7 @@ export const TokenTable = () => {
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box sx={{ m: 1 }}>
                 <TransactionList
-                  tokenAddress={position.tokenAddress}
+                  tokenAddress={position.token_address}
                   tokenSymbol={position.symbol.toLowerCase()}
                   chain={networkName}
                   decimals={position.decimals}

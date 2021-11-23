@@ -29,7 +29,7 @@
     "url": "https://github.com/orbitmechanic/USAMobile/issues"
   },
   "author": "ctrl030, orbitmechanic",
-  "homepage": "https://github.com/orbitmechanic/USAMobile/smartContract#readme",  
+  "homepage": "https://github.com/orbitmechanic/USAMobile/smartContract#readme",
   "license": "../LICENSE.txt",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
