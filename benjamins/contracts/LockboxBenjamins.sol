@@ -190,7 +190,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
 
     // lockboxID inside the lockbox must be equal to _lockboxID
-    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for.");
+    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");
 
     return foundBox.boxDiscountScore;
   }
@@ -236,7 +236,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
 
     // lockboxID inside the lockbox must be equal to _lockboxID
-    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for.");
+    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");
 
     uint256 willUnlockAtThisBlockheight = foundBox.createdTimestamp + foundBox.lockupTimeInBlocks;     
 
@@ -355,11 +355,13 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     lockbox memory _lockboxtoDestroy = usersLockboxes[msg.sender][positionToRefill];
 
     uint256 lockupTimeInBlocks = _lockboxtoDestroy.lockupTimeInBlocks;
-
+  
     // lockboxID inside the lockbox must be equal to _lockboxIDtoDestroy
-    require (_lockboxtoDestroy.lockboxID == _lockboxIDtoDestroy, "This is not the lockbox you're looking for.");
-    // msg.sender must be owner of lockbox
-    require (_lockboxtoDestroy.ownerOfLockbox == msg.sender, 'This is not your lockbox.');    
+    require (_lockboxtoDestroy.lockboxID == _lockboxIDtoDestroy, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");
+        
+    // redundant security: msg.sender must be owner of lockbox
+    require (_lockboxtoDestroy.ownerOfLockbox == msg.sender, 'This is not your lockbox.');
+
     // at least 10 blocks must have passed since lockbox was created
     require((_lockboxtoDestroy.createdTimestamp + lockupTimeInBlocks) <= blockHeightNow, 'This lockbox cannot be opened yet. You can check howManyBlocksUntilUnlockForBox.');   // TODO: add function that shows how long the box is still locked for
 
@@ -627,12 +629,17 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
   // function for owner to withdraw ERC20 tokens that were sent directly to contract by mistake
   function cleanERC20Tips(address erc20ContractAddress) public onlyOwner {
-    require(erc20ContractAddress != 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174); // ERC20 address cannot be USDC
-    require(erc20ContractAddress != 0x1a13F4Ca1d028320A707D99520AbFefca3998b7F); // ERC20 address cannot be amUSDC
-    IERC20 erc20contract = IERC20(erc20ContractAddress);
-    uint256 accumulatedTokens = erc20contract.balanceOf(address(this));
-    erc20contract.transferFrom(address(this), msg.sender, accumulatedTokens);
+    require(erc20ContractAddress != 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174, 'ERC20 cannot be USDC.');     // ERC20 cannot be USDC
+    require(erc20ContractAddress != 0x1a13F4Ca1d028320A707D99520AbFefca3998b7F, 'ERC20 cannot be amUSDC.');   // ERC20 cannot be amUSDC
+    require(erc20ContractAddress != address(this), 'ERC20 cannot be BNJI.');                                  // ERC20 cannot be BNJI
+
+    IERC20 erc20contract = IERC20(erc20ContractAddress);                // Instance of ERC20 token at erc20ContractAddress    
+    uint256 accumulatedTokens = erc20contract.balanceOf(address(this)); // Querying balance of this token, owned by this contract    
+    erc20contract.transfer(msg.sender, accumulatedTokens);              // Sending it to calling owner
   }
+
+
+
 
   // Fallback receives all incoming funds of any type.
   receive() external payable {

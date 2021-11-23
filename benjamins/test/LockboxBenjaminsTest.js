@@ -866,7 +866,7 @@ describe("Testing Lockbox version of Benjamins", function () {
   });
 
 
-  it.only("Test NEW 8. Doing it twice: testUser_1 creates 12 lockboxes succesfully, then unlocks all", async function () { 
+  it("Test NEW 8. Doing it twice: testUser_1 creates 12 lockboxes succesfully, then unlocks all", async function () { 
 
     await countAllCents();         
     await testMinting("Minting 1200 BNJI to caller", 1200, testUser_1, testUser_1);     
@@ -916,7 +916,7 @@ describe("Testing Lockbox version of Benjamins", function () {
     await countAllCents();  
   });
   
-  it.only ("Test NEW 9. testUser_1 and testUser_2 create lockboxes, IDs are generated as expected", async function () {  
+  it ("Test NEW 9. testUser_1 and testUser_2 create lockboxes, IDs are generated as expected", async function () {  
     
     await countAllCents();         
     await testMinting("Minting 1200 BNJI to caller", 1200, testUser_1, testUser_1);     
@@ -973,7 +973,30 @@ describe("Testing Lockbox version of Benjamins", function () {
     await countAllCents();
   });
 
-  /*
+  it ("Test NEW 10. testUser_2 tries to open testUser_1's lockbox, should fail", async function () {  
+    
+    await countAllCents();         
+    await testMinting("Minting 1200 BNJI to caller", 1200, testUser_1, testUser_1);   
+
+    expect(await balBNJI(testUser_1)).to.equal(1200);  
+    expect(await amountOfUsersLockboxes(testUser_1)).to.equal(0);    
+    
+    await testLockboxCreation(testUser_1, 50, `User_1, This is box number 1`, 40);  
+    
+    expect(await balBNJI(testUser_1)).to.equal(1150);  
+    expect(await amountOfUsersLockboxes(testUser_1)).to.equal(1);   
+    expect(await amountOfUsersLockboxes(testUser_2)).to.equal(0); 
+
+    await expect( benjaminsContract.connect(testUser_2_Signer).openAndDestroyLockbox(1)).to.be.revertedWith(
+      "This is not the lockbox you're looking for. You can check getUsersLockboxIDs"
+    );  
+
+    expect(await balBNJI(testUser_1)).to.equal(1150);  
+    expect(await amountOfUsersLockboxes(testUser_1)).to.equal(1);  
+    expect(await amountOfUsersLockboxes(testUser_2)).to.equal(0);  
+    
+  });  
+  
   it("Test 1. testUser_1 should mint 10 BNJI for themself", async function () {  
     await countAllCents();         
     await testMinting("Test 1, minting 40 BNJI to caller", 40, testUser_1, testUser_1);      
@@ -1768,31 +1791,59 @@ describe("Testing Lockbox version of Benjamins", function () {
     await countAllCents(); 
   });    
 
-  it("Test 28. Owner can withdraw ERC20 tokens that were sent by mistake - but not USDC or amUSDC", async function () { 
+  it.only("Test 28. Owner can use cleanERC20Tips to withdraw ERC20 tokens that were sent to contract by mistake - but not USDC, amUSDC or BNJI", async function () { 
   
     await countAllCents(); 
 
-    const contractWMATICstart = Number(ethers.utils.formatEther(await polygonWMATIC.balanceOf(benjaminsContract.address)));  
-    const deployerWMATICstart = Number(ethers.utils.formatEther(await polygonWMATIC.balanceOf(deployer)));
 
-    expect(contractWMATICstart).to.equal(0);  
+    // Creating instance of 
+    const polygonLINKaddress = '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39';
 
-    const amountWMATICtoSend = ethers.utils.parseEther("50");
-    await polygonWMATIC.connect(deployerSigner).transfer(benjaminsContract.address, amountWMATICtoSend);
+    polygonChainlink = new ethers.Contract(
+      polygonLINKaddress,
+      [
+        'function approve(address guy, uint wad) public returns (bool)',
+        'function transfer(address dst, uint wad) public returns (bool)',
+        'function balanceOf(address account) external view returns (uint256)',        
+      ], 
+      deployerSigner
+    );
 
-    const contractWMATICafterSend = Number(ethers.utils.formatEther(await polygonWMATIC.balanceOf(benjaminsContract.address)));  
-    const deployerWMATICafterSend = Number(ethers.utils.formatEther(await polygonWMATIC.balanceOf(deployer)));
+    const chainlinkToGetIn18dec = ethers.utils.parseEther("10");
+    const wmaticToPayWithMaxIn18dec = ethers.utils.parseEther("1000");
 
-    expect(contractWMATICafterSend).to.equal(contractWMATICstart+50);  
-    expect(deployerWMATICafterSend).to.equal(deployerWMATICstart-50);     
+    await polygonQuickswapRouter.connect(deployerSigner).swapTokensForExactTokens( chainlinkToGetIn18dec, wmaticToPayWithMaxIn18dec , [polygonWMATICaddress, polygonLINKaddress], deployer, 1665102928); 
+    
+    const chainlinkBalStart_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
+    const chainlinkBalStart_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
+    expect(chainlinkBalStart_deployer).to.equal(10);
+    expect(chainlinkBalStart_BNJIcontract).to.equal(0);  
 
-    await benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonWMATICaddress);
+    await polygonChainlink.connect(deployerSigner).transfer(benjaminsContract.address, chainlinkToGetIn18dec);
 
-    const contractWMATICafterCleanERC20 = Number(ethers.utils.formatEther(await polygonWMATIC.balanceOf(benjaminsContract.address)));  
-    const deployerWMATICafterCleanERC20 = Number(ethers.utils.formatEther(await polygonWMATIC.balanceOf(deployer)));
+    const chainlinkBalAfterSend_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
+    const chainlinkBalAfterSend_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
+    expect(chainlinkBalAfterSend_deployer).to.equal(0);
+    expect(chainlinkBalAfterSend_BNJIcontract).to.equal(10);  
 
-    expect(contractWMATICafterCleanERC20).to.equal(0);  
-    expect(deployerWMATICafterCleanERC20).to.equal(deployerWMATICafterSend+50);
+    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonUSDCaddress) ).to.be.revertedWith(
+      "ERC20 cannot be USDC."
+    );  
+
+    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonAmUSDCAddress) ).to.be.revertedWith(
+      "ERC20 cannot be amUSDC."
+    ); 
+
+    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(benjaminsContract.address) ).to.be.revertedWith(
+      "ERC20 cannot be BNJI."
+    ); 
+    
+    await benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonLINKaddress);
+
+    const chainlinkBalAfterClean_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
+    const chainlinkBalAfterClean_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
+    expect(chainlinkBalAfterClean_deployer).to.equal(10);
+    expect(chainlinkBalAfterClean_BNJIcontract).to.equal(0);  
     
     await countAllCents(); 
 
