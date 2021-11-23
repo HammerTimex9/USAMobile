@@ -201,7 +201,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   function getUsersLockboxIDs(address _userToCheck)  public view returns (uint256[] memory lockboxIDsOfUser) {
 
-    require(_userToCheck != address(0), "Query for the zero address");
+    require(_userToCheck != address(0), 'Query for the zero address');
 
     uint256 lockboxAmount = getAmountOfUsersLockboxes(_userToCheck);
 
@@ -210,18 +210,21 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       return new uint256[](0);
     }
 
-    uint256[] memory result = new uint256[](lockboxAmount);
+    uint256[] memory resultArray = new uint256[](lockboxAmount);
 
     uint256 counter;
 
+    // resultArray is 0 based
     for (counter = 0; counter < lockboxAmount; counter++) {
 
-      lockbox memory foundBox = usersLockboxes[_userToCheck][counter];
+      // usersLockboxes is a mapping, not an array, and not 0 based, but starting with position 1
+      lockbox memory foundBox = usersLockboxes[_userToCheck][counter+1];
 
-      result[counter] = foundBox.lockboxID;
+      // empty entries will be returned as lockboxID 0
+      resultArray[counter] = foundBox.lockboxID;
     }
 
-    return result;
+    return resultArray;
   }  
   
   function howManyBlocksUntilUnlockForBox (uint256 _lockboxID, address _owner) public view returns(uint256 timeLeftForBoxInBlocks) {
@@ -250,7 +253,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // todo: take out testingmessage   
   function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage, uint256 _lockupTimeInBlocks) public whenAvailable hasTheBenjamins(_amountOfBNJItoLock) {
    
-    require(amountOfLockboxesForUser[msg.sender] <= 12, "Only up to 12 lockboxes per user at the same time.");
+    require(amountOfLockboxesForUser[msg.sender] < 12, "Only up to 12 lockboxes per user at the same time.");
 
     require(_lockupTimeInBlocks >= 10 && (_lockupTimeInBlocks <= 365 * blocksPerDay) , "Mimimum lockup time is 10 blocks, maximum is 365 days.");
     
@@ -321,15 +324,16 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     lockbox memory foundBox = usersLockboxes[_userToCheck][positionToLookUp];
 
     console.log(positionToLookUp, 'positionToLookUp in owners mapping, queried positionInUsersMapping[_lockboxIDtoFind],  showLockboxByIDforUser');
-
+    
     console.log(foundBox.lockboxID, 'lockboxID,  showLockboxByIDforUser');
-    console.log(foundBox.createdTimestamp, 'createdTimestamp,  showLockboxByIDforUser');
+    
+    //console.log(foundBox.createdTimestamp, 'createdTimestamp,  showLockboxByIDforUser');
     console.log(foundBox.amountOfBNJIlocked, 'amountOfBNJIlocked,  showLockboxByIDforUser');
-    console.log(foundBox.lockupTimeInBlocks, 'lockupTimeInBlocks,  showLockboxByIDforUser');
+    /*console.log(foundBox.lockupTimeInBlocks, 'lockupTimeInBlocks,  showLockboxByIDforUser');
     console.log(foundBox.boxDiscountScore, 'boxDiscountScore,  showLockboxByIDforUser');    
     console.log(foundBox.ownerOfLockbox, 'ownerOfLockbox,  showLockboxByIDforUser');
     console.log(foundBox.testMessage, 'testMessage,  showLockboxByIDforUser');
-    
+    */
     return(
       foundBox.lockboxID,
       foundBox.createdTimestamp,
@@ -342,7 +346,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
   
 
-  function openAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable nonReentrant{
+  function openAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable {
 
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
@@ -353,9 +357,9 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint256 lockupTimeInBlocks = _lockboxtoDestroy.lockupTimeInBlocks;
 
     // lockboxID inside the lockbox must be equal to _lockboxIDtoDestroy
-    require (_lockboxtoDestroy.lockboxID == _lockboxIDtoDestroy);
+    require (_lockboxtoDestroy.lockboxID == _lockboxIDtoDestroy, "This is not the lockbox you're looking for.");
     // msg.sender must be owner of lockbox
-    require (_lockboxtoDestroy.ownerOfLockbox == msg.sender);    
+    require (_lockboxtoDestroy.ownerOfLockbox == msg.sender, 'This is not your lockbox.');    
     // at least 10 blocks must have passed since lockbox was created
     require((_lockboxtoDestroy.createdTimestamp + lockupTimeInBlocks) <= blockHeightNow, 'This lockbox cannot be opened yet. You can check howManyBlocksUntilUnlockForBox.');   // TODO: add function that shows how long the box is still locked for
 
