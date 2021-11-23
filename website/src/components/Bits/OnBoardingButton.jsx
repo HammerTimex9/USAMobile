@@ -7,10 +7,9 @@ import { useNetwork } from '../../contexts/networkContext';
 import { useExperts } from '../../contexts/expertsContext';
 
 const ONBOARD_TEXT = 'Click here to install MetaMask!';
-const CONNECT_TEXT = 'Connect';
 
 export function OnBoardingButton() {
-  const [buttonText, setButtonText] = React.useState(ONBOARD_TEXT);
+  const [buttonText] = React.useState(ONBOARD_TEXT);
   const [isDisabled, setDisabled] = React.useState(false);
   const onboarding = React.useRef();
   const { accounts, setAccounts } = useNetwork();
