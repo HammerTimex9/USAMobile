@@ -20,7 +20,7 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
-import { usePositions } from '../../hooks/usePositions';
+import { usePositions } from '../../contexts/portfolioContext';
 import { useNetwork } from '../../contexts/networkContext';
 import { TransactionList } from './TransactionList';
 

@@ -25,12 +25,9 @@ export function OnBoardingButton() {
   React.useEffect(() => {
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       if (accounts.length > 0 || window.ethereum.selectedAddress) {
-        setDisabled(true);
         onboarding.current.stopOnboarding();
-      } else {
-        setButtonText(CONNECT_TEXT);
-        setDisabled(false);
       }
+      setDisabled(true);
     } else {
       setDialog('Click above to install MetaMask in your browser.');
     }
