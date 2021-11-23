@@ -328,7 +328,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     console.log(foundBox.lockboxID, 'lockboxID,  showLockboxByIDforUser');
     
     //console.log(foundBox.createdTimestamp, 'createdTimestamp,  showLockboxByIDforUser');
-    console.log(foundBox.amountOfBNJIlocked, 'amountOfBNJIlocked,  showLockboxByIDforUser');
+    //console.log(foundBox.amountOfBNJIlocked, 'amountOfBNJIlocked,  showLockboxByIDforUser');
     /*console.log(foundBox.lockupTimeInBlocks, 'lockupTimeInBlocks,  showLockboxByIDforUser');
     console.log(foundBox.boxDiscountScore, 'boxDiscountScore,  showLockboxByIDforUser');    
     console.log(foundBox.ownerOfLockbox, 'ownerOfLockbox,  showLockboxByIDforUser');
