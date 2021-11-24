@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/static/css/main.66687682.chunk.css",
-    "main.js": "/static/js/main.0e0ac52d.chunk.js",
-    "main.js.map": "/static/js/main.0e0ac52d.chunk.js.map",
+    "main.js": "/static/js/main.cb8051fc.chunk.js",
+    "main.js.map": "/static/js/main.cb8051fc.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.b6f66283.js",
     "runtime-main.js.map": "/static/js/runtime-main.b6f66283.js.map",
     "static/css/2.94f1de13.chunk.css": "/static/css/2.94f1de13.chunk.css",
@@ -14,7 +14,10 @@
     "static/css/2.94f1de13.chunk.css.map": "/static/css/2.94f1de13.chunk.css.map",
     "static/css/main.66687682.chunk.css.map": "/static/css/main.66687682.chunk.css.map",
     "static/js/2.52545375.chunk.js.LICENSE.txt": "/static/js/2.52545375.chunk.js.LICENSE.txt",
+    "static/media/AddPolygon.b261fb06.png": "/static/media/AddPolygon.b261fb06.png",
     "static/media/Benicorn.d83d564e.svg": "/static/media/Benicorn.d83d564e.svg",
+    "static/media/Congratulations.5233726b.png": "/static/media/Congratulations.5233726b.png",
+    "static/media/InstallMetamask.fa8b70ca.png": "/static/media/InstallMetamask.fa8b70ca.png",
     "static/media/LadyLiberty.ded89b3f.jpg": "/static/media/LadyLiberty.ded89b3f.jpg",
     "static/media/LibertyFox.17268b03.svg": "/static/media/LibertyFox.17268b03.svg",
     "static/media/SamEagle.c625891f.svg": "/static/media/SamEagle.c625891f.svg",
@@ -31,6 +34,6 @@
     "static/css/2.94f1de13.chunk.css",
     "static/js/2.52545375.chunk.js",
     "static/css/main.66687682.chunk.css",
-    "static/js/main.0e0ac52d.chunk.js"
+    "static/js/main.cb8051fc.chunk.js"
   ]
 }
