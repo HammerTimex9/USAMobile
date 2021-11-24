@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 
-import { Stack, CircularProgress } from '@mui/material';
+import { Stack } from '@mui/material';
 
 import MetaMaskOnboarding from '@metamask/onboarding';
 
@@ -37,7 +37,7 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 function App() {
   const { isAuthenticated, Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
   const { user, isUserUpdating } = useMoralis();
-  const { positions, isLoading } = usePositions();
+  const { positions } = usePositions();
   const { setAccounts, setNetworkId, isPolygon } = useNetwork();
   const { setDialog } = useExperts();
   const address = user?.attributes?.ethAddress;
@@ -128,19 +128,6 @@ function App() {
 
   const emptyPositions = !address || positions.length === 0;
   const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
-
-  if (isLoading) {
-    return (
-      <CircularProgress
-        sx={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
-      />
-    );
-  }
 
   return (
     <Stack alignItems="center" spacing={5} p={3}>

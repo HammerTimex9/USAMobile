@@ -4,10 +4,12 @@ const NetworkContext = React.createContext();
 
 const networks = {
   1: {
+    id: 1,
     name: 'eth',
     symbol: 'ETH',
   },
   137: {
+    id: 137,
     name: 'polygon',
     symbol: 'MATIC',
   },
@@ -24,9 +26,7 @@ export const NetworkProvider = (props) => {
     <NetworkContext.Provider
       value={{
         setNetworkId,
-        networkId,
-        networkName: networks[networkId]?.name,
-        nativeSymbol: networks[networkId]?.symbol,
+        network: networks[networkId],
         isPolygon: networkId === 137,
         setAccounts,
         accounts,

@@ -11,16 +11,16 @@ export const ToSelect = () => {
   const { fromTokenSymbol, setToToken } = useActions();
   const { setDialog } = useExperts();
   const { setQuote } = useQuote();
-  const { networkId } = useNetwork();
+  const { network } = useNetwork();
   const tokens = useMemo(
     () =>
       tokenList.filter(
         (item) =>
           // eslint-disable-next-line eqeqeq
-          item.networkId == networkId &&
+          item.networkId == network.id &&
           item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()
       ),
-    [networkId, fromTokenSymbol]
+    [network, fromTokenSymbol]
   );
 
   useEffect(() => {

@@ -29,8 +29,8 @@ import Card from '../Research/card';
 import Loader from '../Research/load';
 
 export const TokenTable = () => {
-  const { isLoading, totalValue, positions } = usePositions();
-  const { networkName } = useNetwork();
+  const { totalValue, positions } = usePositions();
+  const { network } = useNetwork();
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedCoin, setSelectedCoin] = useState(null);
 
@@ -103,7 +103,7 @@ export const TokenTable = () => {
                 <TransactionList
                   tokenAddress={position.token_address}
                   tokenSymbol={position.symbol.toLowerCase()}
-                  chain={networkName}
+                  chain={network.name}
                   decimals={position.decimals}
                 />
               </Box>
@@ -130,19 +130,16 @@ export const TokenTable = () => {
           <TableHead>
             <TableRow>
               <TableCell align="center" colSpan={6} sx={{ p: 0, pb: 1 }}>
-                {!isLoading && (
-                  <Typography>
-                    Total Value: ${parseFloat(totalValue).toFixed(2)}
-                  </Typography>
-                )}
+                <Typography>
+                  Total Value: ${parseFloat(totalValue).toFixed(2)}
+                </Typography>
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {!isLoading &&
-              positions.map((position) => (
-                <Position key={position.name} position={position} />
-              ))}
+            {positions.map((position) => (
+              <Position key={position.name} position={position} />
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

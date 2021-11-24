@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMoralis } from 'react-moralis';
 
+import { usePositions } from '../contexts/portfolioContext';
 import useUpdaters from './_useUpdaters';
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
@@ -14,6 +15,7 @@ const useSwapAction = ({
   slippage,
 }) => {
   const { Moralis } = useMoralis();
+  const { getPositions } = usePositions();
   const [isFetching, setIsFetching] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [data, setData] = useState();
@@ -39,6 +41,7 @@ const useSwapAction = ({
       });
 
       updaters.current?.setIsApproved(true);
+      getPositions();
 
       const data = await Moralis.Plugins.oneInch.swap({
         chain,
@@ -50,6 +53,7 @@ const useSwapAction = ({
       });
 
       updaters.current?.setData(data);
+      getPositions();
     } catch (e) {
       updaters.current?.setError(e);
     }
@@ -64,6 +68,7 @@ const useSwapAction = ({
     slippage,
     updaters,
     Moralis,
+    getPositions,
   ]);
 
   return { fetch, isFetching, isApproved, data, error };

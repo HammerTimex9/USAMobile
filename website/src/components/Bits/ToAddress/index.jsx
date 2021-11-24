@@ -11,7 +11,7 @@ import './styles.scss';
 export const ToAddress = () => {
   const { web3, enableWeb3, isWeb3Enabled } = useMoralis();
   const { setToToken } = useActions();
-  const { networkId } = useNetwork();
+  const { isPolygon } = useNetwork();
 
   useEffect(() => {
     if (!isWeb3Enabled) {
@@ -27,7 +27,7 @@ export const ToAddress = () => {
 
   return (
     <Box sx={{ minWidth: 420 }} className="to-address">
-      {isWeb3Enabled && networkId === 1 && (
+      {isWeb3Enabled && !isPolygon && (
         <ENSAddress
           provider={web3.givenProvider || web3.currentProvider}
           onResolve={({ name, address, type }) => {
@@ -51,7 +51,7 @@ export const ToAddress = () => {
           }}
         />
       )}
-      {networkId !== 1 && (
+      {isPolygon && (
         <TextField
           id="outlined-basic"
           label="Input destination address"
