@@ -1,6 +1,6 @@
 import { useMoralis } from 'react-moralis';
 
-import { Box, Stack, Typography } from '@mui/material';
+import { Stack } from '@mui/material';
 import { ExpertButton } from '../../Bits/ExpertButton';
 
 import { LightSwitch } from '../../Bits/LightSwitch';
@@ -9,9 +9,7 @@ import { ProfileAvatar } from '../../Bits/ProfileAvatar';
 import { AddNetworkButton } from '../../Bits/AddNetworkButton';
 import { OnBoardingButton } from '../../Bits/OnBoardingButton';
 import { useNetwork } from '../../../contexts/networkContext';
-
-import './styles.css';
-import USAWalletEagleLogo from '../../../media/logos/USAWalletLogo.svg';
+import Logo from './Logo';
 
 export const TopNavBar = () => {
   const { isAuthenticated } = useMoralis();
@@ -19,29 +17,16 @@ export const TopNavBar = () => {
   const { hasPolygon } = useNetwork();
 
   return (
-    <Box
-      sx={{
-        mt: 3,
-        textAlign: 'center',
-        display: isAuthenticated && !hasMetamask ? 'block' : 'flex',
-        justifyContent: 'center',
-      }}
+    <Stack
+      direction="row"
+      alignItems="center"
+      justifyContent="center"
+      flexWrap="wrap"
+      maxWidth="750px"
     >
-      <Stack direction="row" spacing={1} style={{ display: 'inline-flex' }}>
-        <Box
-          component="img"
-          sx={{
-            mr: 0.5,
-            mt: 1,
-            width: 70,
-          }}
-          alt="USA Wallet Logo"
-          src={USAWalletEagleLogo}
-        />
-        <Typography className="BrandName">USA Wallet</Typography>
-      </Stack>
-      {isAuthenticated && !hasMetamask && <br />}
-      <Stack direction="row" spacing={1} style={{ display: 'inline-flex' }}>
+      <Logo />
+
+      <Stack direction="row" alignItems="center" spacing={1} m={0.5}>
         {isAuthenticated && hasPolygon && <ExpertButton />}
         <LightSwitch />
         {isAuthenticated && hasMetamask && !hasPolygon && <AddNetworkButton />}
@@ -49,6 +34,6 @@ export const TopNavBar = () => {
         {isAuthenticated && <OnBoardingButton />}
         {isAuthenticated && <ProfileAvatar />}
       </Stack>
-    </Box>
+    </Stack>
   );
 };
