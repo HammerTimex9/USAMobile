@@ -146,7 +146,7 @@ function App() {
   }
 
   return (
-    <Stack alignItems="center" spacing={2.5} p={3}>
+    <Stack alignItems="center" spacing={5} p={3}>
       <TopNavBar />
       <ExpertStage />
       {isAuthenticated && isPolygon ? (

@@ -1,12 +1,10 @@
 import { Box, Stack } from '@mui/material';
 
-import { LibertyFox } from '../Guides/LibertyFox';
-import { SamEagle } from '../Guides/SamEagle';
-import { Benicorn } from '../Guides/Benicorn';
+import LibertyFox from '../../media/characters/LibertyFox.png';
+import SamEagle from '../../media/characters/SamEagle.png';
+import Benicorn from '../../media/characters/Benicorn.png';
 import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
-
-import { Text } from '../UW/Text';
 
 const Icons = {
   '': SamEagle,
@@ -24,35 +22,27 @@ const Icons = {
 
 export const ExpertStage = () => {
   const { expertsOn, actionMode, dialog } = useExperts();
-  const Icon = Icons[actionMode];
   const { isPolygon } = useNetwork();
+  const icon = Icons[actionMode];
 
   if (expertsOn === true || !isPolygon) {
     return (
-      <Box sx={{ alignSelf: 'center', px: 2 }}>
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            borderColor: 'white',
-            borderWidth: 2,
-            borderRadius: 5,
-            m: 2.5,
-            p: 2.5,
-            width: 400,
-            boxShadow: 'var(--boxShadow)',
-            backgroundImage: 'var(--bg)',
-          }}
-        >
-          <Box sx={{ display: 'flex', flex: 1, alignSelf: 'center', p: 1.5 }}>
-            <Text style={{ wordBreak: 'break-word' }}>{dialog}</Text>
-          </Box>
-          <Box sx={{ display: 'flex', flex: 1, alignSelf: 'center', px: 2 }}>
-            {Icon && <Icon />}
-          </Box>
-        </Stack>
-        <br />
-      </Box>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        spacing={1}
+        sx={{
+          borderRadius: 5,
+          p: 4,
+          width: 400,
+          boxShadow: 'var(--boxShadow)',
+          backgroundImage: 'var(--bg)',
+        }}
+      >
+        <Box>{dialog}</Box>
+        <img src={icon} alt="" width="180" />
+      </Stack>
     );
   } else {
     return null;
