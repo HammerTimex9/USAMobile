@@ -19,6 +19,18 @@ export const PortfolioProvider = (props) => {
 
   useEffect(() => {
     if (!isInitialized) return;
+    getPositions();
+  }, [
+    Moralis,
+    user,
+    isAuthenticated,
+    isInitialized,
+    networkName,
+    nativeSymbol,
+    isPolygon,
+  ]);
+
+  const getPositions = () => {
     if (isAuthenticated) {
       const options = {
         chain: networkName,
@@ -90,15 +102,7 @@ export const PortfolioProvider = (props) => {
       setPositions([]);
       setIsLoading(0);
     }
-  }, [
-    Moralis,
-    user,
-    isAuthenticated,
-    isInitialized,
-    networkName,
-    nativeSymbol,
-    isPolygon,
-  ]);
+  };
 
   return (
     <PortfolioContext.Provider
@@ -107,6 +111,7 @@ export const PortfolioProvider = (props) => {
         isLoading,
         totalValue,
         maticPrice,
+        getPositions,
       }}
     >
       {props.children}
