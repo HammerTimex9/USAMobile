@@ -7,8 +7,6 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { AuthDrawer } from '../AuthDrawer';
 import { DrawerHeader } from '../DrawerHeader';
 
-import './styles.css';
-
 export const AuthButton = () => {
   const { isAuthenticated, logout } = useMoralis();
   const [isOpen, setIsOpen] = useState(false);
@@ -37,16 +35,6 @@ export const AuthButton = () => {
         <Tooltip title="Log out of USA Wallet.">
           <Button
             variant="uw"
-            sx={{
-              alignSelf: 'center',
-              border: 1,
-              boxShadow: 'var(--boxShadow)',
-              borderColor: 'var(--borderColor)',
-              color: 'var(--color)',
-              height: 40,
-            }}
-            aria-label="Log Out"
-            className="LogoutButton"
             startIcon={<LockOpenIcon className="nav-bar-icon" />}
             onClick={() => logout()}
           >
@@ -58,16 +46,6 @@ export const AuthButton = () => {
           <Tooltip title="Log into USA Wallet.">
             <Button
               variant="uw"
-              sx={{
-                alignSelf: 'center',
-                border: 1,
-                boxShadow: 'var(--boxShadow)',
-                borderColor: 'var(--borderColor)',
-                color: 'var(--color)',
-                height: 40,
-              }}
-              aria-label="Log In"
-              className="LoginButton"
               startIcon={<LockIcon className="nav-bar-icon" />}
               onClick={() => toggleDrawer(true)}
             >

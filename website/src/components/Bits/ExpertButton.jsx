@@ -1,5 +1,4 @@
 import { IconButton, Tooltip } from '@mui/material';
-
 import ChatIcon from '@mui/icons-material/Chat';
 import BlockIcon from '@mui/icons-material/Block';
 
@@ -10,13 +9,7 @@ export const ExpertButton = () => {
 
   return (
     <Tooltip title="Toggle expert advice.">
-      <IconButton
-        aria-label={expertsOn ? 'Mute Expert Advice' : 'Enable Expert Advice'}
-        className="ExpertToggleButton"
-        sx={{ ml: 1, boxShadow: 'var(--boxShadow)' }}
-        variant="uw"
-        onClick={() => toggleExperts(!expertsOn)}
-      >
+      <IconButton variant="uw" onClick={() => toggleExperts(!expertsOn)}>
         {expertsOn ? (
           <BlockIcon className="nav-bar-icon" />
         ) : (

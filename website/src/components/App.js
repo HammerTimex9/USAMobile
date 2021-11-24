@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import { BrowserRouter, Link, Switch, Route, Redirect } from 'react-router-dom';
 
-import { Box, Button, Stack, CircularProgress } from '@mui/material';
+import { Button, Stack, CircularProgress } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import LoopIcon from '@mui/icons-material/Loop';
 import LinkIcon from '@mui/icons-material/Link';
@@ -146,102 +146,100 @@ function App() {
   }
 
   return (
-    <Box>
-      <Stack>
-        <TopNavBar />
-        <ExpertStage />
-        {isAuthenticated && isPolygon ? (
-          <BrowserRouter>
-            <Stack
-              direction="row"
-              sx={{ alignSelf: 'center', justifyContent: 'center', mb: 2 }}
-              spacing={1}
+    <Stack alignItems="center" spacing={2.5} p={3}>
+      <TopNavBar />
+      <ExpertStage />
+      {isAuthenticated && isPolygon ? (
+        <BrowserRouter>
+          <Stack
+            direction="row"
+            sx={{ alignSelf: 'center', justifyContent: 'center', mb: 2 }}
+            spacing={1}
+          >
+            <Link
+              to="/PortfolioPrices"
+              className={`NavBar${emptyPositions ? ' disabled' : ''}`}
             >
-              <Link
-                to="/PortfolioPrices"
-                className={`NavBar${emptyPositions ? ' disabled' : ''}`}
+              <Button
+                variant="uw"
+                sx={{
+                  boxShadow: 'var(--boxShadow)',
+                }}
+                startIcon={<VisibilityIcon />}
               >
-                <Button
-                  variant="uw"
-                  sx={{
-                    boxShadow: 'var(--boxShadow)',
-                  }}
-                  startIcon={<VisibilityIcon />}
-                >
-                  Portfolio
-                </Button>
-              </Link>
-              <Link
-                to="/SwapTrade"
-                className={`NavBar${emptyPositions ? ' disabled' : ''}`}
+                Portfolio
+              </Button>
+            </Link>
+            <Link
+              to="/SwapTrade"
+              className={`NavBar${emptyPositions ? ' disabled' : ''}`}
+            >
+              <Button
+                variant="uw"
+                sx={{
+                  boxShadow: 'var(--boxShadow)',
+                }}
+                startIcon={<LoopIcon />}
               >
-                <Button
-                  variant="uw"
-                  sx={{
-                    boxShadow: 'var(--boxShadow)',
-                  }}
-                  startIcon={<LoopIcon />}
-                >
-                  Trade
-                </Button>
-              </Link>
-              <Link to="/BuySell" className="NavBar">
-                <Button
-                  variant="uw"
-                  sx={{
-                    boxShadow: 'var(--boxShadow)',
-                  }}
-                  startIcon={<LinkIcon />}
-                >
-                  Buy Crypto
-                </Button>
-              </Link>
+                Trade
+              </Button>
+            </Link>
+            <Link to="/BuySell" className="NavBar">
+              <Button
+                variant="uw"
+                sx={{
+                  boxShadow: 'var(--boxShadow)',
+                }}
+                startIcon={<LinkIcon />}
+              >
+                Buy Crypto
+              </Button>
+            </Link>
 
-              <Link
-                to="/SendRecieve"
-                className={`NavBar${emptyPositions ? ' disabled' : ''}`}
+            <Link
+              to="/SendRecieve"
+              className={`NavBar${emptyPositions ? ' disabled' : ''}`}
+            >
+              <Button
+                variant="uw"
+                sx={{
+                  boxShadow: 'var(--boxShadow)',
+                }}
+                startIcon={<MailIcon />}
               >
-                <Button
-                  variant="uw"
-                  sx={{
-                    boxShadow: 'var(--boxShadow)',
-                  }}
-                  startIcon={<MailIcon />}
-                >
-                  {isOnlyMatic ? 'Recieve' : 'Send/Recieve'}
-                </Button>
-              </Link>
-            </Stack>
-            <Switch>
-              <CryptoRoute
-                exact
-                path="/PortfolioPrices"
-                component={PortfolioPrices}
-                emptyPositions={emptyPositions}
-              />
-              <CryptoRoute
-                exact
-                path="/SwapTrade"
-                component={SwapTrade}
-                emptyPositions={emptyPositions}
-              />
-              <Route exact path="/BuySell">
-                <BuySell />
-              </Route>
-              <CryptoRoute
-                exact
-                path="/SendRecieve"
-                component={SendReceive}
-                emptyPositions={emptyPositions}
-              />
-              <Redirect to={isOnlyMatic ? '/SwapTrade' : '/PortfolioPrices'} />
-            </Switch>
-          </BrowserRouter>
-        ) : (
-          <BottomFooter />
-        )}
-      </Stack>
-    </Box>
+                {isOnlyMatic ? 'Recieve' : 'Send/Recieve'}
+              </Button>
+            </Link>
+          </Stack>
+          <Switch>
+            <CryptoRoute
+              exact
+              path="/PortfolioPrices"
+              component={PortfolioPrices}
+              emptyPositions={emptyPositions}
+            />
+            <CryptoRoute
+              exact
+              path="/SwapTrade"
+              component={SwapTrade}
+              emptyPositions={emptyPositions}
+            />
+            <Route exact path="/BuySell">
+              <BuySell />
+            </Route>
+            <CryptoRoute
+              exact
+              path="/SendRecieve"
+              component={SendReceive}
+              emptyPositions={emptyPositions}
+            />
+            <Redirect to={isOnlyMatic ? '/SwapTrade' : '/PortfolioPrices'} />
+          </Switch>
+        </BrowserRouter>
+      ) : (
+        <BottomFooter />
+      )}
+    </Stack>
   );
 }
 

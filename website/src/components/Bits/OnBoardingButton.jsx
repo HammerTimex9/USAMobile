@@ -46,19 +46,7 @@ export function OnBoardingButton() {
     return null;
   }
   return (
-    <Button
-      variant="uw"
-      sx={{
-        alignSelf: 'center',
-        border: 1,
-        boxShadow: 'var(--boxShadow)',
-        borderColor: 'var(--borderColor)',
-        color: 'var(--color)',
-        height: 40,
-      }}
-      onClick={onClick}
-      startIcon={<MetaMask />}
-    >
+    <Button variant="uw" onClick={onClick} startIcon={<MetaMask />}>
       {buttonText}
     </Button>
   );
