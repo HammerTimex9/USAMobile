@@ -185,7 +185,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   function getBoxDiscountScore (uint256 _lockboxID, address _owner) public view returns(uint256 discountScoreInBox) {
     
-    uint8 positionToLookUp = positionInUsersMapping[_lockboxID];
+    uint8 positionToLookUp = getLBpositionInUsersMapping(_lockboxID);
 
     lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
 
@@ -231,7 +231,9 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
 
-    uint8 positionToLookUp = positionInUsersMapping[_lockboxID];
+    console.log(blockHeightNow, 'blockHeightNow, howManyBlocksUntilUnlockForBox' );  //TODO: takeout
+
+    uint8 positionToLookUp = getLBpositionInUsersMapping(_lockboxID);
 
     lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
 
@@ -262,6 +264,8 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
+
+    console.log(blockHeightNow, 'blockHeightNow, createLockbox' ); //TODO: takeout
 
     // increasing global lockboxIDcounter
     lockboxIDcounter +=1;
@@ -319,13 +323,15 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     )
   {
 
-    uint8 positionToLookUp = positionInUsersMapping[_lockboxIDtoFind];
+    uint8 positionToLookUp = getLBpositionInUsersMapping(_lockboxIDtoFind);
 
     lockbox memory foundBox = usersLockboxes[_userToCheck][positionToLookUp];
 
-    console.log(positionToLookUp, 'positionToLookUp in owners mapping, queried positionInUsersMapping[_lockboxIDtoFind],  showLockboxByIDforUser');
+    require (foundBox.lockboxID == _lockboxIDtoFind, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");     
+
+    //console.log(positionToLookUp, 'positionToLookUp in owners mapping, queried getLBpositionInUsersMapping(_lockboxIDtoFind),  showLockboxByIDforUser');
     
-    console.log(foundBox.lockboxID, 'lockboxID,  showLockboxByIDforUser');
+    //console.log(foundBox.lockboxID, 'lockboxID,  showLockboxByIDforUser');
     
     //console.log(foundBox.createdTimestamp, 'createdTimestamp,  showLockboxByIDforUser');
     //console.log(foundBox.amountOfBNJIlocked, 'amountOfBNJIlocked,  showLockboxByIDforUser');
@@ -351,7 +357,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
 
-    uint8 positionToRefill = positionInUsersMapping[_lockboxIDtoDestroy];
+    uint8 positionToRefill = getLBpositionInUsersMapping(_lockboxIDtoDestroy);
     lockbox memory _lockboxtoDestroy = usersLockboxes[msg.sender][positionToRefill];
 
     uint256 lockupTimeInBlocks = _lockboxtoDestroy.lockupTimeInBlocks;
@@ -398,14 +404,14 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     // checking allowance for BNJI // TODO: take out
     uint256 fromThisContractToCallerBNJIAllowance = allowance(address(this), msg.sender);
-    console.log(fromThisContractToCallerBNJIAllowance, 'this many BNJI are allowed by this contract to user' );      
+    //console.log(fromThisContractToCallerBNJIAllowance, 'this many BNJI are allowed by this contract to user' );      
 
     // this contract pushes msg.sender amountOfBNJIunlocked to msg.sender
     transferFrom(address(this), msg.sender, amountOfBNJIunlocked);
 
     // rechecking allowance for BNJI // TODO: take out
     uint256 fromThisContractToCallerBNJIAllowanceNow = allowance(address(this), msg.sender);
-    console.log(fromThisContractToCallerBNJIAllowanceNow, 'this many BNJI are allowed by this contract to user after transferFrom' );
+    //console.log(fromThisContractToCallerBNJIAllowanceNow, 'this many BNJI are allowed by this contract to user after transferFrom' );
 
     emit LockboxDestroyed(_lockboxIDtoDestroy, msg.sender, blockHeightNow, amountOfBNJIunlocked, lockupTimeInBlocks, discountScoreToSubtract);   
     
@@ -636,10 +642,7 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     IERC20 erc20contract = IERC20(erc20ContractAddress);                // Instance of ERC20 token at erc20ContractAddress    
     uint256 accumulatedTokens = erc20contract.balanceOf(address(this)); // Querying balance of this token, owned by this contract    
     erc20contract.transfer(msg.sender, accumulatedTokens);              // Sending it to calling owner
-  }
-
-
-
+  } 
 
   // Fallback receives all incoming funds of any type.
   receive() external payable {

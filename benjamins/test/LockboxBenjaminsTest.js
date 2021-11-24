@@ -204,7 +204,7 @@ async function countAllCents() {
 
   liquidCentsArray.push(allLiquidCents);  
 
-  console.log(`These are the entries each time all liquid USDCcents were counted: `, liquidCentsArray); 
+  //console.log(`These are the entries each time all liquid USDCcents were counted: `, liquidCentsArray); 
 
   // verifying that amount of counted cents is always the same
   // starts at second array entry and compares all entries to the one before
@@ -422,34 +422,39 @@ async function testLockboxCreation(callingAccAddress, amountToLockUp, message, t
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
 
   const beforeBoxCreation_BNJIbal_User = await balBNJI(callingAccAddress);
-  const beforeBoxCreation_BNJIbal_Contract = await balBNJI(benjaminsContract.address); 
+  const beforeBoxCreation_BNJIbal_Contract = await balBNJI(benjaminsContract.address);   
   const beforeBoxCreation_BoxAmount = await amountOfUsersLockboxes(callingAccAddress);
-  const beforeBoxCreation_UsersDiscountScore = await getUsersDiscountScore(callingAccAddress);
+  const beforeBoxCreation_UsersDiscountScore = await findUsersDiscountScore(callingAccAddress);
+  const beforeBoxCreation_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
 
   const boxScoreToExpect = calcBoxDiscountScore(amountToLockUp, timeToLockForInBlocks);
 
   await benjaminsContract.connect(callingAccSigner).createLockbox(amountToLockUp, message, timeToLockForInBlocks);
+  
+  // checking the lockboxIDcounter to get the new box's ID and querying getHowLongInBlockTillUnlockForBox
+  const lockboxIDtoExpect = await getBNJILockboxIDcounter();   
+  const blocksToWait = await getHowLongInBlockTillUnlockForBox(lockboxIDtoExpect, callingAccAddress);   
+  expect(blocksToWait).to.equal(timeToLockForInBlocks);   
 
   const afterBoxCreation_BNJIbal_User = await balBNJI(callingAccAddress);
   const afterBoxCreation_BNJIbal_Contract = await balBNJI(benjaminsContract.address);
   const afterBoxCreation_BoxAmount = await amountOfUsersLockboxes(callingAccAddress);
-
-  //console.log(afterBoxCreation_BoxAmount, "afterBoxCreation_BoxAmount for testUser_1");
-
-  const afterBoxCreation_UsersDiscountScore = await getUsersDiscountScore(callingAccAddress);
+  const afterBoxCreation_UsersDiscountScore = await findUsersDiscountScore(callingAccAddress);
+  const afterBoxCreation_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
 
   expect(afterBoxCreation_BNJIbal_User).to.equal(beforeBoxCreation_BNJIbal_User - amountToLockUp);   
   expect(afterBoxCreation_BNJIbal_Contract).to.equal(beforeBoxCreation_BNJIbal_Contract + amountToLockUp); 
   expect(afterBoxCreation_BoxAmount).to.equal(beforeBoxCreation_BoxAmount + 1);  
   expect(afterBoxCreation_UsersDiscountScore).to.equal(beforeBoxCreation_UsersDiscountScore + boxScoreToExpect);  
+  expect(afterBoxCreation_UsersLockedBNJI).to.equal(beforeBoxCreation_UsersLockedBNJI + amountToLockUp); 
 
-  const lockboxIDtoExpect = await getBNJILockboxIDcounter();
+  
   await confirmCreatedLockBox(lockboxIDtoExpect, callingAccAddress, amountToLockUp, timeToLockForInBlocks, boxScoreToExpect, message); 
 
 }  
 
 async function confirmCreatedLockBox(lockboxIDtoExpect, ownerToExpect, amountToLockUp, timeToLockForInBlocks, boxScoreToExpect, message) {
-
+  
   const lockBoxQueryAnswer = await benjaminsContract.showLockboxByIDforUser(ownerToExpect, lockboxIDtoExpect); 
 
   expect(lockBoxQueryAnswer.foundLockboxID).to.equal(lockboxIDtoExpect);  
@@ -461,6 +466,14 @@ async function confirmCreatedLockBox(lockboxIDtoExpect, ownerToExpect, amountToL
 
 }
 
+async function getHowLongInBlockTillUnlockForBox(lockboxID, owner) {
+  return (bigNumberToNumber (await benjaminsContract.howManyBlocksUntilUnlockForBox(lockboxID, owner)));
+}
+
+async function getLockedBalanceOf(userToCheck) {
+  return (bigNumberToNumber (await benjaminsContract.lockedBalanceOf(userToCheck)));
+}
+
 async function findLockboxByUserAndID(userToCheck, lockboxIDtoFind){
   await benjaminsContract.showLockboxByIDforUser(userToCheck, lockboxIDtoFind);   
 }  
@@ -469,7 +482,7 @@ async function findLockboxPositionByID(lockboxID){
   return (bigNumberToNumber (await benjaminsContract.getLBpositionInUsersMapping(lockboxID)));   
 }  
 
-async function getUsersDiscountScore (userToCheck){
+async function findUsersDiscountScore (userToCheck){
   const usersDiscountScore = bigNumberToNumber (await benjaminsContract.getUsersDiscountScore(userToCheck));
   return usersDiscountScore;
 }
@@ -507,32 +520,29 @@ async function openAndDestroyLockboxForUser(callingAccAddress, lockboxIDtoUnlock
 
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
 
-  const beforeBoxDestructionBNJIbal_User = await balBNJI(callingAccAddress);
-  //console.log(beforeBoxDestructionBNJIbal_User, "beforeBoxDestructionBNJIbal_User for testUser_1");
-
-  const beforeBoxDestructionBNJIbal_Contract = await balBNJI(benjaminsContract.address);
-  const beforeBoxDestructionBoxAmount = await amountOfUsersLockboxes(callingAccAddress); 
-  const beforeBoxDestructionUsersDiscountScore = await getUsersDiscountScore(callingAccAddress);
+  const beforeBoxDestruction_BNJIbal_User = await balBNJI(callingAccAddress);
+  const beforeBoxDestruction_BNJIbal_Contract = await balBNJI(benjaminsContract.address);
+  const beforeBoxDestruction_BoxAmount = await amountOfUsersLockboxes(callingAccAddress); 
+  const beforeBoxDestruction_UsersDiscountScore = await findUsersDiscountScore(callingAccAddress);
+  const beforeBoxDestruction_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
 
   // querying the box's discountScore before opening and destroying it
   const discountScoreGeneratedByBox = await getDiscountScoreForBox(lockboxIDtoUnlockAndDestroy, callingAccAddress);
 
   // user unlocks and destroys the lockbox
-  await benjaminsContract.connect(callingAccSigner).openAndDestroyLockbox(lockboxIDtoUnlockAndDestroy);
- 
-  const afterBoxBoxDestructionUsersDiscountScore = await getUsersDiscountScore(callingAccAddress);   
-
-  const afterBoxDestructionBNJIbal_User = await balBNJI(callingAccAddress);
-  //console.log(afterBoxDestructionBNJIbal_User, "afterBoxDestructionBNJIbal_User for testUser_1");
-
-  const afterBoxDestructionBNJIbal_Contract = await balBNJI(benjaminsContract.address);
-  const afterBoxDestructionBoxAmount = await amountOfUsersLockboxes(callingAccAddress);
+  await benjaminsContract.connect(callingAccSigner).openAndDestroyLockbox(lockboxIDtoUnlockAndDestroy); 
   
-  expect(afterBoxDestructionBNJIbal_User).to.equal(beforeBoxDestructionBNJIbal_User + expectedAmount);   
-  expect(afterBoxDestructionBNJIbal_Contract).to.equal(beforeBoxDestructionBNJIbal_Contract - expectedAmount); 
+  const afterBoxDestruction_BNJIbal_User = await balBNJI(callingAccAddress);
+  const afterBoxDestruction_BNJIbal_Contract = await balBNJI(benjaminsContract.address);
+  const afterBoxDestruction_BoxAmount = await amountOfUsersLockboxes(callingAccAddress);
+  const afterBoxBoxDestruction_UsersDiscountScore = await findUsersDiscountScore(callingAccAddress); 
+  const afterBoxDestruction_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
 
-  expect(afterBoxDestructionBoxAmount).to.equal(beforeBoxDestructionBoxAmount - 1);  
-  expect(afterBoxBoxDestructionUsersDiscountScore).to.equal(beforeBoxDestructionUsersDiscountScore - discountScoreGeneratedByBox);
+  expect(afterBoxDestruction_BNJIbal_User).to.equal(beforeBoxDestruction_BNJIbal_User + expectedAmount);   
+  expect(afterBoxDestruction_BNJIbal_Contract).to.equal(beforeBoxDestruction_BNJIbal_Contract - expectedAmount);
+  expect(afterBoxDestruction_BoxAmount).to.equal(beforeBoxDestruction_BoxAmount - 1);  
+  expect(afterBoxBoxDestruction_UsersDiscountScore).to.equal(beforeBoxDestruction_UsersDiscountScore - discountScoreGeneratedByBox);
+  expect(afterBoxDestruction_UsersLockedBNJI).to.equal(beforeBoxDestruction_UsersLockedBNJI - expectedAmount);
 
 }
 
@@ -936,13 +946,13 @@ describe("Testing Lockbox version of Benjamins", function () {
     }
 
     // 5 boxes * 50 BNJI * 40 blocks = 10.000
-    expect(await getUsersDiscountScore(testUser_1)).to.equal(10000);  
+    expect(await findUsersDiscountScore(testUser_1)).to.equal(10000);  
     expect(await amountOfUsersLockboxes(testUser_1)).to.equal(5);
     const expectedArray_1to5 = [1,2,3,4,5];
     await confirmUsersArrayOfLockBoxIDs(testUser_1,expectedArray_1to5);
     expect(await balBNJI(testUser_1)).to.equal(950);
     
-    expect(await getUsersDiscountScore(testUser_2)).to.equal(0);  
+    expect(await findUsersDiscountScore(testUser_2)).to.equal(0);  
     expect(await amountOfUsersLockboxes(testUser_2)).to.equal(0);
     const expectedArray_noEntries = [0,0,0,0,0];
     await confirmUsersArrayOfLockBoxIDs(testUser_2,expectedArray_noEntries);    
@@ -955,13 +965,13 @@ describe("Testing Lockbox version of Benjamins", function () {
       await testLockboxCreation(testUser_2, 50, `User_2, This is box number ${index}`, 40);      
     }
     
-    expect(await getUsersDiscountScore(testUser_1)).to.equal(10000);  
+    expect(await findUsersDiscountScore(testUser_1)).to.equal(10000);  
     expect(await amountOfUsersLockboxes(testUser_1)).to.equal(5);
     await confirmUsersArrayOfLockBoxIDs(testUser_1,expectedArray_1to5);
     expect(await balBNJI(testUser_1)).to.equal(950);
     
     // 10 boxes * 50 BNJI * 40 blocks = 20.000
-    expect(await getUsersDiscountScore(testUser_2)).to.equal(20000);  
+    expect(await findUsersDiscountScore(testUser_2)).to.equal(20000);  
     expect(await amountOfUsersLockboxes(testUser_2)).to.equal(10); 
     const expectedArray_6to15 = [6,7,8,9,10,11,12,13,14,15];
     await confirmUsersArrayOfLockBoxIDs(testUser_2,expectedArray_6to15);
@@ -995,7 +1005,9 @@ describe("Testing Lockbox version of Benjamins", function () {
     expect(await amountOfUsersLockboxes(testUser_1)).to.equal(1);  
     expect(await amountOfUsersLockboxes(testUser_2)).to.equal(0);  
     
-  });  
+  });
+  
+  
   
   it("Test 1. testUser_1 should mint 10 BNJI for themself", async function () {  
     await countAllCents();         
@@ -1791,12 +1803,11 @@ describe("Testing Lockbox version of Benjamins", function () {
     await countAllCents(); 
   });    
 
-  it.only("Test 28. Owner can use cleanERC20Tips to withdraw ERC20 tokens that were sent to contract by mistake - but not USDC, amUSDC or BNJI", async function () { 
+  it("Test 28. Owner can use cleanERC20Tips to withdraw ERC20 tokens that were sent to contract by mistake - but not USDC, amUSDC or BNJI", async function () { 
   
     await countAllCents(); 
 
-
-    // Creating instance of 
+    // Creating instance of Chainlink
     const polygonLINKaddress = '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39';
 
     polygonChainlink = new ethers.Contract(
@@ -1809,37 +1820,45 @@ describe("Testing Lockbox version of Benjamins", function () {
       deployerSigner
     );
 
+    // getting 10 LINK on quickswap
     const chainlinkToGetIn18dec = ethers.utils.parseEther("10");
     const wmaticToPayWithMaxIn18dec = ethers.utils.parseEther("1000");
-
     await polygonQuickswapRouter.connect(deployerSigner).swapTokensForExactTokens( chainlinkToGetIn18dec, wmaticToPayWithMaxIn18dec , [polygonWMATICaddress, polygonLINKaddress], deployer, 1665102928); 
     
+    // preparation confirmation
     const chainlinkBalStart_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
     const chainlinkBalStart_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
     expect(chainlinkBalStart_deployer).to.equal(10);
     expect(chainlinkBalStart_BNJIcontract).to.equal(0);  
 
+    // sending over 10 LINK to contract
     await polygonChainlink.connect(deployerSigner).transfer(benjaminsContract.address, chainlinkToGetIn18dec);
 
+    // transfer confirmation
     const chainlinkBalAfterSend_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
     const chainlinkBalAfterSend_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
     expect(chainlinkBalAfterSend_deployer).to.equal(0);
     expect(chainlinkBalAfterSend_BNJIcontract).to.equal(10);  
 
+    // reverts as expected: cleanERC20Tips does not accept USDC address as argument
     await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonUSDCaddress) ).to.be.revertedWith(
       "ERC20 cannot be USDC."
     );  
 
+    // reverts as expected: cleanERC20Tips does not accept amUSDC address as argument
     await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonAmUSDCAddress) ).to.be.revertedWith(
       "ERC20 cannot be amUSDC."
     ); 
 
+    // reverts as expected: cleanERC20Tips does not accept benjaminsContract address as argument
     await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(benjaminsContract.address) ).to.be.revertedWith(
       "ERC20 cannot be BNJI."
     ); 
     
+    // calling cleanERC20Tips with Chainlink address as argument, LINK is getting sent to calling owner
     await benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonLINKaddress);
 
+    // cleanERC20Tips confirmation
     const chainlinkBalAfterClean_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
     const chainlinkBalAfterClean_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
     expect(chainlinkBalAfterClean_deployer).to.equal(10);
