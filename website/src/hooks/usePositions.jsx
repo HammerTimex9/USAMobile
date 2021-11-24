@@ -19,6 +19,10 @@ export const usePositions = () => {
 
   useEffect(() => {
     if (!isInitialized) return;
+    getPosisions();
+  }, [Moralis, isAuthenticated, isInitialized, networkName, nativeToken]);
+
+  const getPosisions = () => {
     if (isAuthenticated) {
       const user = Moralis.User.current();
       const options = {
@@ -89,7 +93,7 @@ export const usePositions = () => {
       setPositions(emptyList);
       setIsLoading(0);
     }
-  }, [Moralis, isAuthenticated, isInitialized, networkName, nativeToken]);
+  };
 
-  return { positions, isLoading, totalValue, maticPrice };
+  return { positions, isLoading, totalValue, maticPrice, getPosisions };
 };

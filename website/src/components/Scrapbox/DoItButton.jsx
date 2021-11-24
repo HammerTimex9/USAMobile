@@ -8,11 +8,13 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useActions } from '../../contexts/actionsContext';
 import { useNetwork } from '../../contexts/networkContext';
 import useSwapAction from '../../actions/useSwapAction';
+import { usePositions } from '../../hooks/usePositions';
 
 export const DoItButton = () => {
   const { user } = useMoralis();
   const { networkName } = useNetwork();
   const { setQuote } = useQuote();
+  const { getPosisions } = usePositions();
   const { fromTokenAddress, fromTokenSymbol, toTokenAddress, txAmount } =
     useActions();
   const { setDialog } = useExperts();
@@ -39,6 +41,7 @@ export const DoItButton = () => {
   useEffect(() => {
     if (isApproved) {
       setDialog('Approval success.');
+      getPosisions();
     }
   }, [isApproved, setDialog]);
 
@@ -46,12 +49,14 @@ export const DoItButton = () => {
     if (data) {
       setQuote();
       setDialog('Swap success.');
+      getPosisions();
     }
   }, [data, setQuote, setDialog]);
 
   useEffect(() => {
     if (error) {
       setDialog('Something went wrong: ' + error.message);
+      getPosisions();
     }
   }, [error, setDialog]);
 
