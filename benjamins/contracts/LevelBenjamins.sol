@@ -45,7 +45,6 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint8[] holdingTimes = [0, 30, 90, 180];    // holding times in days, relating to discount level (level 1 needs 30 days holding, etc.)
   uint8[] discounts =    [0, 10, 25,  50];    // discounts in percent, relating to discount level (level 1 gets 10% discounts, etc.)
 
-  // todo: create getter
   // user to timestamp when levels are not counted anymore
   mapping (address => uint256) discountsActiveUntil;
 
@@ -148,7 +147,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
   function lockedBalanceOf(address _userToCheck) public view returns (uint256 lockedBNJIofUser) {
-    return (getUsersDiscountLevel(_userToCheck)*600);
+    return (getUsersDiscountLevel(_userToCheck)*1200);
   }
 
   function discountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountLevel) {
@@ -159,12 +158,16 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   function getUsersDiscountLevel(address _userToCheck) public view returns (uint256 discountLevel) {
     return amountOfLevelsForUser[_userToCheck];
   }
+
+  function getUsersUnlockTimestamp(address _userToCheck) public view returns (uint256 usersUnlockTimestamp) {
+    return discountsActiveUntil[_userToCheck];
+  }
   
   function howManyBlocksUntilUnlock (address _userToCheck) public view returns(uint256 timeLeftInBlocks) {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
 
-    uint256 willUnlockAtThisBlockheight = discountsActiveUntil[_userToCheck]; /*getUsersUnlockTimestamp()   */ // todo create function for this.
+    uint256 willUnlockAtThisBlockheight = getUsersUnlockTimestamp(_userToCheck);
    
     int256 amountOfBlocksStillLocked = int256(willUnlockAtThisBlockheight) - int256(blockHeightNow);
 
@@ -179,13 +182,13 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   
 
   // todo: take out testingmessage   
-  function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * 600) {
+  function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * 1200) {
     
     uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) + _amountOfLevelsToIncrease;
 
-    require(0 < endAmountOfLevels && endAmountOfLevels <=3, "You can increase the discount level up to level 3.");
+    require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3.");
     
-    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 600);   // Todo: approval must be done in front end before
+    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 1200);   // Todo: approval must be done in front end before
 
     // transferring BNJI from msg.sender to this contract
     transfer(address(this), amountOfBNJItoLock);                       // TODO: check if caller is correct, should be msg.sender, might need transferFrom
@@ -206,24 +209,23 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }  
 
 
-
-
-
   function decreaseDiscountLevels (uint256 _amountOfLevelsToDecrease) public whenAvailable {
 
-    uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) - _amountOfLevelsToDecrease;
+    uint256 usersDiscountLevelNow = getUsersDiscountLevel(msg.sender);
 
-    require(_amountOfLevelsToDecrease <= endAmountOfLevels && endAmountOfLevels >=0, "You can lower the discount level until 0.");
+    uint256 endAmountOfLevels = usersDiscountLevelNow - _amountOfLevelsToDecrease;
+
+    require(_amountOfLevelsToDecrease <= usersDiscountLevelNow && endAmountOfLevels >=0, "You can lower the discount level until 0.");
 
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;  
 
     // timestamp must be smaller than now (i.e. enough time has passed)
-    require(discountsActiveUntil[msg.sender] <= blockHeightNow, "Discounts are still active, levels cannot be decreased.");
+    require(getUsersUnlockTimestamp(msg.sender) <= blockHeightNow, "Discounts are still active, levels cannot be decreased.");
 
     amountOfLevelsForUser[msg.sender] = endAmountOfLevels;    
 
-    uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * 600;
+    uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * 1200;
 
     // this contract approves msg.sender to use transferFrom and pull in amountOfBNJIunlocked BNJI
     _approve(address(this), msg.sender, amountOfBNJIunlocked);    
@@ -236,15 +238,18 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
 
+
+
+
   // Modified ERC20 transfer()   
-  function transfer(address recipient, uint256 amount)
+  function transfer(address recipient, uint256 amountBNJI)
     public
     override
     nonReentrant
     whenAvailable    
   returns(bool) {  
     // transferring BNJI
-    _transfer(_msgSender(), recipient, amount);
+    _transfer(_msgSender(), recipient, amountBNJI);
     
     return true;
   }
