@@ -38,6 +38,7 @@ export const ExpertStage = () => {
           width: 400,
           boxShadow: 'var(--boxShadow)',
           backgroundImage: 'var(--bg)',
+          lineHeight: 1.5,
         }}
       >
         <Box>{dialog}</Box>
