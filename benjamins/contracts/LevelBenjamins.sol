@@ -25,7 +25,7 @@ import "hardhat/console.sol";
 // Collected fees and interest are withdrawable to the owner to a set recipient address.
 // Fee discounts are calculated based on BNJI balance.
 // Reentrancy is protected against via OpenZeppelin's ReentrancyGuard
-contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
+contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
   ILendingPool public polygonLendingPool;     // Aave lending pool on Polygon
   IERC20 public polygonUSDC;                  // USDC crypto currency on Polygon
@@ -42,35 +42,15 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint256 public curveFactor =   8000000;     // Inverse slope of the bonding curve.
   uint16  public baseFeeTimes10k = 10000;     // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
 
+  uint8[] holdingTimes = [0, 30, 90, 180];    // holding times in days, relating to discount level (level 1 needs 30 days holding, etc.)
+  uint8[] discounts =    [0, 10, 25,  50];    // discounts in percent, relating to discount level (level 1 gets 10% discounts, etc.)
 
+  // todo: create getter
+  // user to timestamp when levels are not counted anymore
+  mapping (address => uint256) discountsActiveUntil;
 
-  struct lockbox {
-    uint256 lockboxID;
-    uint256 createdTimestamp;
-    uint256 amountOfBNJIlocked; 
-    uint256 lockupTimeInBlocks;   
-    uint256 boxDiscountScore;
-    address ownerOfLockbox;
-    string testMessage; // TODO: take out, only for testing
-  }
-
-  // counter going forward, giving each lockbox an unique identifier
-  uint256 lockboxIDcounter;  // TODO: probably improve, use OZ counter mechanism
-
-  // amount of lockboxes for each
-  mapping (address => uint8) amountOfLockboxesForUser;
-  
-  // double mapping, user to position to lockbox
-  mapping ( address => mapping (uint256 => lockbox) ) usersLockboxes;
-
-  // amount of users total BNJI in lockboxes 
-  mapping (address => uint256) usersBNJIinLockboxes; // todo: discuss if we should have this
-
-  // global mapping of all lockboxIDs to their position (key) in their owner's mapping // todo: discuss if we should create this as a double mapping, just for readability (lockboxID to user to position)
-  mapping (uint256 => uint8) positionInUsersMapping;
-
-  // each user's discount score
-  mapping (address => uint256) discountScore;
+  // 0 - 3 levels
+  mapping (address => uint256) amountOfLevelsForUser;
 
   // event for withdrawGains function
   // availableIn6dec shows how many USDC were available to withdraw, in 6 decimals format
@@ -93,10 +73,10 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
 
   // event for creating a lockbox
-  event LockboxCreated(uint256 lockboxID, address owner, uint256 createdTimestamp, uint256 lockedBNJI, uint256 lockupTimeInBlocks, uint256 boxDiscountScore, string testingMessage); // TODO: take out message
-  
+  event DiscountLevelIncreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel, uint256 discountShouldBeActiveUntil); 
+ 
   // event for unlocking and destroying a lockbox 
-  event LockboxDestroyed(uint256 lockboxID, address owner, uint256 destroyedTimestamp, uint256 unlockedBNJI, uint256 lockupTimeInBlocks, uint256 boxDiscountScore); // TODO: fix order of arguments, also in emit of course
+  event DiscountLevelDecreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel);
 
   // event for exchanging USDC and BNJI // TODO:include mint or burn bool or type string 
   event Exchanged(
@@ -167,81 +147,25 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return _decimals;
   }
 
-  function getLBpositionInUsersMapping(uint256 _lockboxID) public view returns(uint8 posOfLBinUsersMapping) {
-    return positionInUsersMapping[_lockboxID];
+  function lockedBalanceOf(address _userToCheck) public view returns (uint256 lockedBNJIofUser) {
+    return (getUsersDiscountLevel(_userToCheck)*600);
   }
 
-  function lockedBalanceOf (address _userToCheck) public view returns(uint256 lockedBNJIofUser) {
-    return usersBNJIinLockboxes[_userToCheck];
+  function discountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountLevel) {
+    uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
+    return discounts[usersDiscountLevel] * baseFeeTimes10k;
   }
 
-  function getLockboxIDcounter() public view returns(uint256){
-    return lockboxIDcounter;
+  function getUsersDiscountLevel(address _userToCheck) public view returns (uint256 discountLevel) {
+    return amountOfLevelsForUser[_userToCheck];
   }
-
-  function getUsersDiscountScore (address _userToCheck) public view returns(uint256 usersDiscountScore){
-    return discountScore[_userToCheck];
-  }
-
-  function getBoxDiscountScore (uint256 _lockboxID, address _owner) public view returns(uint256 discountScoreInBox) {
-    
-    uint8 positionToLookUp = getLBpositionInUsersMapping(_lockboxID);
-
-    lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
-
-    // lockboxID inside the lockbox must be equal to _lockboxID
-    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");
-
-    return foundBox.boxDiscountScore;
-  }
-    
-  function getAmountOfUsersLockboxes(address _userToCheck) public view returns (uint8 amountOfBoxesForUser) {
-    return amountOfLockboxesForUser[_userToCheck];
-  }
-
-  function getUsersLockboxIDs(address _userToCheck)  public view returns (uint256[] memory lockboxIDsOfUser) {
-
-    require(_userToCheck != address(0), 'Query for the zero address');
-
-    uint256 lockboxAmount = getAmountOfUsersLockboxes(_userToCheck);
-
-    if (lockboxAmount == 0) {
-      // Return an empty array
-      return new uint256[](0);
-    }
-
-    uint256[] memory resultArray = new uint256[](lockboxAmount);
-
-    uint256 counter;
-
-    // resultArray is 0 based
-    for (counter = 0; counter < lockboxAmount; counter++) {
-
-      // usersLockboxes is a mapping, not an array, and not 0 based, but starting with position 1
-      lockbox memory foundBox = usersLockboxes[_userToCheck][counter+1];
-
-      // empty entries will be returned as lockboxID 0
-      resultArray[counter] = foundBox.lockboxID;
-    }
-
-    return resultArray;
-  }  
   
-  function howManyBlocksUntilUnlockForBox (uint256 _lockboxID, address _owner) public view returns(uint256 timeLeftForBoxInBlocks) {
+  function howManyBlocksUntilUnlock (address _userToCheck) public view returns(uint256 timeLeftInBlocks) {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
 
-    console.log(blockHeightNow, 'blockHeightNow, howManyBlocksUntilUnlockForBox' );  //TODO: takeout
-
-    uint8 positionToLookUp = getLBpositionInUsersMapping(_lockboxID);
-
-    lockbox memory foundBox = usersLockboxes[_owner][positionToLookUp];
-
-    // lockboxID inside the lockbox must be equal to _lockboxID
-    require (foundBox.lockboxID == _lockboxID, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");
-
-    uint256 willUnlockAtThisBlockheight = foundBox.createdTimestamp + foundBox.lockupTimeInBlocks;     
-
+    uint256 willUnlockAtThisBlockheight = discountsActiveUntil[_userToCheck]; /*getUsersUnlockTimestamp()   */ // todo create function for this.
+   
     int256 amountOfBlocksStillLocked = int256(willUnlockAtThisBlockheight) - int256(blockHeightNow);
 
     if (amountOfBlocksStillLocked < 0 ) {
@@ -252,177 +176,64 @@ contract LockboxBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   }
 
-  // todo: take out testingmessage   
-  function createLockbox (uint256 _amountOfBNJItoLock, string memory testingMessage, uint256 _lockupTimeInBlocks) public whenAvailable hasTheBenjamins(_amountOfBNJItoLock) {
-   
-    require(amountOfLockboxesForUser[msg.sender] < 12, "Only up to 12 lockboxes per user at the same time.");
-
-    require(_lockupTimeInBlocks >= 10 && (_lockupTimeInBlocks <= 365 * blocksPerDay) , "Mimimum lockup time is 10 blocks, maximum is 365 days.");
-    
-    // transferring BNJI from msg.sender to this contract
-    transfer(address(this), _amountOfBNJItoLock);                       // TODO: check if caller is correct, should be msg.sender, might need transferFrom
-    
-    // this is now, expressed in blockheight
-    uint256 blockHeightNow = block.number;
-
-    console.log(blockHeightNow, 'blockHeightNow, createLockbox' ); //TODO: takeout
-
-    // increasing global lockboxIDcounter
-    lockboxIDcounter +=1;
-
-    // updated lockboxIDcounter is saved as lockboxID into lockbox
-    uint256 newLockboxID = lockboxIDcounter;  
-
-    // calculating and saving this lockebox's generatedDiscountScore into lockbox
-    uint256 generatedDiscountScore = _amountOfBNJItoLock * _lockupTimeInBlocks;
-
-    // creating new lockbox
-    lockbox memory newLockbox = lockbox ({  
-      lockboxID:          uint256(newLockboxID),            // unique identifier
-      createdTimestamp:   uint256(blockHeightNow),          // timestamp of creation
-      amountOfBNJIlocked: uint256(_amountOfBNJItoLock),     // amount of BNJI that were locked in
-      lockupTimeInBlocks: uint256 (_lockupTimeInBlocks),    // amount of blocks that the lockbox will be locked for
-      boxDiscountScore:   uint256(generatedDiscountScore),  // discountScore that is generated by this box, as long as it's unopened
-      ownerOfLockbox:     address(msg.sender),              // msg.sender is owner of lockbox
-      testMessage:        string(testingMessage)            // just for testing, to see if keeping track works as intended
-    });   
-    
-    // increasing user's counter of lockboxes
-    amountOfLockboxesForUser[msg.sender] += 1;
-
-    // using the updated counter as position (key) in users mapping of lockboxes
-    uint8 position = amountOfLockboxesForUser[msg.sender];
-
-    // saving new lockbox to usersLockboxes under their address and the fitting position
-    usersLockboxes[msg.sender][position] = newLockbox; 
-
-    // saving the position to global mapping of lockboxIDs
-    positionInUsersMapping[newLockboxID] = position;
-
-    // increasing counter of user's locked BNJI
-    usersBNJIinLockboxes[msg.sender] += _amountOfBNJItoLock;
-
-    // adding this lockebox's generatedDiscountScore to user's discountScore   
-    discountScore[msg.sender] += generatedDiscountScore;
-
-    // emitting event with all related useful details
-    emit LockboxCreated (newLockboxID, msg.sender, blockHeightNow, _amountOfBNJItoLock, _lockupTimeInBlocks, generatedDiscountScore, testingMessage);  
-  }
-
-  function showLockboxByIDforUser (address _userToCheck, uint256 _lockboxIDtoFind) 
-    public 
-    view 
-  returns (
-    uint256 foundLockboxID,
-    uint256 foundCreatedTimestamp,
-    uint256 foundAmountOfBNJIlocked,
-    uint256 foundLockupTimeInBlocks,
-    uint256 foundBoxDiscountScore,
-    address foundOwnerOfLockbox,
-    string memory foundTestingMessage
-    )
-  {
-
-    uint8 positionToLookUp = getLBpositionInUsersMapping(_lockboxIDtoFind);
-
-    lockbox memory foundBox = usersLockboxes[_userToCheck][positionToLookUp];
-
-    require (foundBox.lockboxID == _lockboxIDtoFind, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");     
-
-    //console.log(positionToLookUp, 'positionToLookUp in owners mapping, queried getLBpositionInUsersMapping(_lockboxIDtoFind),  showLockboxByIDforUser');
-    
-    //console.log(foundBox.lockboxID, 'lockboxID,  showLockboxByIDforUser');
-    
-    //console.log(foundBox.createdTimestamp, 'createdTimestamp,  showLockboxByIDforUser');
-    //console.log(foundBox.amountOfBNJIlocked, 'amountOfBNJIlocked,  showLockboxByIDforUser');
-    /*console.log(foundBox.lockupTimeInBlocks, 'lockupTimeInBlocks,  showLockboxByIDforUser');
-    console.log(foundBox.boxDiscountScore, 'boxDiscountScore,  showLockboxByIDforUser');    
-    console.log(foundBox.ownerOfLockbox, 'ownerOfLockbox,  showLockboxByIDforUser');
-    console.log(foundBox.testMessage, 'testMessage,  showLockboxByIDforUser');
-    */
-    return(
-      foundBox.lockboxID,
-      foundBox.createdTimestamp,
-      foundBox.amountOfBNJIlocked,
-      foundBox.lockupTimeInBlocks,
-      foundBox.boxDiscountScore,
-      foundBox.ownerOfLockbox,
-      foundBox.testMessage
-    );
-  }
   
 
-  function openAndDestroyLockbox(uint256 _lockboxIDtoDestroy) public whenAvailable {
+  // todo: take out testingmessage   
+  function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * 600) {
+    
+    uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) + _amountOfLevelsToIncrease;
 
+    require(0 < endAmountOfLevels && endAmountOfLevels <=3, "You can increase the discount level up to level 3.");
+    
+    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 600);   // Todo: approval must be done in front end before
+
+    // transferring BNJI from msg.sender to this contract
+    transfer(address(this), amountOfBNJItoLock);                       // TODO: check if caller is correct, should be msg.sender, might need transferFrom
+    
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
 
-    uint8 positionToRefill = getLBpositionInUsersMapping(_lockboxIDtoDestroy);
-    lockbox memory _lockboxtoDestroy = usersLockboxes[msg.sender][positionToRefill];
+    uint256 amountOfTimeToLock = holdingTimes[endAmountOfLevels] * blocksPerDay;
 
-    uint256 lockupTimeInBlocks = _lockboxtoDestroy.lockupTimeInBlocks;
-  
-    // lockboxID inside the lockbox must be equal to _lockboxIDtoDestroy
-    require (_lockboxtoDestroy.lockboxID == _lockboxIDtoDestroy, "This is not the lockbox you're looking for. You can check getUsersLockboxIDs");
-        
-    // redundant security: msg.sender must be owner of lockbox
-    require (_lockboxtoDestroy.ownerOfLockbox == msg.sender, 'This is not your lockbox.');
+    uint256 discountShouldBeActiveUntil = blockHeightNow + amountOfTimeToLock;    
 
-    // at least 10 blocks must have passed since lockbox was created
-    require((_lockboxtoDestroy.createdTimestamp + lockupTimeInBlocks) <= blockHeightNow, 'This lockbox cannot be opened yet. You can check howManyBlocksUntilUnlockForBox.');   // TODO: add function that shows how long the box is still locked for
-
-    // as this lockbox gets destroyed, the discountScore it was generating is substracted again from user's discountScore
-    uint256 discountScoreToSubtract = _lockboxtoDestroy.boxDiscountScore;
-    discountScore[msg.sender] -= discountScoreToSubtract;
-
-    uint256 amountOfBNJIunlocked = _lockboxtoDestroy.amountOfBNJIlocked;
+    discountsActiveUntil[msg.sender] = discountShouldBeActiveUntil;
     
-    uint8 lastLockboxPositionOfUser = getAmountOfUsersLockboxes(msg.sender);    
+    amountOfLevelsForUser[msg.sender] = endAmountOfLevels;    
 
-    uint8 positionOfLockboxToDestroy = positionToRefill;
+    // emitting event with all related useful details
+    emit DiscountLevelIncreased (msg.sender, blockHeightNow, endAmountOfLevels, discountShouldBeActiveUntil);  
+  }  
 
-    // When the lockbox to destroy is the already in the user's mapping's last position, the swap operation is unnecessary
-    if (positionOfLockboxToDestroy != lastLockboxPositionOfUser) {
 
-      lockbox memory lockboxToMove = usersLockboxes[msg.sender][lastLockboxPositionOfUser];
 
-      usersLockboxes[msg.sender][positionToRefill] = lockboxToMove;       // Move the last lockbox to the slot of the to-destroy lockbox
-      positionInUsersMapping[lockboxToMove.lockboxID] = positionToRefill;  // Update the moved lockbox's position
-    }
-    
-    delete positionInUsersMapping[_lockboxIDtoDestroy];
-    delete usersLockboxes[msg.sender][lastLockboxPositionOfUser];
 
-    // decreasing user's counter of lockboxes
-    amountOfLockboxesForUser[msg.sender] -= 1;
 
-    // decreasing counter of user's locked BNJI
-    usersBNJIinLockboxes[msg.sender] -= amountOfBNJIunlocked;
+  function decreaseDiscountLevels (uint256 _amountOfLevelsToDecrease) public whenAvailable {
+
+    uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) - _amountOfLevelsToDecrease;
+
+    require(_amountOfLevelsToDecrease <= endAmountOfLevels && endAmountOfLevels >=0, "You can lower the discount level until 0.");
+
+    // this is now, expressed in blockheight
+    uint256 blockHeightNow = block.number;  
+
+    // timestamp must be smaller than now (i.e. enough time has passed)
+    require(discountsActiveUntil[msg.sender] <= blockHeightNow, "Discounts are still active, levels cannot be decreased.");
+
+    amountOfLevelsForUser[msg.sender] = endAmountOfLevels;    
+
+    uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * 600;
 
     // this contract approves msg.sender to use transferFrom and pull in amountOfBNJIunlocked BNJI
     _approve(address(this), msg.sender, amountOfBNJIunlocked);    
 
-    // checking allowance for BNJI // TODO: take out
-    uint256 fromThisContractToCallerBNJIAllowance = allowance(address(this), msg.sender);
-    //console.log(fromThisContractToCallerBNJIAllowance, 'this many BNJI are allowed by this contract to user' );      
-
     // this contract pushes msg.sender amountOfBNJIunlocked to msg.sender
-    transferFrom(address(this), msg.sender, amountOfBNJIunlocked);
+    transferFrom(address(this), msg.sender, amountOfBNJIunlocked);    
 
-    // rechecking allowance for BNJI // TODO: take out
-    uint256 fromThisContractToCallerBNJIAllowanceNow = allowance(address(this), msg.sender);
-    //console.log(fromThisContractToCallerBNJIAllowanceNow, 'this many BNJI are allowed by this contract to user after transferFrom' );
-
-    emit LockboxDestroyed(_lockboxIDtoDestroy, msg.sender, blockHeightNow, amountOfBNJIunlocked, lockupTimeInBlocks, discountScoreToSubtract);   
+    emit DiscountLevelDecreased(msg.sender, blockHeightNow, endAmountOfLevels);  
     
   }
-
-
-
-
-
-
-  
 
 
   // Modified ERC20 transfer()   
