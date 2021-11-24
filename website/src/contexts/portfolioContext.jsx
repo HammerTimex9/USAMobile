@@ -11,7 +11,7 @@ export const usePositions = () => useContext(PortfolioContext);
 
 export const PortfolioProvider = (props) => {
   const { isInitialized, isAuthenticated, Moralis, user } = useMoralis();
-  const { networkName, nativeSymbol, isPolygon } = useNetwork();
+  const { network, isPolygon } = useNetwork();
   const [positions, setPositions] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
   const [isLoading, setIsLoading] = useState(1);
@@ -20,20 +20,12 @@ export const PortfolioProvider = (props) => {
   useEffect(() => {
     if (!isInitialized) return;
     getPositions();
-  }, [
-    Moralis,
-    user,
-    isAuthenticated,
-    isInitialized,
-    networkName,
-    nativeSymbol,
-    isPolygon,
-  ]);
+  }, [Moralis, user, isAuthenticated, isInitialized, network, isPolygon]);
 
   const getPositions = () => {
     if (isAuthenticated) {
       const options = {
-        chain: networkName,
+        chain: network.name,
         address: user?.attributes.ethAddress,
       };
       Promise.all([
@@ -41,7 +33,7 @@ export const PortfolioProvider = (props) => {
         Moralis.Web3API.account.getTokenBalances(options),
       ])
         .then(([native, erc20]) => {
-          const nativeId = geckoCoinIds[nativeSymbol.toLowerCase()];
+          const nativeId = geckoCoinIds[network.symbol.toLowerCase()];
           const tokens = erc20.filter(({ symbol }) => allPolygonTokens[symbol]);
           Promise.all([
             fetch(
@@ -54,7 +46,7 @@ export const PortfolioProvider = (props) => {
                 Moralis.Web3API.token
                   .getTokenPrice({
                     address: item.token_address,
-                    chain: networkName,
+                    chain: network.name,
                     exchange: 'quickswap',
                   })
                   .then((data) => data.usdPrice)
@@ -63,7 +55,7 @@ export const PortfolioProvider = (props) => {
           ]).then(([nativePrice, prices]) => {
             const positions = [
               {
-                symbol: nativeSymbol,
+                symbol: network.symbol,
                 balance: native.balance,
                 price: nativePrice,
               },

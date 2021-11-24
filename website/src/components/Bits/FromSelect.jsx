@@ -13,7 +13,7 @@ export const FromSelect = () => {
   const { positions, waiting } = usePositions();
   const { setFromToken, setToToken } = useActions();
   const { setDialog } = useExperts();
-  const { networkId } = useNetwork();
+  const { isPolygon } = useNetwork();
 
   useEffect(() => {
     return () => {
@@ -25,7 +25,7 @@ export const FromSelect = () => {
     const position = e.target.value;
     setValue(position);
 
-    if (networkId !== 137) {
+    if (!isPolygon) {
       setFromToken();
       setToToken();
       setDialog('Switch network to Polygon');

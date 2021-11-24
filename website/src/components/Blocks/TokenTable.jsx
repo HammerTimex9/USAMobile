@@ -30,7 +30,7 @@ import Loader from '../Research/load';
 
 export const TokenTable = () => {
   const { isLoading, totalValue, positions } = usePositions();
-  const { networkName } = useNetwork();
+  const { network } = useNetwork();
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedCoin, setSelectedCoin] = useState(null);
 
@@ -103,7 +103,7 @@ export const TokenTable = () => {
                 <TransactionList
                   tokenAddress={position.token_address}
                   tokenSymbol={position.symbol.toLowerCase()}
-                  chain={networkName}
+                  chain={network.name}
                   decimals={position.decimals}
                 />
               </Box>

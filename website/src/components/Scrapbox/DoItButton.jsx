@@ -12,14 +12,14 @@ import { usePositions } from '../../contexts/portfolioContext';
 
 export const DoItButton = () => {
   const { user } = useMoralis();
-  const { networkName } = useNetwork();
+  const { network } = useNetwork();
   const { setQuote } = useQuote();
   const { getPositions } = usePositions();
   const { fromTokenAddress, fromTokenSymbol, toTokenAddress, txAmount } =
     useActions();
   const { setDialog } = useExperts();
   const { fetch, isFetching, isApproved, data, error } = useSwapAction({
-    chain: networkName,
+    chain: network.name,
     fromTokenAddress,
     toTokenAddress,
     amount: txAmount,
