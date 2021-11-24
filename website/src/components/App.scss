@@ -58,14 +58,12 @@ body {
 }
 
 .NavBar {
-  text-decoration: none;
+  a {
+    text-decoration: none;
 
-  &.NavBar {
-    padding-left: 10px;
-  }
-
-  &.disabled {
-    pointer-events: none;
-    opacity: 0.5;
+    &.disabled {
+      pointer-events: none;
+      opacity: 0.5;
+    }
   }
 }
