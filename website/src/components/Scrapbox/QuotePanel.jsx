@@ -2,7 +2,7 @@ import React from 'react';
 import { Avatar, Button, Stack, Typography } from '@mui/material';
 
 import { useQuote } from '../../contexts/quoteContext';
-import { usePositions } from '../../hooks/usePositions';
+import { usePositions } from '../../contexts/portfolioContext';
 import { useExperts } from '../../contexts/expertsContext';
 import { DoItButton } from './DoItButton';
 

@@ -7,10 +7,9 @@ import { useNetwork } from '../../contexts/networkContext';
 import { useExperts } from '../../contexts/expertsContext';
 
 const ONBOARD_TEXT = 'Click here to install MetaMask!';
-const CONNECT_TEXT = 'Connect';
 
 export function OnBoardingButton() {
-  const [buttonText, setButtonText] = React.useState(ONBOARD_TEXT);
+  const [buttonText] = React.useState(ONBOARD_TEXT);
   const [isDisabled, setDisabled] = React.useState(false);
   const onboarding = React.useRef();
   const { accounts, setAccounts } = useNetwork();
@@ -25,12 +24,9 @@ export function OnBoardingButton() {
   React.useEffect(() => {
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       if (accounts.length > 0 || window.ethereum.selectedAddress) {
-        setDisabled(true);
         onboarding.current.stopOnboarding();
-      } else {
-        setButtonText(CONNECT_TEXT);
-        setDisabled(false);
       }
+      setDisabled(true);
     } else {
       setDialog('Click above to install MetaMask in your browser.');
     }
@@ -50,19 +46,7 @@ export function OnBoardingButton() {
     return null;
   }
   return (
-    <Button
-      variant="uw"
-      sx={{
-        alignSelf: 'center',
-        border: 1,
-        boxShadow: 'var(--boxShadow)',
-        borderColor: 'var(--borderColor)',
-        color: 'var(--color)',
-        height: 40,
-      }}
-      onClick={onClick}
-      startIcon={<MetaMask />}
-    >
+    <Button variant="uw" onClick={onClick} startIcon={<MetaMask />}>
       {buttonText}
     </Button>
   );

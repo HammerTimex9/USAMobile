@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import { Button, Drawer, Tooltip } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
@@ -6,8 +6,6 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 
 import { AuthDrawer } from '../AuthDrawer';
 import { DrawerHeader } from '../DrawerHeader';
-
-import './styles.css';
 
 export const AuthButton = () => {
   const { isAuthenticated, logout } = useMoralis();
@@ -20,22 +18,23 @@ export const AuthButton = () => {
     console.log('OnClose Drawer.');
   };
 
+  useEffect(() => {
+    return () => {
+      window.addEventListener('beforeunload', function (e) {
+        let confirmationMessage = 'o/';
+        (e || window.event).returnValue = confirmationMessage;
+        if (isAuthenticated) logout();
+        return confirmationMessage;
+      });
+    };
+  });
+
   return (
     <>
       {isAuthenticated ? (
         <Tooltip title="Log out of USA Wallet.">
           <Button
             variant="uw"
-            sx={{
-              alignSelf: 'center',
-              border: 1,
-              boxShadow: 'var(--boxShadow)',
-              borderColor: 'var(--borderColor)',
-              color: 'var(--color)',
-              height: 40,
-            }}
-            aria-label="Log Out"
-            className="LogoutButton"
             startIcon={<LockOpenIcon className="nav-bar-icon" />}
             onClick={() => logout()}
           >
@@ -47,16 +46,6 @@ export const AuthButton = () => {
           <Tooltip title="Log into USA Wallet.">
             <Button
               variant="uw"
-              sx={{
-                alignSelf: 'center',
-                border: 1,
-                boxShadow: 'var(--boxShadow)',
-                borderColor: 'var(--borderColor)',
-                color: 'var(--color)',
-                height: 40,
-              }}
-              aria-label="Log In"
-              className="LoginButton"
               startIcon={<LockIcon className="nav-bar-icon" />}
               onClick={() => toggleDrawer(true)}
             >

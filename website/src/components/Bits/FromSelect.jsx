@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
-import { usePositions } from '../../hooks/usePositions';
+import { usePositions } from '../../contexts/portfolioContext';
 import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
@@ -13,7 +13,7 @@ export const FromSelect = () => {
   const { positions, waiting } = usePositions();
   const { setFromToken, setToToken } = useActions();
   const { setDialog } = useExperts();
-  const { networkId } = useNetwork();
+  const { isPolygon } = useNetwork();
 
   useEffect(() => {
     return () => {
@@ -25,7 +25,7 @@ export const FromSelect = () => {
     const position = e.target.value;
     setValue(position);
 
-    if (networkId !== 137) {
+    if (!isPolygon) {
       setFromToken();
       setToToken();
       setDialog('Switch network to Polygon');

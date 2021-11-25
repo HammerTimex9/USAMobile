@@ -1,39 +1,29 @@
-const uwDarkText = '#1A202C';
-const uwLightText = '#ffffffeb';
+const COLORS = {
+  light: '#1a202c',
+  dark: 'rgba(255, 255, 255, 0.92)',
+};
 
-export const getCustomTheme = (colorMode = 'light') => ({
+export const getCustomTheme = (mode = 'light') => ({
   palette: {
-    mode: colorMode,
-    uwprimary: {
-      contrastText: '#FFFFFF',
-      main: uwDarkText,
-      dark: '#000000',
-      light: '#414755',
-    },
+    mode,
     text: {
-      ...(colorMode === 'light'
-        ? { primary: uwDarkText }
-        : { primary: uwLightText }),
+      primary: COLORS[mode],
     },
+  },
+  typography: {
+    fontFamily: 'P22-Typewriter',
   },
   components: {
     MuiButton: {
       variants: [
         {
           props: { variant: 'uw' },
-
           style: {
-            background: 'transparent',
-            lineHeight: 2,
-            ...(colorMode === 'light'
-              ? {
-                  border: '1px solid #E2E8F0',
-                  color: uwDarkText,
-                }
-              : {
-                  borderWidth: 0,
-                  color: uwLightText,
-                }),
+            height: '2.5rem',
+            padding: '6px 16px',
+            border: `1px solid var(--borderColor)`,
+            color: COLORS[mode],
+            boxShadow: 'var(--boxShadow)',
           },
         },
       ],
@@ -43,19 +33,12 @@ export const getCustomTheme = (colorMode = 'light') => ({
         {
           props: { variant: 'uw' },
           style: {
-            background: 'transparent',
             width: '2.5rem',
             height: '2.5rem',
-            alignSelf: 'center',
-            border: '1px solid #E2E8F0',
-            borderRadius: '.3rem',
-            ...(colorMode === 'light'
-              ? {
-                  color: uwDarkText,
-                }
-              : {
-                  color: uwLightText,
-                }),
+            borderRadius: '0.25rem',
+            border: `1px solid var(--borderColor)`,
+            color: COLORS[mode],
+            boxShadow: 'var(--boxShadow)',
           },
         },
       ],
@@ -63,7 +46,6 @@ export const getCustomTheme = (colorMode = 'light') => ({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          // Some CSS
           padding: '8px 16px',
         },
       },

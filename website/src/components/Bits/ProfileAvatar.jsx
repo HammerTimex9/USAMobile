@@ -21,10 +21,7 @@ export const ProfileAvatar = () => {
   return (
     <>
       <Tooltip title="Click to update your USA Wallet profile.">
-        <Avatar
-          sx={{ alignSelf: 'center', color: 'white' }}
-          onClick={() => toggleDrawer(true)}
-        >
+        <Avatar sx={{ color: 'white' }} onClick={() => toggleDrawer(true)}>
           <PersonIcon />
         </Avatar>
       </Tooltip>

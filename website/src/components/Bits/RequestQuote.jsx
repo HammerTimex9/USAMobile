@@ -10,7 +10,7 @@ import { useNetwork } from '../../contexts/networkContext';
 import useQuoteAction from '../../actions/useQuoteAction';
 
 export const RequestQuote = () => {
-  const { networkName } = useNetwork();
+  const { network } = useNetwork();
   const {
     fromTokenSymbol,
     fromTokenAddress,
@@ -22,7 +22,7 @@ export const RequestQuote = () => {
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
   const { fetch, isFetching, data, error } = useQuoteAction({
-    chain: networkName,
+    chain: network.name,
     fromTokenAddress,
     toTokenAddress,
     amount: txAmount,
