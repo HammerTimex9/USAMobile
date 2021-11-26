@@ -35,7 +35,7 @@ function App() {
   const { isAuthenticated, Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
   const { user } = useMoralis();
   const { positions } = usePositions();
-  const { setAccounts, setNetworkId, isPolygon } = useNetwork();
+  const { setNetworkId, isPolygon } = useNetwork();
   const { setDialog } = useExperts();
   const address = user?.attributes?.ethAddress;
   const hasMetamask = window.ethereum?.isMetaMask;
@@ -64,7 +64,6 @@ function App() {
       Moralis.onAccountsChanged((accounts) => {
         console.log('Account Changed Called.', accounts);
         Moralis.link(accounts[0]);
-        setAccounts(accounts);
       });
       Moralis.onChainChanged((chainId) => {
         console.log('ChainId:', chainId);
@@ -82,13 +81,6 @@ function App() {
     if (isAuthenticated) {
       if (!isWeb3Enabled) {
         enableWeb3();
-      }
-      if (isWeb3Enabled) {
-        if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-          if (window?.ethereum?.selectedAddress) {
-            setAccounts([window.ethereum?.selectedAddress]);
-          }
-        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
