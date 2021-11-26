@@ -69,8 +69,9 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // event for unlocking and destroying a lockbox 
   event DiscountLevelDecreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel);
 
-  // event for exchanging USDC and BNJI // TODO:include mint or burn bool or type string 
+  // event for exchanging USDC and BNJI
   event Exchanged(
+    bool isMint,
     address fromAddress,
     address toAddress,
     uint256 inTokens,
@@ -111,16 +112,16 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     _;
   }
 
-  // Redundant reserveInUSDCin6dec protection vs. user withdraws. TODO: clean up
+  // Redundant reserveInUSDCin6dec protection vs. user withdraws.
   modifier wontBreakTheBank(uint256 amountBNJItoBurn) {        
     // calculating the USDC value of the BNJI tokens to burn, and rounding them to full cents
     uint256 beforeFeesNotRoundedIn6dec = quoteUSDC(amountBNJItoBurn, false);        
     uint256 beforeFeesRoundedDownIn6dec = beforeFeesNotRoundedIn6dec - (beforeFeesNotRoundedIn6dec % USDCcentsScaleFactor);
     // if the USDC reserve counter shows less than what is needed, check the existing amUSDC balance of the contract
     if(reserveInUSDCin6dec < beforeFeesRoundedDownIn6dec) {
-      uint256 fundsOnTab = polygonAMUSDC.balanceOf(address(this));
+      uint256 fundsOnTabIn6dec = polygonAMUSDC.balanceOf(address(this));
       // if there are enough amUSDC available, set the tracker to allow the transfer 
-      if (fundsOnTab >= beforeFeesRoundedDownIn6dec ) {
+      if (fundsOnTabIn6dec >= beforeFeesRoundedDownIn6dec ) {
         reserveInUSDCin6dec = beforeFeesRoundedDownIn6dec;                
       }
     }
@@ -206,7 +207,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 1000);   // Todo: approval must be done in front end before
 
     // transferring BNJI from msg.sender to this contract
-    transfer(address(this), amountOfBNJItoLock);                       // TODO: check if caller is correct, should be msg.sender, might need transferFrom
+    transfer(address(this), amountOfBNJItoLock);  // TODO: check if caller is correct, should be msg.sender, might need transferFrom
     
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
@@ -382,7 +383,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       reserveInUSDCin6dec -= beforeFeeInUSDCin6dec;
     }
 
-    emit Exchanged(msg.sender, _forWhom, _amountBNJI, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec);
+    emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec);
   }
 
   // Move USDC for a supply change.  Note: sign of amount is the mint/burn direction.
@@ -424,6 +425,11 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       polygonUSDC.transfer(_payee, _afterFeeUSDCin6dec);
     }
   }    
+
+  function checkGains() public view onlyOwner returns (uint256 availableNowIn6dec) {
+    uint256 availableIn6dec = polygonAMUSDC.balanceOf(address(this)) - reserveInUSDCin6dec;
+    return availableIn6dec;
+  }
 
   // TODO: test and look at in depth
   // Withdraw available fees and interest gains from lending pool to receiver address.
