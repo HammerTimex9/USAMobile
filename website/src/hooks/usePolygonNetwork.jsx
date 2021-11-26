@@ -43,7 +43,7 @@ export const usePolygonNetwork = () => {
           setDialog(error.message);
         });
     } else {
-      setDialog('Install MetaMask First.');
+      // setDialog('Install MetaMask First.');
     }
   };
   const switchNetworkToPolygon = () => {
@@ -78,7 +78,7 @@ export const usePolygonNetwork = () => {
           // setDialog(error.message);
         });
     } else {
-      setDialog('Install MetaMask First.');
+      // setDialog('Install MetaMask First.');
     }
   };
 
@@ -107,7 +107,7 @@ export const usePolygonNetwork = () => {
           setDialog('There is an error in adding Network, Please try again.');
         });
     } else {
-      setDialog('Install MetaMask First.');
+      // setDialog('Install MetaMask First.');
     }
   };
 

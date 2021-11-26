@@ -65,7 +65,7 @@ function App() {
     <Stack alignItems="center" spacing={5} p={3}>
       <TopNavBar />
       <ExpertStage />
-      {isAuthenticated && isPolygon ? (
+      {isAuthenticated ? (
         <>
           <NavBar />
           <Suspense fallback={<div>Loading...</div>}>
