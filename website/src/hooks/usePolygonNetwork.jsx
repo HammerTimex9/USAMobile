@@ -36,16 +36,13 @@ export const usePolygonNetwork = () => {
           (error) => {
             console.log('ChainIdError:', error);
             setDialog(error.message);
-            setNetworkId(1);
           }
         )
         .catch((error) => {
           console.log('ChainIdCatch:', error);
           setDialog(error.message);
-          setNetworkId(1);
         });
     } else {
-      setNetworkId(1);
       setDialog('Install MetaMask First.');
     }
   };
@@ -61,7 +58,6 @@ export const usePolygonNetwork = () => {
           },
           (switchError) => {
             console.log('SwitchError:', switchError);
-            // setNetworkId(1);
             // setDialog(switchError.message);
             setHasPolygon(false);
             if (switchError.code === 4902) {
@@ -79,11 +75,9 @@ export const usePolygonNetwork = () => {
         )
         .catch((error) => {
           console.log('SwitchCatch:', error);
-          // setNetworkId(1);
           // setDialog(error.message);
         });
     } else {
-      setNetworkId(1);
       setDialog('Install MetaMask First.');
     }
   };
@@ -106,16 +100,13 @@ export const usePolygonNetwork = () => {
             }
           },
           (error) => {
-            setNetworkId(1);
             setDialog('There is an error in adding Network, Please try again.');
           }
         )
         .catch((error) => {
-          setNetworkId(1);
           setDialog('There is an error in adding Network, Please try again.');
         });
     } else {
-      setNetworkId(1);
       setDialog('Install MetaMask First.');
     }
   };
