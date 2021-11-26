@@ -42,7 +42,7 @@ const useSwapAction = ({
 
       updaters.current?.setIsApproved(true);
       getPositions();
-
+      window.confirm('Are you sure?');
       const data = await Moralis.Plugins.oneInch.swap({
         chain,
         fromTokenAddress: fromTokenAddress || NATIVE_ADDRESS,
