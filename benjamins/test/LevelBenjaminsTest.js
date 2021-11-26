@@ -698,8 +698,7 @@ describe("Testing Lockbox version of Benjamins", function () {
   })     
   
   
-  // Put in tests for levels
-  
+  // Put in tests for levels 
   
   
   it("Test 1. testUser_1 should mint 10 BNJI for themself", async function () {  

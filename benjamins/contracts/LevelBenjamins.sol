@@ -42,9 +42,10 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint256 public curveFactor =   8000000;     // Inverse slope of the bonding curve.
   uint16  public baseFeeTimes10k = 10000;     // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
 
-  uint8[] holdingTimes = [0, 30, 90, 180];    // holding times in days, relating to discount level (level 1 needs 30 days holding, etc.)
-  uint8[] discounts =    [0, 10, 25,  50];    // discounts in percent, relating to discount level (level 1 gets 10% discounts, etc.)
-
+  uint256  neededBNJIperLevel;                // amount of BNJI needed per discount level
+  uint16[] holdingTimes;                      // holding times in days
+  uint16[] discounts;                         // discounts in percent
+  
   // user to timestamp when levels are not counted anymore
   mapping (address => uint256) discountsActiveUntil;
 
@@ -54,22 +55,13 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // event for withdrawGains function
   // availableIn6dec shows how many USDC were available to withdraw, in 6 decimals format
   // amountUSDCin6dec shows how many USDC were withdrawn, in 6 decimals format
-  event ProfitTaken(uint256 availableIn6dec, uint256 amountUSDCin6dec);
+  event ProfitTaken(uint256 availableUSDCIn6dec, uint256 withdrawnUSDCin6dec);
 
   // event for deposits into the lending pool
-  event LendingPoolDeposit (uint256 amountUSDCin6dec, address payer);
+  event LendingPoolDeposit (uint256 amountUSDCin6dec, address sender);
 
   // event for withdrawals from the lending pool
-  event LendingPoolWithdrawal (uint256 amountUSDCBeforeFeein6dec, address payee);
-
-  // event for updating these addresses: feeReceiver, polygonUSDC, polygonAMUSDC
-  event AddressUpdate(address newAddress, string typeOfUpdate); 
-
-  // event for updating the amounts of blocks mined on Polygon network per day
-  event BlocksPerDayUpdate(uint256 newAmountOfBlocksPerDay);
-
-  // event for updating the contract's approval to Aave's USDC lending pool
-  event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
+  event LendingPoolWithdrawal (uint256 amountUSDCBeforeFeein6dec, address receiver);
 
   // event for creating a lockbox
   event DiscountLevelIncreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel, uint256 discountShouldBeActiveUntil); 
@@ -86,6 +78,27 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint256 feeUSDCin6dec
   );
 
+  // event for updating these addresses: feeReceiver, polygonUSDC, polygonAMUSDC
+  event AddressUpdate(address newAddress, string typeOfUpdate); 
+
+  // event for updating the amounts of blocks mined on Polygon network per day
+  event BlocksPerDayUpdate(uint256 newAmountOfBlocksPerDay);
+
+  // event for updating the inverse slope of the bonding curve
+  event CurveFactorUpdate(uint256 newCurveFactor);
+  
+  // event for updating the contract's approval to Aave's USDC lending pool
+  event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
+
+  // event for updating the table of necessary BNJI amounts per account level
+  event NeededBNJIperLevelUpdate(uint256 neededBNJIperLevel);
+
+  // event for updating the table of necessary holding periods for the respective account level
+  event HoldingTimesUpdate(uint16[] newHoldingTimes);
+
+  // event for updating the table of discounts for the respective account level
+  event DiscountsUpdate(uint16[] newDiscounts);
+ 
   // owner overrides paused.
   modifier whenAvailable() {        
     require(!paused() || (msg.sender == owner()), "Benjamins is paused.");
@@ -126,6 +139,10 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     polygonUSDC = IERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
     polygonAMUSDC = IERC20(0x1a13F4Ca1d028320A707D99520AbFefca3998b7F);
     polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
+
+    // setting holdingTimes and discounts 
+    holdingTimes = [0, 30, 90, 300];        // holding times in days, relating to discount level (level 1 needs 30 days holding, etc.)
+    discounts =    [0, 10, 25,  50];        // discounts in percent, relating to discount level (level 1 gets 10% discounts, etc.)
     
     // calling OpenZeppelin's (pausable) pause function for initial preparations after deployment
     pause();
@@ -146,23 +163,23 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return _decimals;
   }
 
-  function lockedBalanceOf(address _userToCheck) public view returns (uint256 lockedBNJIofUser) {
-    return (getUsersDiscountLevel(_userToCheck)*1200);
-  }
-
-  function discountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountLevel) {
-    uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
-    return discounts[usersDiscountLevel] * baseFeeTimes10k;
-  }
-
   function getUsersDiscountLevel(address _userToCheck) public view returns (uint256 discountLevel) {
     return amountOfLevelsForUser[_userToCheck];
   }
 
+  function lockedBalanceOf(address _userToCheck) public view returns (uint256 lockedBNJIofUser) {
+    return (getUsersDiscountLevel(_userToCheck)*1000);
+  }
+
+  function getDiscountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountInPercentTimes10k) {
+    uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
+    return discounts[usersDiscountLevel] * baseFeeTimes10k;
+  }  
+
   function getUsersUnlockTimestamp(address _userToCheck) public view returns (uint256 usersUnlockTimestamp) {
     return discountsActiveUntil[_userToCheck];
   }
-  
+
   function howManyBlocksUntilUnlock (address _userToCheck) public view returns(uint256 timeLeftInBlocks) {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
@@ -171,7 +188,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
    
     int256 amountOfBlocksStillLocked = int256(willUnlockAtThisBlockheight) - int256(blockHeightNow);
 
-    if (amountOfBlocksStillLocked < 0 ) {
+    if (amountOfBlocksStillLocked < 0) {
       return 0;
     } else {
       return uint256(amountOfBlocksStillLocked);
@@ -180,15 +197,13 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
   
-
-  // todo: take out testingmessage   
-  function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * 1200) {
+  function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * 1000) {
     
     uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) + _amountOfLevelsToIncrease;
 
     require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3.");
     
-    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 1200);   // Todo: approval must be done in front end before
+    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 1000);   // Todo: approval must be done in front end before
 
     // transferring BNJI from msg.sender to this contract
     transfer(address(this), amountOfBNJItoLock);                       // TODO: check if caller is correct, should be msg.sender, might need transferFrom
@@ -225,7 +240,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     amountOfLevelsForUser[msg.sender] = endAmountOfLevels;    
 
-    uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * 1200;
+    uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * 1000;
 
     // this contract approves msg.sender to use transferFrom and pull in amountOfBNJIunlocked BNJI
     _approve(address(this), msg.sender, amountOfBNJIunlocked);    
@@ -348,7 +363,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     } else {
       beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, false);
     }
-    uint256 feeNotRoundedIn6dec = (beforeFeeInUSDCin6dec * baseFeeTimes10k)/ USDCscaleFactor;
+    uint256 feeNotRoundedIn6dec = (beforeFeeInUSDCin6dec * baseFeeTimes10k) / USDCscaleFactor;
     uint256 feeRoundedDownIn6dec = feeNotRoundedIn6dec - (feeNotRoundedIn6dec % USDCcentsScaleFactor);
     // Execute exchange
     if (isMint == true) {
@@ -391,14 +406,14 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       // this contract gives the Aave lending pool allowance to pull in the amount without fee from this contract
       polygonUSDC.approve(address(polygonLendingPool), _beforeFeeInUSDCin6dec);
 
-      // lending pool is queried to pull in the approved USDC (in 6 decimals unit)
+      // lending pool is queried to pull in the approved USDC (in 6 decimals format)
       polygonLendingPool.deposit(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this), 0);
       emit LendingPoolDeposit(_beforeFeeInUSDCin6dec, _payer);
     } else {
       // on burning, fee is substracted from return
       uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec - _feeRoundedDownIn6dec;
             
-      // lending pool is queried to push USDC (in 6 decimals unit) including fee back to this contract
+      // lending pool is queried to push USDC (in 6 decimals format) including fee back to this contract
       polygonLendingPool.withdraw(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this));
       emit LendingPoolWithdrawal(_beforeFeeInUSDCin6dec, _payee);
 
@@ -439,6 +454,23 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   function getBlocksPerDay() public view returns (uint256 amountOfBlocksPerDayNow) {
     return blocksPerDay;           
+  }
+
+  // Returns the inverse slope of the bonding curve
+  function getCurveFactor () public view returns (uint256 curveFactorNow) {
+    return curveFactor;
+  }
+
+  function getneededBNJIperLevel() public view returns (uint256 neededBNJIperLevelNow) {
+    return neededBNJIperLevel;           
+  }
+
+  function getLevelHolds() public view returns (uint16[] memory holdingTimesNow) {
+    return holdingTimes;           
+  }
+
+  function getDiscounts() public view returns (uint16[] memory discountsNow) {
+    return discounts;           
   }
       
   // function for owner to withdraw MATIC that were sent directly to contract by mistake
@@ -515,10 +547,34 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     emit BlocksPerDayUpdate(newAmountOfBlocksPerDay);
   }
 
+  // Update the inverse slope of the bonding curve
+  function updateCurveFactor (uint256 newCurveFactor) public onlyOwner {
+    curveFactor = newCurveFactor;
+    emit CurveFactorUpdate(curveFactor);
+  }
+
   // Update approval from this contract to Aave's USDC lending pool.
   function updateApproveLendingPool (uint256 amountToApproveIn6dec) public onlyOwner {
     polygonUSDC.approve(address(polygonLendingPool), amountToApproveIn6dec);
     emit LendingPoolApprovalUpdate(amountToApproveIn6dec);
   }
+  
+  // Update token amount required per account level
+  function updateNeededBNJIperLevel (uint256 newNeededBNJIperLevel) public onlyOwner {
+    neededBNJIperLevel = newNeededBNJIperLevel;
+    emit NeededBNJIperLevelUpdate(neededBNJIperLevel);
+  }
+
+  // Update timeout times required by account levels
+  function updateHoldingTimes (uint16[] memory newHoldingTimes) public onlyOwner {
+    holdingTimes = newHoldingTimes;
+    emit HoldingTimesUpdate(holdingTimes);
+  }
+
+  // Update fee discounts for account levels
+  function updateDiscounts (uint16[] memory newDiscounts) public onlyOwner {
+    discounts = newDiscounts;
+    emit DiscountsUpdate(discounts);
+  }     
 
 }
