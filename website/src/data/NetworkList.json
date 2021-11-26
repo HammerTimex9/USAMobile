@@ -1,0 +1,12 @@
+{
+  "1": {
+    "id": 1,
+    "name": "eth",
+    "symbol": "ETH"
+  },
+  "137": {
+    "id": 137,
+    "name": "polygon",
+    "symbol": "MATIC"
+  }
+}

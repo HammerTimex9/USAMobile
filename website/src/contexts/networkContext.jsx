@@ -1,19 +1,8 @@
 import React, { useState, useContext } from 'react';
 
-const NetworkContext = React.createContext();
+import networkList from '../data/NetworkList.json';
 
-const networks = {
-  1: {
-    id: 1,
-    name: 'eth',
-    symbol: 'ETH',
-  },
-  137: {
-    id: 137,
-    name: 'polygon',
-    symbol: 'MATIC',
-  },
-};
+const NetworkContext = React.createContext();
 
 export const useNetwork = () => useContext(NetworkContext);
 
@@ -26,7 +15,7 @@ export const NetworkProvider = (props) => {
     <NetworkContext.Provider
       value={{
         setNetworkId,
-        network: networks[networkId],
+        network: networkList[networkId],
         isPolygon: networkId === 137,
         setAccounts,
         accounts,
