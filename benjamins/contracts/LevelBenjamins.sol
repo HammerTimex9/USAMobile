@@ -46,11 +46,11 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint16[] holdingTimes;                      // holding times in days
   uint16[] discounts;                         // discounts in percent
   
-  // user to timestamp when levels are not counted anymore
-  mapping (address => uint256) discountsActiveUntil;
+  // mapping of user to timestamp, relating to when levels can be decreased again
+  mapping (address => uint256) minHoldingtimeUntil;
 
   // 0 - 3 levels
-  mapping (address => uint256) amountOfLevelsForUser;
+  mapping (address => uint256) usersAccountLevel;
 
   // event for withdrawGains function
   // availableIn6dec shows how many USDC were available to withdraw, in 6 decimals format
@@ -63,10 +63,10 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // event for withdrawals from the lending pool
   event LendingPoolWithdrawal (uint256 amountUSDCBeforeFeein6dec, address receiver);
 
-  // event for creating a lockbox
-  event DiscountLevelIncreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel, uint256 discountShouldBeActiveUntil); 
+  // event for increasing account level
+  event DiscountLevelIncreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel, uint256 minimumHoldingUntil); 
  
-  // event for unlocking and destroying a lockbox 
+  // event for decreasing account level
   event DiscountLevelDecreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel);
 
   // event for exchanging USDC and BNJI
@@ -165,7 +165,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
   function getUsersDiscountLevel(address _userToCheck) public view returns (uint256 discountLevel) {
-    return amountOfLevelsForUser[_userToCheck];
+    return usersAccountLevel[_userToCheck];
   }
 
   function lockedBalanceOf(address _userToCheck) public view returns (uint256 lockedBNJIofUser) {
@@ -178,7 +178,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }  
 
   function getUsersUnlockTimestamp(address _userToCheck) public view returns (uint256 usersUnlockTimestamp) {
-    return discountsActiveUntil[_userToCheck];
+    return minHoldingtimeUntil[_userToCheck];
   }
 
   function howManyBlocksUntilUnlock (address _userToCheck) public view returns(uint256 timeLeftInBlocks) {
@@ -216,9 +216,9 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     uint256 discountShouldBeActiveUntil = blockHeightNow + amountOfTimeToLock;    
 
-    discountsActiveUntil[msg.sender] = discountShouldBeActiveUntil;
+    minHoldingtimeUntil[msg.sender] = discountShouldBeActiveUntil;
     
-    amountOfLevelsForUser[msg.sender] = endAmountOfLevels;    
+    usersAccountLevel[msg.sender] = endAmountOfLevels;    
 
     // emitting event with all related useful details
     emit DiscountLevelIncreased (msg.sender, blockHeightNow, endAmountOfLevels, discountShouldBeActiveUntil);  
@@ -239,7 +239,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // timestamp must be smaller than now (i.e. enough time has passed)
     require(getUsersUnlockTimestamp(msg.sender) <= blockHeightNow, "Discounts are still active, levels cannot be decreased.");
 
-    amountOfLevelsForUser[msg.sender] = endAmountOfLevels;    
+    usersAccountLevel[msg.sender] = endAmountOfLevels;    
 
     uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * 1000;
 
@@ -364,7 +364,9 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     } else {
       beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, false);
     }
-    uint256 feeNotRoundedIn6dec = (beforeFeeInUSDCin6dec * baseFeeTimes10k) / USDCscaleFactor;
+    // baseFeeTimes10k is brought into full percent format by dividing by 10000, then applied as percent by dividing by 100
+    uint256 feeNotRoundedIn6dec = (beforeFeeInUSDCin6dec * baseFeeTimes10k) / 1000000;
+    // rounding down to full cents
     uint256 feeRoundedDownIn6dec = feeNotRoundedIn6dec - (feeNotRoundedIn6dec % USDCcentsScaleFactor);
     // Execute exchange
     if (isMint == true) {
@@ -471,7 +473,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return neededBNJIperLevel;           
   }
 
-  function getLevelHolds() public view returns (uint16[] memory holdingTimesNow) {
+  function getHoldingTimes() public view returns (uint16[] memory holdingTimesNow) {
     return holdingTimes;           
   }
 

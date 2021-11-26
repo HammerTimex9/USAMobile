@@ -28,8 +28,10 @@ let liquidCentsArray = [];
 
 const scale6dec = 1000000;
 
-const baseFee = 1;
-const levelDiscountsArray = [ 0,  5, 10,  20,  40,   75];       
+const baseFeeTimes10k = 10000;
+const levelDiscountsArray = [0, 10, 25,  50];
+const holdingTimesInDays =  [0, 30, 90, 300];
+let blocksPerDay;
 
 let benjaminsContract;
 
@@ -49,7 +51,6 @@ let polygonLendingPool;
 const polygonLendingPoolAddress = '0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf';
 
 let testUser_1_Signer;
-let testUser_2_Signer;
 
 let user1LevelDataArray = [];
 let user1DiscountDataArray = [];
@@ -59,9 +60,9 @@ let user2DiscountDataArray = [];
 // querrying and saving account level and account discount info for userToCheck, and saving them to an array for later confirmation
 async function addUserAccDataPoints(userToCheck){
  
-  const userLevelNow = bigNumberToNumber (await benjaminsContract.discountLevel(userToCheck));
+  const userLevelNow = await getDiscountLevel(userToCheck);
   
-  const userDiscountNow = 100 - bigNumberToNumber( await benjaminsContract.quoteFeePercentage(userToCheck)/100/baseFee);
+  const userDiscountNow = await getDiscountPercentage(userToCheck);
     
   if (userToCheck == testUser_1){
     user1LevelDataArray.push(userLevelNow);
@@ -69,7 +70,6 @@ async function addUserAccDataPoints(userToCheck){
   } else if (userToCheck == testUser_2) {
     user2LevelDataArray.push(userLevelNow);
     user2DiscountDataArray.push(userDiscountNow);
-
   } 
 }
 
@@ -155,8 +155,8 @@ function fromCentsToUSDC (numberInCents) {
 }
 
 function getRoundedFee(principalInUSDCcents){    
-  const feeModifier = baseFee;
-  const feeStarterInCents = ((principalInUSDCcents * feeModifier ) /100);   
+  const feeModifier = baseFeeTimes10k;
+  const feeStarterInCents = ((principalInUSDCcents * feeModifier ) / 1000000);   
   const feeInCentsRoundedDown = feeStarterInCents - (feeStarterInCents % 1);
   return feeInCentsRoundedDown  
 }
@@ -235,6 +235,7 @@ async function testTransfer(amountBNJItoTransfer, callingAccAddress, receivingAd
 
 }
 
+// TODO: create revert situation without USDC approval
 async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
 
   const callingAccUSDCBalanceBeforeMintInCents = await balUSDCinCents(callingAccAddress);  
@@ -246,7 +247,7 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   const restAllowanceToBNJIcontractIn6dec = await polygonUSDC.allowance(callingAccAddress, benjaminsContract.address);
   expect(await restAllowanceToBNJIcontractIn6dec).to.equal(0);
   
-  const amountToApproveIn6dec = await calcMintApprovalAndPrep(amountToMint, callingAccAddress);  
+  const amountToApproveIn6dec = await calcMintApprovalAndPrep(amountToMint);  
   await polygonUSDC.connect(callingAccSigner).approve(benjaminsContract.address, amountToApproveIn6dec);
   
   const givenAllowanceToBNJIcontractIn6dec = await polygonUSDC.connect(callingAccSigner).allowance(callingAccAddress, benjaminsContract.address);
@@ -286,7 +287,7 @@ async function testBurning(amountToBurn, callingAccAddress, receivingAddress) {
   
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
 
-  await calcBurnVariables(amountToBurn, callingAccAddress);
+  await calcBurnVariables(amountToBurn);
 
   // descr: function burnTo(uint256 _amount, address _toWhom)
   await benjaminsContract.connect(callingAccSigner).burnTo(amountToBurn, receivingAddress);    
@@ -350,10 +351,8 @@ function confirmBurn(){
   expect(burnFeeInUSDCShouldBeNowGlobalV).to.equal(Number(burnFeeInUSDCWasPaidNowGlobalV));
 };
 
-async function calcMintApprovalAndPrep(amountToMint, accountMinting) {  
+async function calcMintApprovalAndPrep(amountToMint) {  
   
-  const mintingAccSigner = await ethers.provider.getSigner(accountMinting);  
-
   const amountOfTokensBeforeMint = bigNumberToNumber(await benjaminsContract.totalSupply());
   const amountOfTokensAfterMint = Number (amountOfTokensBeforeMint) + Number (amountToMint);
  
@@ -377,9 +376,7 @@ async function calcMintApprovalAndPrep(amountToMint, accountMinting) {
   return toPayTotalIn6dec;
 }
 
-async function calcBurnVariables(amountToBurn, accountBurning, isTransfer=false) {
-
-  const burningAccSigner = await ethers.provider.getSigner(accountBurning);
+async function calcBurnVariables(amountToBurn, isTransfer=false) {
 
   const amountOfTokensBeforeBurn = bigNumberToNumber(await benjaminsContract.totalSupply());  
   const amountOfTokensAfterBurn = amountOfTokensBeforeBurn - amountToBurn;
@@ -413,71 +410,90 @@ async function calcBurnVariables(amountToBurn, accountBurning, isTransfer=false)
 
 
 
-async function testLockboxCreation(callingAccAddress, amountToLockUp, message, timeToLockForInBlocks) {
+async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet) {
 
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
 
-  const beforeBoxCreation_BNJIbal_User = await balBNJI(callingAccAddress);
-  const beforeBoxCreation_BNJIbal_Contract = await balBNJI(benjaminsContract.address);   
-  const beforeBoxCreation_BoxAmount = await amountOfUsersLockboxes(callingAccAddress);
-  const beforeBoxCreation_UsersDiscountScore = await findUsersDiscountScore(callingAccAddress);
-  const beforeBoxCreation_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
+  const beforeLevelIncrease_BNJIbal_User = await balBNJI(callingAccAddress);
+  const beforeLevelIncrease_BNJIbal_Contract = await balBNJI(benjaminsContract.address);  
 
-  const boxScoreToExpect = calcBoxDiscountScore(amountToLockUp, timeToLockForInBlocks);
+  const beforeLevelIncrease_AmountOfBlocksToWait = await howLongUntilUnlock(callingAccAddress);
+  const beforeLevelIncrease_UsersUnlockTimestamp = await getUnlockTimestamp(callingAccAddress);  
 
-  await benjaminsContract.connect(callingAccSigner).createLockbox(amountToLockUp, message, timeToLockForInBlocks);
+  const beforeLevelIncrease_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
+  const beforeLevelIncrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress); 
+  const beforeLevelIncrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);  
+
+  const beforeLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[beforeLevelIncrease_UsersDiscountPercentage];
+
+  await benjaminsContract.connect(callingAccSigner).increaseDiscountLevels(amountOfLevelsToGet);
   
-  // checking the lockboxIDcounter to get the new box's ID and querying getHowLongInBlockTillUnlockForBox
-  const lockboxIDtoExpect = await getBNJILockboxIDcounter();   
-  const blocksToWait = await getHowLongInBlockTillUnlockForBox(lockboxIDtoExpect, callingAccAddress);   
-  expect(blocksToWait).to.equal(timeToLockForInBlocks);   
+  const blockheightNow = await ethers.provider.getBlockNumber();
+  
+  const afterLevelIncrease_BNJIbal_User = await balBNJI(callingAccAddress);
+  const afterLevelIncrease_BNJIbal_Contract = await balBNJI(benjaminsContract.address); 
 
-  const afterBoxCreation_BNJIbal_User = await balBNJI(callingAccAddress);
-  const afterBoxCreation_BNJIbal_Contract = await balBNJI(benjaminsContract.address);
-  const afterBoxCreation_BoxAmount = await amountOfUsersLockboxes(callingAccAddress);
-  const afterBoxCreation_UsersDiscountScore = await findUsersDiscountScore(callingAccAddress);
-  const afterBoxCreation_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
+  const afterLevelIncrease_AmountOfBlocksToWait = await howLongUntilUnlock(callingAccAddress);
+  const afterLevelIncrease_UsersUnlockTimestamp = await getUnlockTimestamp(callingAccAddress); 
 
-  expect(afterBoxCreation_BNJIbal_User).to.equal(beforeBoxCreation_BNJIbal_User - amountToLockUp);   
-  expect(afterBoxCreation_BNJIbal_Contract).to.equal(beforeBoxCreation_BNJIbal_Contract + amountToLockUp); 
-  expect(afterBoxCreation_BoxAmount).to.equal(beforeBoxCreation_BoxAmount + 1);  
-  expect(afterBoxCreation_UsersDiscountScore).to.equal(beforeBoxCreation_UsersDiscountScore + boxScoreToExpect);  
-  expect(afterBoxCreation_UsersLockedBNJI).to.equal(beforeBoxCreation_UsersLockedBNJI + amountToLockUp); 
+  const afterLevelIncrease_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
+  const afterLevelIncrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress);  
+  const afterLevelIncrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);
+
+  const afterLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[afterLevelIncrease_UsersDiscountLevel];
+
+  const afterLevelIncrease_discountLevelExpected = beforeLevelIncrease_UsersDiscountLevel + amountOfLevelsToGet;
+  const afterLevelIncrease_amountOfBlocksToWaitExpected = holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] * blocksPerDay;
+  const afterLevelIncrease_unlockTimestampExpected = blockheightNow + (holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] *blocksperDays);
 
   
-  await confirmCreatedLockBox(lockboxIDtoExpect, callingAccAddress, amountToLockUp, timeToLockForInBlocks, boxScoreToExpect, message); 
+  // TODO: comment all expects
+  expect(afterLevelIncrease_BNJIbal_User).to.equal(beforeLevelIncrease_BNJIbal_User - amountToLockUp);   
+  expect(afterLevelIncrease_BNJIbal_Contract).to.equal(beforeLevelIncrease_BNJIbal_Contract + amountToLockUp);  
+  
+  expect(afterLevelIncrease_UsersUnlockTimestamp).to.be.greaterThan(beforeLevelIncrease_UsersUnlockTimestamp);
+  expect(afterLevelIncrease_AmountOfBlocksToWait).to.be.greaterThan(beforeLevelIncrease_AmountOfBlocksToWait);
+
+  expect(afterLevelIncrease_AmountOfBlocksToWait).to.equal(afterLevelIncrease_amountOfBlocksToWaitExpected); 
+  expect(afterLevelIncrease_UsersUnlockTimestamp).to.equal(afterLevelIncrease_unlockTimestampExpected);  
+  
+  expect(afterLevelIncrease_UsersLockedBNJI).to.equal(beforeLevelIncrease_UsersLockedBNJI + (amountOfLevelsToGet*1000)); 
+  expect(afterLevelIncrease_UsersDiscountLevel).to.equal(afterLevelIncrease_discountLevelExpected);  
+
+  expect(afterLevelIncrease_UsersDiscountPercentage).to.equal(afterLevelIncrease_DiscountPercentageExpected);
+  expect(beforeLevelIncrease_UsersDiscountPercentage).to.equal(beforeLevelIncrease_DiscountPercentageExpected);  
 
 }  
 
-async function getHowLongInBlockTillUnlockForBox(lockboxID, owner) {
-  return (bigNumberToNumber (await benjaminsContract.howManyBlocksUntilUnlockForBox(lockboxID, owner)));
+async function howLongUntilUnlock(userToCheck) {
+  return (bigNumberToNumber (await benjaminsContract.howManyBlocksUntilUnlock(userToCheck)));
+}
+
+
+async function getUnlockTimestamp(userToCheck) {
+  return (bigNumberToNumber (await benjaminsContract.getUsersUnlockTimestamp(userToCheck)));
 }
 
 async function getLockedBalanceOf(userToCheck) {
   return (bigNumberToNumber (await benjaminsContract.lockedBalanceOf(userToCheck)));
 }
 
-async function findLockboxByUserAndID(userToCheck, lockboxIDtoFind){
-  await benjaminsContract.showLockboxByIDforUser(userToCheck, lockboxIDtoFind);   
-}  
 
-async function findLockboxPositionByID(lockboxID){
-  return (bigNumberToNumber (await benjaminsContract.getLBpositionInUsersMapping(lockboxID)));   
-}  
-
-async function findUsersDiscountScore (userToCheck){
-  const usersDiscountScore = bigNumberToNumber (await benjaminsContract.getUsersDiscountScore(userToCheck));
-  return usersDiscountScore;
+async function getDiscountLevel(userToCheck){
+  const usersDiscountLevel = bigNumberToNumber (await benjaminsContract.getUsersDiscountLevel(userToCheck));
+  return usersDiscountLevel;
 }
 
-async function amountOfUsersLockboxes(userToCheck){
-  return bigNumberToNumber (await benjaminsContract.getAmountOfUsersLockboxes(userToCheck));
+
+async function getDiscountPercentage(userToCheck){
+  const usersDiscountPercentage = (bigNumberToNumber(await benjaminsContract.getDiscountPercentageTimes10k(userToCheck)))/baseFeeTimes10k;
+  return usersDiscountPercentage;
 }
 
 
 
 
-async function openAndDestroyLockboxForUser(callingAccAddress, lockboxIDtoUnlockAndDestroy, expectedAmount) {
+async function testDecreaseLevel(callingAccAddress, lockboxIDtoUnlockAndDestroy, expectedAmount) {
 
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
 
@@ -524,15 +540,14 @@ describe("Testing Levels version of Benjamins", function () {
   beforeEach(async function() {   
 
     ({ deployer, feeReceiver, accumulatedReceiver, testUser_1, testUser_2, testUser_3, testUser_4, testUser_5 } = await getNamedAccounts());
-
+    
     testUserAddressesArray = [];
     totalUSDCcentsEntriesArr = [];
     liquidCentsArray = [];
     protocolUSDCbalWithoutInterestInCentsGlobalV = 0;
 
     deployerSigner = await ethers.provider.getSigner(deployer);   
-    testUser_1_Signer = await ethers.provider.getSigner(testUser_1); 
-    testUser_2_Signer = await ethers.provider.getSigner(testUser_2); 
+    testUser_1_Signer = await ethers.provider.getSigner(testUser_1);     
 
     testUserAddressesArray.push(testUser_1);
     testUserAddressesArray.push(testUser_2);
@@ -543,6 +558,9 @@ describe("Testing Levels version of Benjamins", function () {
     // Deploy contract
     await fixture(["LevelBenjamins"]);
     benjaminsContract = await ethers.getContract("LevelBenjamins");      
+
+    // Get amount of blocksPerDay into this testing suite
+    blocksPerDay = bigNumberToNumber(await benjaminsContract.getBlocksPerDay());
 
     polygonUSDC = new ethers.Contract(
       polygonUSDCaddress,
@@ -715,7 +733,7 @@ describe("Testing Levels version of Benjamins", function () {
 
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
-    const amountToApproveIn6dec = await calcMintApprovalAndPrep(4000, testUser_1); 
+    const amountToApproveIn6dec = await calcMintApprovalAndPrep(4000); 
     await polygonUSDC.connect(testUser_1_Signer).approve(benjaminsContract.address, amountToApproveIn6dec);    
     await benjaminsContract.connect(testUser_1_Signer).mint(4000);  
 
@@ -771,7 +789,7 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents(); 
   }); 
 
-  it("Test 7. Token price should increase following bonding curve", async function () {  
+  it("Test 7. Token price should go up, following the bonding curve", async function () {  
 
     await countAllCents(); 
 
@@ -917,23 +935,26 @@ describe("Testing Levels version of Benjamins", function () {
     expect(await balBNJI(testUser_1)).to.equal(3600);   
     await addUserAccDataPoints(testUser_1);  
 
-    get level 1
+    // upgrading to account level 1
+    await testIncreaseLevel(testUser_1, 1);  
     
     expect(await balBNJI(testUser_1)).to.equal(60);   
     await addUserAccDataPoints(testUser_1);
 
-    get level 2
+    // upgrading to account level 2
+    await testIncreaseLevel(testUser_1, 1);  
     
     expect(await balBNJI(testUser_1)).to.equal(99); 
     await addUserAccDataPoints(testUser_1); 
 
-    get level 3
+    // upgrading to account level 3
+    await testIncreaseLevel(testUser_1, 1);  
 
     expect(await balBNJI(testUser_1)).to.equal(99); 
     await addUserAccDataPoints(testUser_1); 
 
-    const expectedUser1Levels = [0,0,0,0,5];
-    const expectedUser1Discounts = [0,0,0,0,50];    
+    const expectedUser1Levels =     [0,0, 1, 2, 3];
+    const expectedUser1Discounts =  [0,0,10,25,50];    
       
     confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);       
 
