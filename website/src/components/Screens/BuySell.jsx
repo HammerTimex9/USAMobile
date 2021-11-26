@@ -1,11 +1,11 @@
-import { useEffect, memo } from 'react';
+import { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import transakSDK from '@transak/transak-sdk';
 
 import { useExperts } from '../../contexts/expertsContext';
 import { useColorMode } from '../../contexts/colorModeContext';
 
-export const BuySell = memo(() => {
+const BuySell = () => {
   const { setActionMode, setDialog } = useExperts();
   const { colorMode } = useColorMode();
   const { Moralis } = useMoralis();
@@ -72,4 +72,6 @@ export const BuySell = memo(() => {
   }, [ethAddress, emailAddress, setActionMode, setDialog, colorMode]);
 
   return null;
-});
+};
+
+export default BuySell;

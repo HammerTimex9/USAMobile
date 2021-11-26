@@ -10,7 +10,7 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
-export const PortfolioPrices = () => {
+const PortfolioPrices = () => {
   const { setActionMode, setDialog } = useExperts();
 
   const { isAuthenticated, enableWeb3, isWeb3Enabled } = useMoralis();
@@ -45,3 +45,5 @@ export const PortfolioPrices = () => {
     </Box>
   );
 };
+
+export default PortfolioPrices;
