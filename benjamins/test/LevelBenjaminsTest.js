@@ -102,6 +102,11 @@ async function mintBlocks (amountOfBlocksToMint) {
   }
 }
 
+async function getBlockheightNow() {
+  const blockHeightNow = await ethers.provider.getBlockNumber();
+  return blockHeightNow;
+}
+
 async function balUSDCinCents(userToQuery) {
   return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonUSDC.balanceOf(userToQuery)));
 }
@@ -203,7 +208,7 @@ async function countAllCents() {
 
   liquidCentsArray.push(allLiquidCents);  
 
-  //console.log(`These are the entries each time all liquid USDCcents were counted: `, liquidCentsArray); 
+  // console.log(`These are the entries each time all liquid USDCcents were counted: `, liquidCentsArray); 
 
   // verifying that amount of counted cents is always the same
   // starts at second array entry and compares all entries to the one before
@@ -248,18 +253,19 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   expect(await restAllowanceToBNJIcontractIn6dec).to.equal(0);
   
   const amountToApproveIn6dec = await calcMintApprovalAndPrep(amountToMint);  
-  await polygonUSDC.connect(callingAccSigner).approve(benjaminsContract.address, amountToApproveIn6dec);
+
+  //now a block gets minted, signed writing to chain
+  await polygonUSDC.connect(callingAccSigner).approve(benjaminsContract.address, amountToApproveIn6dec); // TODO: create revert case
   
-  const givenAllowanceToBNJIcontractIn6dec = await polygonUSDC.connect(callingAccSigner).allowance(callingAccAddress, benjaminsContract.address);
-  
+  const givenAllowanceToBNJIcontractIn6dec = await polygonUSDC.allowance(callingAccAddress, benjaminsContract.address); 
   expect(Number (amountToApproveIn6dec)).to.equal(Number (givenAllowanceToBNJIcontractIn6dec));
   
+  //now a block gets minted, signed writing to chain
   // descr: function mintTo(uint256 _amount, address _toWhom) public whenAvailable {  
   await benjaminsContract.connect(callingAccSigner).mintTo(amountToMint, receivingAddress);  
 
   const totalSupplyAfterMint = bigNumberToNumber( await benjaminsContract.totalSupply() ); 
  
-
   const callingAccUSDCBalanceAfterMintInCents = await balUSDCinCents(callingAccAddress);   
   const feeReceiverUSDCBalanceAfterMintInCents = await balUSDCinCents(feeReceiver); 
  
@@ -276,8 +282,7 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   mintFeeInUSDCWasPaidNowGlobalV = feeReceiverUSDCdiffMintInCents/100;
   tokensExistQueriedGlobalV = totalSupplyAfterMint;
   mintAllowanceInUSDCCentsWasNowGlobalV = dividefrom6decToUSDCcents(givenAllowanceToBNJIcontractIn6dec);
-
-  confirmMint();
+  
 };
 
 async function testBurning(amountToBurn, callingAccAddress, receivingAddress) { 
@@ -413,6 +418,7 @@ async function calcBurnVariables(amountToBurn, isTransfer=false) {
 async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet) {
 
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
+  const costInBNJI = (amountOfLevelsToGet*1000);
 
   const beforeLevelIncrease_BNJIbal_User = await balBNJI(callingAccAddress);
   const beforeLevelIncrease_BNJIbal_Contract = await balBNJI(benjaminsContract.address);  
@@ -424,11 +430,11 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet) {
   const beforeLevelIncrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress); 
   const beforeLevelIncrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);  
 
-  const beforeLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[beforeLevelIncrease_UsersDiscountPercentage];
+  const beforeLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[beforeLevelIncrease_UsersDiscountLevel]; 
 
   await benjaminsContract.connect(callingAccSigner).increaseDiscountLevels(amountOfLevelsToGet);
   
-  const blockheightNow = await ethers.provider.getBlockNumber();
+  const blockheightNow = await getBlockheightNow();
   
   const afterLevelIncrease_BNJIbal_User = await balBNJI(callingAccAddress);
   const afterLevelIncrease_BNJIbal_Contract = await balBNJI(benjaminsContract.address); 
@@ -439,17 +445,17 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet) {
   const afterLevelIncrease_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
   const afterLevelIncrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress);  
   const afterLevelIncrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);
-
+  
   const afterLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[afterLevelIncrease_UsersDiscountLevel];
 
   const afterLevelIncrease_discountLevelExpected = beforeLevelIncrease_UsersDiscountLevel + amountOfLevelsToGet;
   const afterLevelIncrease_amountOfBlocksToWaitExpected = holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] * blocksPerDay;
-  const afterLevelIncrease_unlockTimestampExpected = blockheightNow + (holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] *blocksperDays);
+  const afterLevelIncrease_unlockTimestampExpected = blockheightNow + (holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] * blocksPerDay);
 
   
   // TODO: comment all expects
-  expect(afterLevelIncrease_BNJIbal_User).to.equal(beforeLevelIncrease_BNJIbal_User - amountToLockUp);   
-  expect(afterLevelIncrease_BNJIbal_Contract).to.equal(beforeLevelIncrease_BNJIbal_Contract + amountToLockUp);  
+  expect(afterLevelIncrease_BNJIbal_User).to.equal(beforeLevelIncrease_BNJIbal_User - costInBNJI);   
+  expect(afterLevelIncrease_BNJIbal_Contract).to.equal(beforeLevelIncrease_BNJIbal_Contract + costInBNJI);  
   
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.be.greaterThan(beforeLevelIncrease_UsersUnlockTimestamp);
   expect(afterLevelIncrease_AmountOfBlocksToWait).to.be.greaterThan(beforeLevelIncrease_AmountOfBlocksToWait);
@@ -457,7 +463,7 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet) {
   expect(afterLevelIncrease_AmountOfBlocksToWait).to.equal(afterLevelIncrease_amountOfBlocksToWaitExpected); 
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.equal(afterLevelIncrease_unlockTimestampExpected);  
   
-  expect(afterLevelIncrease_UsersLockedBNJI).to.equal(beforeLevelIncrease_UsersLockedBNJI + (amountOfLevelsToGet*1000)); 
+  expect(afterLevelIncrease_UsersLockedBNJI).to.equal(beforeLevelIncrease_UsersLockedBNJI + costInBNJI); 
   expect(afterLevelIncrease_UsersDiscountLevel).to.equal(afterLevelIncrease_discountLevelExpected);  
 
   expect(afterLevelIncrease_UsersDiscountPercentage).to.equal(afterLevelIncrease_DiscountPercentageExpected);
@@ -486,7 +492,7 @@ async function getDiscountLevel(userToCheck){
 
 
 async function getDiscountPercentage(userToCheck){
-  const usersDiscountPercentage = (bigNumberToNumber(await benjaminsContract.getDiscountPercentageTimes10k(userToCheck)))/baseFeeTimes10k;
+  const usersDiscountPercentage = (bigNumberToNumber(await benjaminsContract.getUsersDiscountPercentageTimes10k(userToCheck)))/baseFeeTimes10k;
   return usersDiscountPercentage;
 }
 
@@ -677,23 +683,28 @@ describe("Testing Levels version of Benjamins", function () {
     await checkTestAddresses(3000,10,0, true);
   })     
   
+
+
+
+
+
   
   // Put in tests for levels 
   
-  it("Test 1. testUser_1 should mint 10 BNJI for themself", async function () {  
+  it("Test 01. testUser_1 should mint 10 BNJI for themself", async function () {  
     await countAllCents();         
     await testMinting(40, testUser_1, testUser_1);      
     expect(await balBNJI(testUser_1)).to.equal(40);    
     await countAllCents();    
   });
   
-  it("Test 2. testUser_1 should mint 10 BNJI for themself, then do the same again in the next block", async function () { 
+  it("Test 02. testUser_1 should mint 10 BNJI for themself, then do the same again in the next block", async function () { 
     
     await countAllCents(); 
-    await addUserAccDataPoints(testUser_1);
+    await addUserAccDataPoints(testUser_1);  
 
     // minting 40 BNJI to caller
-    await testMinting(40, testUser_1, testUser_1);
+    await testMinting(40, testUser_1, testUser_1);    
     await addUserAccDataPoints(testUser_1);
 
     // minting 40 BNJI to caller
@@ -709,7 +720,7 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents(); 
   });
       
-  it("Test 3. Owner can pause and unpause contract", async function () {
+  it("Test 03. Owner can pause and unpause contract", async function () {
 
    // BenjaminsContract is unpaused in the beginning
    expect(await benjaminsContract.paused()).to.equal(false);
@@ -727,7 +738,7 @@ describe("Testing Levels version of Benjamins", function () {
    expect(await benjaminsContract.paused()).to.equal(false);
   });
   
-  it("Test 4. User can call mint and burn functions directly ", async function () {
+  it("Test 04. User can call mint and burn functions directly ", async function () {
 
     await countAllCents(); 
 
@@ -746,7 +757,7 @@ describe("Testing Levels version of Benjamins", function () {
   });
 
   // TODO: update 
-  it("Test 5. testUser_1 mints 1100 tokens, no need for waiting time", async function () {   
+  it("Test 05. testUser_1 mints 1100 tokens, burns in next block, no need for waiting time", async function () {   
     
     await countAllCents(); 
 
@@ -754,23 +765,23 @@ describe("Testing Levels version of Benjamins", function () {
     expect(await balUSDC(testUser_1)).to.equal(3000); 
 
     //minting 1100 BNJI to caller
-    await testMinting(1100, testUser_1, testUser_1);        
-
+    await testMinting(1100, testUser_1, testUser_1);    
+    
     const costInUSDC1 = mintAllowanceInUSDCCentsShouldBeNowGlobalV/100;
-    expect(await balBNJI(testUser_1)).to.equal(59); 
+    expect(await balBNJI(testUser_1)).to.equal(1100); 
     expect(await balUSDC(testUser_1)).to.equal(3000-costInUSDC1);   
               
-    // burning 1100 BNJI to caller after 11 blocks 
+    // burning 1100 BNJI directly in the next block
     await testBurning(1100, testUser_1, testUser_1);
 
     const returnInUSDC1 = burnReturnWOfeeInUSDCShouldBeNowGlobalV;
     expect(await balBNJI(testUser_1)).to.equal(0);
-    expect(await balUSDC(testUser_1)).to.equal(2999.74); 
+    expect(await balUSDC(testUser_1)).to.equal(2995.12); 
 
     await countAllCents();     
   });    
   
-  it("Test 6. Should REVERT: testUser_1 tries to burn more tokens than they have", async function () {   
+  it("Test 06. Should REVERT: testUser_1 tries to burn more tokens than they have", async function () {   
     
     await countAllCents(); 
 
@@ -789,7 +800,7 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents(); 
   }); 
 
-  it("Test 7. Token price should go up, following the bonding curve", async function () {  
+  it("Test 07. Token price should go up, following the bonding curve", async function () {  
 
     await countAllCents(); 
 
@@ -831,7 +842,7 @@ describe("Testing Levels version of Benjamins", function () {
   
 
   // TODO: update
-  it("Test 8. Account levels and discounts are not triggered by minting", async function () {   
+  it("Test 08. Account levels and discounts are not triggered by minting", async function () {   
 
     // Preparation mint
     await testMinting(200000, deployer, deployer);   
@@ -861,109 +872,9 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents(); 
   });  
 
-  // TODO: update
-  it("Test 9. Account Level 1 can be purchased for 1000 BNJI", async function () {   
-
-    await countAllCents();
-    await addUserAccDataPoints(testUser_1);
-
-    // minting 1600 BNJI to caller
-    await testMinting(1600, testUser_1, testUser_1);    
-    
-    expect(await balBNJI(testUser_1)).to.equal(1600);   
-    await addUserAccDataPoints(testUser_1);   
-
-    const expectedUser1Levels = [0,0];
-    const expectedUser1Discounts = [0,0];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts); 
-    
-    await countAllCents();
-  });  
   
-  // TODO: update
-  it("Test 10. Account Level 2 can be purchased in one step", async function () {   
-
-    await countAllCents();
-
-    await addUserAccDataPoints(testUser_1);
-    
-    
-    // minting 2600 BNJI to caller
-    await testMinting(2600, testUser_1, testUser_1);    
-    
-    expect(await balBNJI(testUser_1)).to.equal(60);   
-    await addUserAccDataPoints(testUser_1);   
-
-    const expectedUser1Levels = [0,0];
-    const expectedUser1Discounts = [0,0];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts); 
-    
-    await countAllCents();
-  });  
-
-  // TODO: update
-  it("Test 11. Account Level 3 can be purchased in one step", async function () {  
-    
-    await countAllCents();
-
-    await addUserAccDataPoints(testUser_1); 
-
-    // minting 2600 BNJI to caller
-    await testMinting(3600, testUser_1, testUser_1);    
-    
-    
-    expect(await balBNJI(testUser_1)).to.equal(100); 
-    await addUserAccDataPoints(testUser_1);   
-
-    const expectedUser1Levels = [0,0];
-    const expectedUser1Discounts = [0,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
-
-    await countAllCents();
-  });   
   
-  // TODO: update
-  it("Test 16. There is no time-lock for buying and discounts are effective immediately upon getting the discountLevel", async function () {   
-
-    await countAllCents();
-    
-    await addUserAccDataPoints(testUser_1); 
-   
-    // minting 2600 BNJI to caller
-    await testMinting(3600, testUser_1, testUser_1);    
-
-    expect(await balBNJI(testUser_1)).to.equal(3600);   
-    await addUserAccDataPoints(testUser_1);  
-
-    // upgrading to account level 1
-    await testIncreaseLevel(testUser_1, 1);  
-    
-    expect(await balBNJI(testUser_1)).to.equal(60);   
-    await addUserAccDataPoints(testUser_1);
-
-    // upgrading to account level 2
-    await testIncreaseLevel(testUser_1, 1);  
-    
-    expect(await balBNJI(testUser_1)).to.equal(99); 
-    await addUserAccDataPoints(testUser_1); 
-
-    // upgrading to account level 3
-    await testIncreaseLevel(testUser_1, 1);  
-
-    expect(await balBNJI(testUser_1)).to.equal(99); 
-    await addUserAccDataPoints(testUser_1); 
-
-    const expectedUser1Levels =     [0,0, 1, 2, 3];
-    const expectedUser1Discounts =  [0,0,10,25,50];    
-      
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);       
-
-    await countAllCents();
-  });  
-  
-  // TODO put in another test here as test 18
-  
-  it("Test 19. It is possible to mint tokens to another account", async function () {   
+  it("Test 09. It is possible to mint tokens to another account", async function () {   
 
     await countAllCents();
 
@@ -993,7 +904,7 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents();
   });  
   
-  it("Test 20. It is possible to burn tokens and reward the USDC to another account", async function () {   
+  it("Test 10. It is possible to burn tokens and reward the USDC to another account", async function () {   
 
     await countAllCents();
 
@@ -1030,74 +941,8 @@ describe("Testing Levels version of Benjamins", function () {
       
   }); 
   
-  // TODO: update
-  it("Test 21. Without lock, there is no holding period", async function () {   
-
-    await countAllCents();
-
-    await addUserAccDataPoints(testUser_1); 
-    await addUserAccDataPoints(testUser_2); 
-
-    // minting 60 BNJI to caller
-    await testMinting(60, testUser_1, testUser_1);    
-    
-    expect(await balBNJI(testUser_1)).to.equal(60);
-    expect(await balBNJI(testUser_2)).to.equal(0);
-    
-    await addUserAccDataPoints(testUser_1);    
-
-    await testTransfer(30, testUser_1, testUser_2, false, 0); 
-
-    expect(await balBNJI(testUser_1)).to.equal(30);
-    expect(await balBNJI(testUser_2)).to.equal(30);
-
-    await addUserAccDataPoints(testUser_1); 
-    await addUserAccDataPoints(testUser_2);
-    
-    const expectedUser1Levels = [0,0,0];
-    const expectedUser1Discounts = [0,0,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts); 
-
-    const expectedUser2Levels = [0];
-    const expectedUser2Discounts = [0];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts); 
-
-    await countAllCents();
-  });  
   
-  // TODO: update
-  it("Test 23. Downgrading accounts is not triggrered by burning and BNJI that are not locked can be burnt immediately", async function () { 
-
-    await testMinting("Preparation mint", 200000, deployer, deployer); 
-
-    await countAllCents();
-
-    expect(await balBNJI(testUser_1)).to.equal(0); 
-    await addUserAccDataPoints(testUser_1);        
-
-    // minting 2000 BNJI to caller
-    await testMinting(2000, testUser_1, testUser_1);  
-
-    expect(await balBNJI(testUser_1)).to.equal(2000); 
-    await addUserAccDataPoints(testUser_1);   
-    
-    // burning 2000 tokens, returns go to caller, no needed holding times
-    await testBurning(2000, testUser_1, testUser_1);
-    
-    await addUserAccDataPoints(testUser_1);  
-    expect(await balBNJI(testUser_1)).to.equal(0);         
-
-    const expectedUser1Levels = [0,0];
-    const expectedUser1Discounts = [0,0];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);   
-
-    await countAllCents();
-    
-  });
-  
-  // TODO: re organize / number the tests
-
-  it("Test 25. It is possible to transfer tokens", async function () {   
+  it("Test 11. It is possible to transfer tokens", async function () {   
 
     await countAllCents();  
 
@@ -1133,7 +978,7 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents();
   });  
 
-  it("Test 26. It is possible to use transferFrom on tokens", async function () {
+  it("Test 12. It is possible to use transferFrom on tokens", async function () {
  
     await countAllCents();
 
@@ -1172,123 +1017,190 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents();
   });  
 
-  it("Test 27. Owner can withdraw MATIC tokens that were sent to the contract directly, by mistake", async function () { 
+  // TODO: update
+  it("Test 13. There is no holding period on transfering BNJI that are not locked", async function () {   
 
-    await countAllCents(); 
+    await countAllCents();
 
-    const contractMATICstart = await getMATICbalance(benjaminsContract.address);  
-    const deployerMATICstart = await getMATICbalance(deployer);
-    const deployerMATICstartRounded = deployerMATICstart - (deployerMATICstart%1); 
+    await addUserAccDataPoints(testUser_1); 
+    await addUserAccDataPoints(testUser_2); 
+
+    // minting 60 BNJI to caller
+    await testMinting(60, testUser_1, testUser_1);    
     
-    expect(contractMATICstart).to.equal(0); 
+    expect(await balBNJI(testUser_1)).to.equal(60);
+    expect(await balBNJI(testUser_2)).to.equal(0);
     
-    await deployerSigner.sendTransaction({
-      to: benjaminsContract.address,
-      value: ethers.utils.parseEther("20") // 20 Matic
-    })
+    await addUserAccDataPoints(testUser_1);    
 
-    const contractMATICafterSend = await getMATICbalance(benjaminsContract.address); 
-    expect(contractMATICafterSend).to.equal(contractMATICstart+20); 
+    await testTransfer(30, testUser_1, testUser_2, false, 0); 
 
-    const deployerMATICafterSend = await getMATICbalance(deployer);
-    const deployerMATICafterSendRounded = deployerMATICafterSend - (deployerMATICafterSend%1);
-    expect(deployerMATICafterSendRounded).to.equal(deployerMATICstartRounded-20);   
+    expect(await balBNJI(testUser_1)).to.equal(30);
+    expect(await balBNJI(testUser_2)).to.equal(30);
+
+    await addUserAccDataPoints(testUser_1); 
+    await addUserAccDataPoints(testUser_2);
     
-    await benjaminsContract.connect(deployerSigner).cleanMATICtips();
+    const expectedUser1Levels = [0,0,0];
+    const expectedUser1Discounts = [0,0,0];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts); 
+
+    const expectedUser2Levels = [0];
+    const expectedUser2Discounts = [0];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts); 
+
+    await countAllCents();
+  });  
   
-    const contractMATICafterCleanedTips = await getMATICbalance(benjaminsContract.address); 
-    expect(contractMATICafterCleanedTips).to.equal(0); 
+  // TODO: re organize / number the tests
 
-    const deployerMATICafterCleanedTips = await getMATICbalance(deployer);
-    const deployerMATICafterCleanedTipsRounded = deployerMATICafterCleanedTips - (deployerMATICafterCleanedTips%1);
-    expect(deployerMATICafterCleanedTipsRounded).to.equal(deployerMATICafterSendRounded+20);
-       
-    await countAllCents(); 
-  });    
 
-  it("Test 28. Owner can use cleanERC20Tips to withdraw ERC20 tokens that were sent to contract by mistake - but not USDC, amUSDC or BNJI", async function () { 
+
+
+
+  // TODO: update
+  it("Test 09. Account Level 1 can be purchased for 1000 BNJI", async function () {   
+
+    await countAllCents();
+    await addUserAccDataPoints(testUser_1); 
+
+    // minting 1000 BNJI to caller
+    await testMinting(1000, testUser_1, testUser_1);   
+    await addUserAccDataPoints(testUser_1); 
+    
+    // upgrading to account level 1
+    await testIncreaseLevel(testUser_1, 1);  
+    
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    const expectedUser1Levels    = [0,0, 1];
+    const expectedUser1Discounts = [0,0,10];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+
+    await countAllCents();
+  });  
   
-    await countAllCents(); 
+  // TODO: update
+  it("Test 10. Account Level 2 can be purchased in one step", async function () {   
 
-    // Creating instance of Chainlink
-    const polygonLINKaddress = '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39';
+    await countAllCents();
+    await addUserAccDataPoints(testUser_1); 
 
-    polygonChainlink = new ethers.Contract(
-      polygonLINKaddress,
-      [
-        'function approve(address guy, uint wad) public returns (bool)',
-        'function transfer(address dst, uint wad) public returns (bool)',
-        'function balanceOf(address account) external view returns (uint256)',        
-      ], 
-      deployerSigner
-    );
-
-    // getting 10 LINK on quickswap
-    const chainlinkToGetIn18dec = ethers.utils.parseEther("10");
-    const wmaticToPayWithMaxIn18dec = ethers.utils.parseEther("1000");
-    await polygonQuickswapRouter.connect(deployerSigner).swapTokensForExactTokens( chainlinkToGetIn18dec, wmaticToPayWithMaxIn18dec , [polygonWMATICaddress, polygonLINKaddress], deployer, 1665102928); 
+    // minting 2600 BNJI to caller
+    await testMinting(2600, testUser_1, testUser_1);   
+    await addUserAccDataPoints(testUser_1); 
     
-    // preparation confirmation
-    const chainlinkBalStart_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
-    const chainlinkBalStart_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
-    expect(chainlinkBalStart_deployer).to.equal(10);
-    expect(chainlinkBalStart_BNJIcontract).to.equal(0);  
-
-    // sending over 10 LINK to contract
-    await polygonChainlink.connect(deployerSigner).transfer(benjaminsContract.address, chainlinkToGetIn18dec);
-
-    // transfer confirmation
-    const chainlinkBalAfterSend_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
-    const chainlinkBalAfterSend_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
-    expect(chainlinkBalAfterSend_deployer).to.equal(0);
-    expect(chainlinkBalAfterSend_BNJIcontract).to.equal(10);  
-
-    // reverts as expected: cleanERC20Tips does not accept USDC address as argument
-    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonUSDCaddress) ).to.be.revertedWith(
-      "ERC20 cannot be USDC."
-    );  
-
-    // reverts as expected: cleanERC20Tips does not accept amUSDC address as argument
-    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonAmUSDCAddress) ).to.be.revertedWith(
-      "ERC20 cannot be amUSDC."
-    ); 
-
-    // reverts as expected: cleanERC20Tips does not accept benjaminsContract address as argument
-    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(benjaminsContract.address) ).to.be.revertedWith(
-      "ERC20 cannot be BNJI."
-    ); 
+    // upgrading to account level 3
+    await testIncreaseLevel(testUser_1, 2);  
     
-    // calling cleanERC20Tips with Chainlink address as argument, LINK is getting sent to calling owner
-    await benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonLINKaddress);
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(600); 
 
-    // cleanERC20Tips confirmation
-    const chainlinkBalAfterClean_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
-    const chainlinkBalAfterClean_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
-    expect(chainlinkBalAfterClean_deployer).to.equal(10);
-    expect(chainlinkBalAfterClean_BNJIcontract).to.equal(0);  
+    const expectedUser1Levels    = [0,0, 2];
+    const expectedUser1Discounts = [0,0,25];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+
+    await countAllCents();
+  });  
+  
+  it("Test 11. Account Level 3 can be purchased in one step", async function () {  
     
-    await countAllCents(); 
+    await countAllCents();
+    await addUserAccDataPoints(testUser_1); 
 
+    // minting 3600 BNJI to caller
+    await testMinting(3600, testUser_1, testUser_1);   
+    await addUserAccDataPoints(testUser_1); 
+    
+    // upgrading to account level 3
+    await testIncreaseLevel(testUser_1, 3);  
+    
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(600); 
+
+    const expectedUser1Levels    = [0,0, 3];
+    const expectedUser1Discounts = [0,0,50];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+
+    await countAllCents();
+  });   
+  
+  // TODO: update
+  it("Test 16. Discounts are effective immediately after increasing the account level", async function () {   
+
+    await countAllCents();
+    
+    await addUserAccDataPoints(testUser_1); 
+   
+    // minting 2600 BNJI to caller
+    await testMinting(3600, testUser_1, testUser_1);    
+
+    expect(await balBNJI(testUser_1)).to.equal(3600);   
+    await addUserAccDataPoints(testUser_1);  
+
+    // upgrading to account level 1
+    await testIncreaseLevel(testUser_1, 1);  
+    
+    expect(await balBNJI(testUser_1)).to.equal(2600);   
+    await addUserAccDataPoints(testUser_1);
+
+    // upgrading to account level 2
+    await testIncreaseLevel(testUser_1, 1);  
+    
+    expect(await balBNJI(testUser_1)).to.equal(1600); 
+    await addUserAccDataPoints(testUser_1); 
+
+    // upgrading to account level 3
+    await testIncreaseLevel(testUser_1, 1);  
+
+    expect(await balBNJI(testUser_1)).to.equal(600); 
+    await addUserAccDataPoints(testUser_1); 
+
+    const expectedUser1Levels =     [0,0, 1, 2, 3];
+    const expectedUser1Discounts =  [0,0,10,25,50];    
+      
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);       
+
+    await countAllCents();
   });  
 
   
-  it("Test 1. testUser_1 should mint 10 BNJI for themself", async function () {  
-    await countAllCents();         
-    await testMinting("Test 1, minting 40 BNJI to caller", 40, testUser_1, testUser_1);      
-    expect(await balBNJI(testUser_1)).to.equal(40);    
-    await countAllCents();    
+  // TODO: update, include locked amount
+  it("Test 23. Downgrading accounts is not triggrered by burning", async function () { 
+
+    await countAllCents();
+    await addUserAccDataPoints(testUser_1);
+    expect(await balBNJI(testUser_1)).to.equal(0);             
+
+    // minting 5000 BNJI to caller
+    await testMinting(5000, testUser_1, testUser_1);      
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(5000); 
+
+    // increasing account level to 3
+    await testIncreaseLevel(testUser_1, 3);
+    await addUserAccDataPoints(testUser_1); 
+    expect(await balBNJI(testUser_1)).to.equal(2000); 
+    
+    // burning 2000 tokens, returns go to caller, no needed holding times
+    await testBurning(2000, testUser_1, testUser_1);
+    
+    await addUserAccDataPoints(testUser_1);  
+    expect(await balBNJI(testUser_1)).to.equal(0);         
+
+    const expectedUser1Levels    = [0,0, 3, 3];
+    const expectedUser1Discounts = [0,0,50,50];          
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);   
+
+    await countAllCents();
+    
   });
+  
 
 
 
-
-
-
-
-
-
-
-  // todo: create "real world usage simulation"
+  // todo: create "real world use simulation"
 
   // todo: rename the following tests, should be the last ones
 
@@ -1415,7 +1327,105 @@ describe("Testing Levels version of Benjamins", function () {
   });
 
 
+  
+  it("Test 14. Owner can withdraw MATIC tokens that were sent to the contract directly, by mistake", async function () { 
 
+    await countAllCents(); 
+
+    const contractMATICstart = await getMATICbalance(benjaminsContract.address);  
+    const deployerMATICstart = await getMATICbalance(deployer);
+    const deployerMATICstartRounded = deployerMATICstart - (deployerMATICstart%1); 
+    
+    expect(contractMATICstart).to.equal(0); 
+    
+    await deployerSigner.sendTransaction({
+      to: benjaminsContract.address,
+      value: ethers.utils.parseEther("20") // 20 Matic
+    })
+
+    const contractMATICafterSend = await getMATICbalance(benjaminsContract.address); 
+    expect(contractMATICafterSend).to.equal(contractMATICstart+20); 
+
+    const deployerMATICafterSend = await getMATICbalance(deployer);
+    const deployerMATICafterSendRounded = deployerMATICafterSend - (deployerMATICafterSend%1);
+    expect(deployerMATICafterSendRounded).to.equal(deployerMATICstartRounded-20);   
+    
+    await benjaminsContract.connect(deployerSigner).cleanMATICtips();
+  
+    const contractMATICafterCleanedTips = await getMATICbalance(benjaminsContract.address); 
+    expect(contractMATICafterCleanedTips).to.equal(0); 
+
+    const deployerMATICafterCleanedTips = await getMATICbalance(deployer);
+    const deployerMATICafterCleanedTipsRounded = deployerMATICafterCleanedTips - (deployerMATICafterCleanedTips%1);
+    expect(deployerMATICafterCleanedTipsRounded).to.equal(deployerMATICafterSendRounded+20);
+       
+    await countAllCents(); 
+  });    
+
+  it("Test 15. Owner can use cleanERC20Tips to withdraw ERC20 tokens that were sent to contract by mistake - but not USDC, amUSDC or BNJI", async function () { 
+  
+    await countAllCents(); 
+
+    // Creating instance of Chainlink
+    const polygonLINKaddress = '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39';
+
+    polygonChainlink = new ethers.Contract(
+      polygonLINKaddress,
+      [
+        'function approve(address guy, uint wad) public returns (bool)',
+        'function transfer(address dst, uint wad) public returns (bool)',
+        'function balanceOf(address account) external view returns (uint256)',        
+      ], 
+      deployerSigner
+    );
+
+    // getting 10 LINK on quickswap
+    const chainlinkToGetIn18dec = ethers.utils.parseEther("10");
+    const wmaticToPayWithMaxIn18dec = ethers.utils.parseEther("1000");
+    await polygonQuickswapRouter.connect(deployerSigner).swapTokensForExactTokens( chainlinkToGetIn18dec, wmaticToPayWithMaxIn18dec , [polygonWMATICaddress, polygonLINKaddress], deployer, 1665102928); 
+    
+    // preparation confirmation
+    const chainlinkBalStart_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
+    const chainlinkBalStart_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
+    expect(chainlinkBalStart_deployer).to.equal(10);
+    expect(chainlinkBalStart_BNJIcontract).to.equal(0);  
+
+    // sending over 10 LINK to contract
+    await polygonChainlink.connect(deployerSigner).transfer(benjaminsContract.address, chainlinkToGetIn18dec);
+
+    // transfer confirmation
+    const chainlinkBalAfterSend_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
+    const chainlinkBalAfterSend_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
+    expect(chainlinkBalAfterSend_deployer).to.equal(0);
+    expect(chainlinkBalAfterSend_BNJIcontract).to.equal(10);  
+
+    // reverts as expected: cleanERC20Tips does not accept USDC address as argument
+    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonUSDCaddress) ).to.be.revertedWith(
+      "ERC20 cannot be USDC."
+    );  
+
+    // reverts as expected: cleanERC20Tips does not accept amUSDC address as argument
+    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonAmUSDCAddress) ).to.be.revertedWith(
+      "ERC20 cannot be amUSDC."
+    ); 
+
+    // reverts as expected: cleanERC20Tips does not accept benjaminsContract address as argument
+    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(benjaminsContract.address) ).to.be.revertedWith(
+      "ERC20 cannot be BNJI."
+    ); 
+    
+    // calling cleanERC20Tips with Chainlink address as argument, LINK is getting sent to calling owner
+    await benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonLINKaddress);
+
+    // cleanERC20Tips confirmation
+    const chainlinkBalAfterClean_deployer      = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(deployer)));    
+    const chainlinkBalAfterClean_BNJIcontract  = Number(ethers.utils.formatEther(await polygonChainlink.balanceOf(benjaminsContract.address)));
+    expect(chainlinkBalAfterClean_deployer).to.equal(10);
+    expect(chainlinkBalAfterClean_BNJIcontract).to.equal(0);  
+    
+    await countAllCents(); 
+
+  });  
 
 
   
@@ -1438,6 +1448,8 @@ describe("Testing Levels version of Benjamins", function () {
 
   });
 
+
+  // TODO: re check, burns only deployer's tokens / setup mint - should probably become a function and run at the end of longer scenarios
   it("Test 30. All tokens that exist can be burned, and the connected USDC paid out by the protocol", async function () { 
 
     await countAllCents();
@@ -1448,13 +1460,15 @@ describe("Testing Levels version of Benjamins", function () {
       const balanceBNJI = await balBNJI(callingAcc);
 
       if (balanceBNJI>0){
-        await testBurning(`Endburn from testUser_${index}`, balanceBNJI, callingAcc, callingAcc);
+        console.log(balanceBNJI, `Endburn from testUser_${index}`);
+        await testBurning(balanceBNJI, callingAcc, callingAcc);
         expect(await balBNJI(callingAcc)).to.equal(0);
       }    
     }
 
     const balBNJIdeployer = await balBNJI(deployer);
-    await testBurning(`Endburn from deployer`, balBNJIdeployer, deployer, deployer);
+    console.log(balBNJIdeployer, `Endburn from deployer`);
+    await testBurning(balBNJIdeployer, deployer, deployer);
 
     expect(await balBNJI(deployer)).to.equal(0);
 

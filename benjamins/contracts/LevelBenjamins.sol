@@ -27,29 +27,29 @@ import "hardhat/console.sol";
 // Reentrancy is protected against via OpenZeppelin's ReentrancyGuard
 contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
-  ILendingPool public polygonLendingPool;     // Aave lending pool on Polygon
-  IERC20 public polygonUSDC;                  // USDC crypto currency on Polygon
-  IERC20 public polygonAMUSDC;                // Aave's amUSDC crypto currency on Polygon
+  ILendingPool public polygonLendingPool;       // Aave lending pool on Polygon
+  IERC20 public polygonUSDC;                    // USDC crypto currency on Polygon
+  IERC20 public polygonAMUSDC;                  // Aave's amUSDC crypto currency on Polygon
 
-  address public feeReceiver;                 // beneficiary address for collected fees
+  address public feeReceiver;                   // beneficiary address for collected fees
 
-  uint256 public reserveInUSDCin6dec;         // end user USDC on deposit
-  uint256 USDCscaleFactor =      1000000;     // 6 decimals scale of USDC crypto currency
-  uint256 USDCcentsScaleFactor =   10000;     // 4 decimals scale of USDC crypto currency cents
-  uint256 public blocksPerDay =        2;     // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
-  uint8   private _decimals;                  // storing BNJI decimals, set to 0 in constructor
+  uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
+  uint256 public USDCscaleFactor =    1000000;  // 6 decimals scale of USDC crypto currency
+  uint256 public USDCcentsScaleFactor = 10000;  // 4 decimals scale of USDC crypto currency cents
+  uint256 public blocksPerDay = 2;              // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
+  uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor
      
-  uint256 public curveFactor =   8000000;     // Inverse slope of the bonding curve.
-  uint16  public baseFeeTimes10k = 10000;     // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
+  uint256 public curveFactor =   8000000;       // inverse slope of the bonding curve
+  uint256 public baseFeeTimes10k = 10000;       // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
 
-  uint256  neededBNJIperLevel;                // amount of BNJI needed per discount level
-  uint16[] holdingTimes;                      // holding times in days
-  uint16[] discounts;                         // discounts in percent
+  uint256 public neededBNJIperLevel;            // amount of BNJI needed per discount level
+  uint16[] public holdingTimes;                 // holding times in days
+  uint16[] public discounts;                    // discounts in percent
   
   // mapping of user to timestamp, relating to when levels can be decreased again
   mapping (address => uint256) minHoldingtimeUntil;
 
-  // 0 - 3 levels
+  // user accounts can be levels 0 - 3
   mapping (address => uint256) usersAccountLevel;
 
   // event for withdrawGains function
@@ -99,6 +99,9 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   // event for updating the table of discounts for the respective account level
   event DiscountsUpdate(uint16[] newDiscounts);
+
+  // event for updating the baseFeeTimes10k variable
+  event BaseFeeUpdate(uint256 newbaseFeeTimes10k); 
  
   // owner overrides paused.
   modifier whenAvailable() {        
@@ -172,9 +175,12 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return (getUsersDiscountLevel(_userToCheck)*1000);
   }
 
-  function getDiscountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountInPercentTimes10k) {
+  function getUsersDiscountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountInPercentTimes10k) {
     uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
-    return discounts[usersDiscountLevel] * baseFeeTimes10k;
+
+    uint256 usersDiscountInPercentTimes10k = uint256(discounts[usersDiscountLevel]) * baseFeeTimes10k;
+
+    return usersDiscountInPercentTimes10k;
   }  
 
   function getUsersUnlockTimestamp(address _userToCheck) public view returns (uint256 usersUnlockTimestamp) {
@@ -207,7 +213,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 1000);   // Todo: approval must be done in front end before
 
     // transferring BNJI from msg.sender to this contract
-    transfer(address(this), amountOfBNJItoLock);  // TODO: check if caller is correct, should be msg.sender, might need transferFrom
+    transfer(address(this), amountOfBNJItoLock);
     
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
@@ -394,7 +400,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     address _payee,
     uint256 _beforeFeeInUSDCin6dec,
     uint256 _feeRoundedDownIn6dec,
-    bool isMint // negative when burning, does not include fee. positive when minting, includes fee.
+    bool isMint
   ) internal whenAvailable {
     if (isMint == true) {
       // on minting, fee is added to price
@@ -465,7 +471,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
   // Returns the inverse slope of the bonding curve
-  function getCurveFactor () public view returns (uint256 curveFactorNow) {
+  function getCurveFactor() public view returns (uint256 curveFactorNow) {
     return curveFactor;
   }
 
@@ -479,6 +485,10 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   function getDiscounts() public view returns (uint16[] memory discountsNow) {
     return discounts;           
+  }
+
+  function getBaseFee() public view returns (uint256 baseFeeTimes10kNow){
+    return baseFeeTimes10k;
   }
       
   // function for owner to withdraw MATIC that were sent directly to contract by mistake
@@ -584,5 +594,9 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     discounts = newDiscounts;
     emit DiscountsUpdate(discounts);
   }     
-
+    
+  function updateBaseFee( uint256 _newbaseFeeTimes10k) public onlyOwner {
+    baseFeeTimes10k = _newbaseFeeTimes10k;
+    emit BaseFeeUpdate(_newbaseFeeTimes10k);
+  }
 }
