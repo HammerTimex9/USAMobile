@@ -10,7 +10,7 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
-export const SwapTrade = () => {
+const SwapTrade = () => {
   const { setActionMode, setDialog } = useExperts();
   const { isAuthenticated } = useMoralis();
   const { switchNetworkToPolygon } = usePolygonNetwork();
@@ -39,3 +39,5 @@ export const SwapTrade = () => {
     </Box>
   );
 };
+
+export default SwapTrade;

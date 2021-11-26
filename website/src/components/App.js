@@ -1,27 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
-import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
-
+import { Switch, Route, Redirect } from 'react-router-dom';
 import { Stack } from '@mui/material';
-
 import MetaMaskOnboarding from '@metamask/onboarding';
+
+import { usePositions } from '../contexts/portfolioContext';
+import { useNetwork } from '../contexts/networkContext';
+import { useExperts } from '../contexts/expertsContext';
+import { usePolygonNetwork } from '../hooks/usePolygonNetwork';
 
 import { TopNavBar } from './Screens/TopNavBar';
 import { ExpertStage } from './Screens/ExpertStage';
 import { NavBar } from './Screens/NavBar';
-import { PortfolioPrices } from './Screens/PortfolioPrices';
-import { SwapTrade } from './Screens/SwapTrade';
-import { BuySell } from './Screens/BuySell';
-import { SendReceive } from './Screens/SendReceive';
 import { BottomFooter } from './Screens/BottomFooter';
-import { usePositions } from '../contexts/portfolioContext';
-
-import { useNetwork } from '../contexts/networkContext';
-import { useExperts } from '../contexts/expertsContext';
-
-import { usePolygonNetwork } from '../hooks/usePolygonNetwork';
-
 import './App.scss';
+
+const PortfolioPrices = lazy(() => import('./Screens/PortfolioPrices'));
+const SwapTrade = lazy(() => import('./Screens/SwapTrade'));
+const BuySell = lazy(() => import('./Screens/BuySell'));
+const SendReceive = lazy(() => import('./Screens/SendReceive'));
 
 const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
   return (
@@ -36,7 +33,7 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 
 function App() {
   const { isAuthenticated, Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
-  const { user, isUserUpdating } = useMoralis();
+  const { user } = useMoralis();
   const { positions } = usePositions();
   const { setAccounts, setNetworkId, isPolygon } = useNetwork();
   const { setDialog } = useExperts();
@@ -47,9 +44,6 @@ function App() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      // We are calling this on each render
-      // to update context from metamask.
-      // It will also update checkes, We are using Polygon or not.
       if (isWeb3Enabled) {
         getSelectedNetwork();
       }
@@ -71,19 +65,6 @@ function App() {
         console.log('Account Changed Called.', accounts);
         Moralis.link(accounts[0]);
         setAccounts(accounts);
-        if (user && !isUserUpdating) {
-          // setUserData(
-          //   {
-          //     accounts: accounts,
-          //     ethAddress: accounts?.length > 0 ? accounts[0] : null,
-          //   },
-          //   {
-          //     onError: (error) => {
-          //       console.log('UpdateUserError:', error);
-          //     },
-          //   }
-          // );
-        }
       });
       Moralis.onChainChanged((chainId) => {
         console.log('ChainId:', chainId);
@@ -106,19 +87,6 @@ function App() {
         if (MetaMaskOnboarding.isMetaMaskInstalled()) {
           if (window?.ethereum?.selectedAddress) {
             setAccounts([window.ethereum?.selectedAddress]);
-            if (user && !isUserUpdating) {
-              // setUserData(
-              //   {
-              //     accounts: [window.ethereum?.selectedAddress],
-              //     ethAddress: window.ethereum?.selectedAddress,
-              //   },
-              //   {
-              //     onError: (error) => {
-              //       console.log('UpdateUserError:', error);
-              //     },
-              //   }
-              // );
-            }
           }
         }
       }
@@ -134,33 +102,35 @@ function App() {
       <TopNavBar />
       <ExpertStage />
       {isAuthenticated && isPolygon ? (
-        <BrowserRouter>
+        <>
           <NavBar />
-          <Switch>
-            <CryptoRoute
-              exact
-              path="/PortfolioPrices"
-              component={PortfolioPrices}
-              emptyPositions={emptyPositions}
-            />
-            <CryptoRoute
-              exact
-              path="/SwapTrade"
-              component={SwapTrade}
-              emptyPositions={emptyPositions}
-            />
-            <Route exact path="/BuySell">
-              <BuySell />
-            </Route>
-            <CryptoRoute
-              exact
-              path="/SendRecieve"
-              component={SendReceive}
-              emptyPositions={emptyPositions}
-            />
-            <Redirect to={isOnlyMatic ? '/SwapTrade' : '/PortfolioPrices'} />
-          </Switch>
-        </BrowserRouter>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Switch>
+              <CryptoRoute
+                exact
+                path="/PortfolioPrices"
+                component={PortfolioPrices}
+                emptyPositions={emptyPositions}
+              />
+              <CryptoRoute
+                exact
+                path="/SwapTrade"
+                component={SwapTrade}
+                emptyPositions={emptyPositions}
+              />
+              <Route exact path="/BuySell">
+                <BuySell />
+              </Route>
+              <CryptoRoute
+                exact
+                path="/SendRecieve"
+                component={SendReceive}
+                emptyPositions={emptyPositions}
+              />
+              <Redirect to={isOnlyMatic ? '/SwapTrade' : '/PortfolioPrices'} />
+            </Switch>
+          </Suspense>
+        </>
       ) : (
         <BottomFooter />
       )}

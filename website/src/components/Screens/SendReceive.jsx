@@ -11,7 +11,7 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
-export const SendReceive = () => {
+const SendReceive = () => {
   const { setActionMode, setDialog } = useExperts();
   const [localMode, setLocalMode] = useState('none');
 
@@ -81,3 +81,5 @@ export const SendReceive = () => {
     </Box>
   );
 };
+
+export default SendReceive;
