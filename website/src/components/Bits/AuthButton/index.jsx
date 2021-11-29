@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router';
 import { useMoralis } from 'react-moralis';
 import { Button, Drawer, Tooltip } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
@@ -8,6 +9,7 @@ import { AuthDrawer } from '../AuthDrawer';
 import { DrawerHeader } from '../DrawerHeader';
 
 export const AuthButton = () => {
+  const history = useHistory();
   const { isAuthenticated, logout } = useMoralis();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -17,6 +19,12 @@ export const AuthButton = () => {
   const onCloseDrawer = () => {
     console.log('OnClose Drawer.');
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      history.replace('/');
+    }
+  }, [history, isAuthenticated]);
 
   useEffect(() => {
     return () => {

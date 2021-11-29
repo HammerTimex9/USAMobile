@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Avatar,
   Box,
   Collapse,
@@ -8,57 +14,30 @@ import {
   Modal,
   Paper,
 } from '@mui/material';
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
-import { usePositions } from '../../contexts/portfolioContext';
-import { useNetwork } from '../../contexts/networkContext';
+import { usePositions } from '../../../contexts/portfolioContext';
+import { useNetwork } from '../../../contexts/networkContext';
+import TokenCard from '../../Bits/TokenCard';
 import { TransactionList } from './TransactionList';
-
-import { getDataByCoinID } from '../../hooks/action';
-import Card from '../Research/card';
-import Loader from '../Research/load';
 
 export const TokenTable = () => {
   const { totalValue, positions } = usePositions();
   const { network } = useNetwork();
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [selectedCoin, setSelectedCoin] = useState(null);
+  const [selectedSymbol, setSelectedSymbol] = useState(null);
 
-  const getDataApi = getDataByCoinID();
-  const handleClickRow = async (p) => {
-    if (!p.id) return;
-    setModalOpen(true);
-    const data = await getDataApi(p.id);
-    if (data.id) {
-      setSelectedCoin(data);
-    } else {
-      onModalClose();
-    }
-  };
+  const onModalClose = () => setSelectedSymbol();
 
-  const onModalClose = () => {
-    setModalOpen(false);
-    setSelectedCoin(null);
-  };
   function Position(props) {
     const { position } = props;
     const [open, setOpen] = React.useState(false);
     return (
-      <React.Fragment>
+      <>
         <TableRow
           sx={{ '& > *': { borderBottom: 'unset' } }}
           style={{ cursor: 'pointer' }}
-          onClick={() => handleClickRow(position)}
+          onClick={() => setSelectedSymbol(position.symbol)}
         >
           <TableCell component="th" scope="row">
             <Avatar
@@ -110,12 +89,12 @@ export const TokenTable = () => {
             </Collapse>
           </TableCell>
         </TableRow>
-      </React.Fragment>
+      </>
     );
   }
 
   return (
-    <Box sx={{ display: 'inline-flex', minWidth: 320, m: 'auto' }}>
+    <>
       <TableContainer
         component={Paper}
         sx={{
@@ -126,7 +105,7 @@ export const TokenTable = () => {
           borderColor: 'var(--borderColor)',
         }}
       >
-        <Table aria-label="collapsible table">
+        <Table>
           <TableHead>
             <TableRow>
               <TableCell align="center" colSpan={6} sx={{ p: 0, pb: 1 }}>
@@ -144,20 +123,12 @@ export const TokenTable = () => {
         </Table>
       </TableContainer>
       <Modal
-        open={modalOpen}
-        aria-labelledby="Transaction Details Modal"
-        aria-describedby="We will display Row Details here."
-        sx={{ maxWidth: '56rem', mx: 'auto', my: '3.56rem', px: 3, py: 1 }}
+        open={!!selectedSymbol}
+        sx={{ maxWidth: '56rem', mx: 'auto', my: '3.56rem' }}
         onBackdropClick={onModalClose}
       >
-        <Box sx={{ background: 'white' }}>
-          {selectedCoin ? (
-            <Card data={selectedCoin} onClose={onModalClose} />
-          ) : (
-            <Loader />
-          )}
-        </Box>
+        <TokenCard symbol={selectedSymbol} onClose={onModalClose} />
       </Modal>
-    </Box>
+    </>
   );
 };
