@@ -16,7 +16,15 @@ export const PortfolioProvider = (props) => {
   const [totalValue, setTotalValue] = useState(0);
   const [maticPrice, setMaticPrice] = useState(0);
 
+  useEffect(() => {
+    Moralis.onAccountsChanged((accounts) => {
+      Moralis.link(accounts[0]);
+    });
+  }, [Moralis, isAuthenticated]);
+
   const getPositions = useCallback(() => {
+    if (!network) return;
+
     const user = Moralis.User.current();
     const address = user.attributes.ethAddress;
     if (!address) return;

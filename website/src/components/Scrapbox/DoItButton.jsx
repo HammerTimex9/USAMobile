@@ -34,7 +34,17 @@ export const DoItButton = () => {
           fromTokenSymbol
       );
     }
-  }, [isFetching, fromTokenSymbol, txAmount, setDialog]);
+    if (isFetching && !isApproved) {
+      setDialog(
+        "Press 'Confirm' to approve spending your Matic for this transaction"
+      );
+    }
+    if (isFetching && isApproved) {
+      setDialog(
+        'Waiting for the network to register your signed spending approval...'
+      );
+    }
+  }, [isFetching, fromTokenSymbol, txAmount, setDialog, isApproved]);
 
   useEffect(() => {
     if (isApproved) {
@@ -45,7 +55,9 @@ export const DoItButton = () => {
   useEffect(() => {
     if (data) {
       setQuote();
-      setDialog('Swap success.');
+      setDialog(
+        'Swap success...please allow a few minutes before the new balances appear in your portfolio.'
+      );
     }
   }, [data, setQuote, setDialog]);
 
