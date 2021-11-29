@@ -153,7 +153,7 @@ function Card({ data, onClose }) {
         className="button-wrap"
       >
         {links.blockchain_site
-          .filter((a, index) => a && index < 5)
+          .filter((a, index) => a && a.indexOf('scan') > -1 && index < 5)
           .map((b, index) => (
             <Button
               onClick={() => handleClick(b)}
