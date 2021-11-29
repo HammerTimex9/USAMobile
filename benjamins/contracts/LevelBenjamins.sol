@@ -209,7 +209,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
     uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) + _amountOfLevelsToIncrease;
 
-    require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3.");
+    require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3");
     
     uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * neededBNJIperLevel);   // Todo: approval must be done in front end before
 
@@ -238,13 +238,13 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     uint256 endAmountOfLevels = usersDiscountLevelNow - _amountOfLevelsToDecrease;
 
-    require(_amountOfLevelsToDecrease <= usersDiscountLevelNow && endAmountOfLevels >=0, "You can lower the discount level until 0.");
+    require(_amountOfLevelsToDecrease <= usersDiscountLevelNow && endAmountOfLevels >=0, "You can lower the discount level until 0");
 
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;  
 
     // timestamp must be smaller than now (i.e. enough time has passed)
-    require(getUsersUnlockTimestamp(msg.sender) <= blockHeightNow, "Discounts are still active, levels cannot be decreased.");
+    require(getUsersUnlockTimestamp(msg.sender) <= blockHeightNow, "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock");
 
     usersAccountLevel[msg.sender] = endAmountOfLevels;    
 
