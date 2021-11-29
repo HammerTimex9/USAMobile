@@ -63,10 +63,10 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // event for withdrawals from the lending pool
   event LendingPoolWithdrawal (uint256 amountUSDCBeforeFeein6dec, address receiver);
 
-  // event for increasing account level
+  // event for increasing discount level
   event DiscountLevelIncreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel, uint256 minimumHoldingUntil); 
  
-  // event for decreasing account level
+  // event for decreasing discount level
   event DiscountLevelDecreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel);
 
   // event for exchanging USDC and BNJI
@@ -91,13 +91,13 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // event for updating the contract's approval to Aave's USDC lending pool
   event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
 
-  // event for updating the table of necessary BNJI amounts per account level
+  // event for updating the table of necessary BNJI amounts per discount level
   event NeededBNJIperLevelUpdate(uint256 neededBNJIperLevel);
 
-  // event for updating the table of necessary holding periods for the respective account level
+  // event for updating the table of necessary holding periods for the respective discount level
   event HoldingTimesUpdate(uint16[] newHoldingTimes);
 
-  // event for updating the table of discounts for the respective account level
+  // event for updating the table of discounts for the respective discount level
   event DiscountsUpdate(uint16[] newDiscounts);
 
   // event for updating the baseFeeTimes10k variable
@@ -144,7 +144,8 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     polygonAMUSDC = IERC20(0x1a13F4Ca1d028320A707D99520AbFefca3998b7F);
     polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
 
-    // setting holdingTimes and discounts 
+    // setting neededBNJIperLevel, holdingTimes and discounts 
+    neededBNJIperLevel = 1000;              // necessary amount of BNJI to lock per level (level 1 needs 1000 BNJI locked up, etc.)
     holdingTimes = [0, 30, 90, 300];        // holding times in days, relating to discount level (level 1 needs 30 days holding, etc.)
     discounts =    [0, 10, 25,  50];        // discounts in percent, relating to discount level (level 1 gets 10% discounts, etc.)
     
@@ -172,7 +173,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
   function lockedBalanceOf(address _userToCheck) public view returns (uint256 lockedBNJIofUser) {
-    return (getUsersDiscountLevel(_userToCheck)*1000);
+    return (getUsersDiscountLevel(_userToCheck)*neededBNJIperLevel);
   }
 
   function getUsersDiscountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountInPercentTimes10k) {
@@ -204,13 +205,13 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
   
-  function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * 1000) {
+  function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * neededBNJIperLevel) {
     
     uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) + _amountOfLevelsToIncrease;
 
     require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3.");
     
-    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * 1000);   // Todo: approval must be done in front end before
+    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * neededBNJIperLevel);   // Todo: approval must be done in front end before
 
     // transferring BNJI from msg.sender to this contract
     transfer(address(this), amountOfBNJItoLock);
@@ -247,7 +248,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     usersAccountLevel[msg.sender] = endAmountOfLevels;    
 
-    uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * 1000;
+    uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * neededBNJIperLevel;
 
     // this contract approves msg.sender to use transferFrom and pull in amountOfBNJIunlocked BNJI
     _approve(address(this), msg.sender, amountOfBNJIunlocked);    
@@ -487,7 +488,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return discounts;           
   }
 
-  function getBaseFee() public view returns (uint256 baseFeeTimes10kNow){
+  function getBaseFeeTimes10k() public view returns (uint256 baseFeeTimes10kNow){
     return baseFeeTimes10k;
   }
       
@@ -577,19 +578,19 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     emit LendingPoolApprovalUpdate(amountToApproveIn6dec);
   }
   
-  // Update token amount required per account level
+  // Update token amount required per discount level
   function updateNeededBNJIperLevel (uint256 newNeededBNJIperLevel) public onlyOwner {
     neededBNJIperLevel = newNeededBNJIperLevel;
     emit NeededBNJIperLevelUpdate(neededBNJIperLevel);
   }
 
-  // Update timeout times required by account levels
+  // Update timeout times required by discount levels
   function updateHoldingTimes (uint16[] memory newHoldingTimes) public onlyOwner {
     holdingTimes = newHoldingTimes;
     emit HoldingTimesUpdate(holdingTimes);
   }
 
-  // Update fee discounts for account levels
+  // Update fee discounts for discount levels
   function updateDiscounts (uint16[] memory newDiscounts) public onlyOwner {
     discounts = newDiscounts;
     emit DiscountsUpdate(discounts);

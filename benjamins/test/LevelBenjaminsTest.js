@@ -28,10 +28,12 @@ let liquidCentsArray = [];
 
 const scale6dec = 1000000;
 
-const baseFeeTimes10k = 10000;
-const levelDiscountsArray = [0, 10, 25,  50];
-const holdingTimesInDays =  [0, 30, 90, 300];
+let baseFeeTimes10k;
 let blocksPerDay;
+let curveFactor;
+let neededBNJIperLevel;
+let levelDiscountsArray = [];
+let holdingTimesInDays = [];
 
 let benjaminsContract;
 
@@ -57,7 +59,7 @@ let user1DiscountDataArray = [];
 let user2LevelDataArray = [];
 let user2DiscountDataArray = [];
 
-// querrying and saving account level and account discount info for userToCheck, and saving them to an array for later confirmation
+// querrying and saving discount level and account discount info for userToCheck, and saving them to an array for later confirmation
 async function addUserAccDataPoints(userToCheck){
  
   const userLevelNow = await getDiscountLevel(userToCheck);
@@ -73,7 +75,8 @@ async function addUserAccDataPoints(userToCheck){
   } 
 }
 
-// confirms account level and account discount as recorded via add addUserAccDataPoints function
+
+// confirms discount level and discount percentage as recorded via add addUserAccDataPoints function
 function confirmUserDataPoints(userToCheck, expectedUserLevelsArray, expectedUserDiscountArray) {
   if  (userToCheck == testUser_1){
     for (let index = 0; index < user1LevelDataArray.length; index++) {
@@ -93,7 +96,31 @@ function confirmUserDataPoints(userToCheck, expectedUserLevelsArray, expectedUse
   user1DiscountDataArray = [];
   user2LevelDataArray = [];
   user2DiscountDataArray = [];
+}
+
+async function getContractsHoldingTimesArrayAndConfirmIt() {
+  let holdingTimesInDaysWithBNs = [];
+  holdingTimesInDaysWithBNs = await benjaminsContract.getHoldingTimes();
+
+  const expectedHoldingTimesArray  =  [0, 30, 90, 300];
+
+  for (let index = 0; index < holdingTimesInDaysWithBNs.length; index++) {     
+    holdingTimesInDays.push(bigNumberToNumber(holdingTimesInDaysWithBNs[index]));
+    expect(holdingTimesInDays[index]).to.equal(expectedHoldingTimesArray[index]); 
   }
+}
+
+async function getContractsDiscountArrayAndConfirmIt() {
+  let contractsDiscountArrayWithBNs = [];
+  contractsDiscountArrayWithBNs = await benjaminsContract.getDiscounts();
+
+  const expectedDiscountsArray = [0, 10, 25,  50];  
+
+  for (let index = 0; index < contractsDiscountArrayWithBNs.length; index++) {     
+    levelDiscountsArray.push(bigNumberToNumber(contractsDiscountArrayWithBNs[index]));
+    expect(levelDiscountsArray[index]).to.equal(expectedDiscountsArray[index]); 
+  }
+}
 
 // simulate the passing of blocks
 async function mintBlocks (amountOfBlocksToMint) {
@@ -215,6 +242,8 @@ async function countAllCents() {
   for (let index = 1; index < liquidCentsArray.length; index++) {
     expect(liquidCentsArray[index]).to.equal(liquidCentsArray[index-1]);    
   };
+
+  return allLiquidCents;
 
 }
 
@@ -362,7 +391,7 @@ async function calcMintApprovalAndPrep(amountToMint) {
   const amountOfTokensAfterMint = Number (amountOfTokensBeforeMint) + Number (amountToMint);
  
   // starting with minting costs, then rounding down to cents
-  const mintingCostinUSDC = ((amountOfTokensAfterMint * amountOfTokensAfterMint) - (amountOfTokensBeforeMint * amountOfTokensBeforeMint)) / 8000000;
+  const mintingCostinUSDC = ((amountOfTokensAfterMint * amountOfTokensAfterMint) - (amountOfTokensBeforeMint * amountOfTokensBeforeMint)) / curveFactor;
   const mintingCostInCents = mintingCostinUSDC * 100;
   const mintingCostRoundedDownInCents = mintingCostInCents - (mintingCostInCents % 1);
 
@@ -386,7 +415,7 @@ async function calcBurnVariables(amountToBurn, isTransfer=false) {
   const amountOfTokensBeforeBurn = bigNumberToNumber(await benjaminsContract.totalSupply());  
   const amountOfTokensAfterBurn = amountOfTokensBeforeBurn - amountToBurn;
 
-  const burnReturnInUSDC = ( (amountOfTokensBeforeBurn * amountOfTokensBeforeBurn) - (amountOfTokensAfterBurn * amountOfTokensAfterBurn) ) / 8000000;
+  const burnReturnInUSDC = ( (amountOfTokensBeforeBurn * amountOfTokensBeforeBurn) - (amountOfTokensAfterBurn * amountOfTokensAfterBurn) ) / curveFactor;
   const burnReturnInCents = burnReturnInUSDC * 100;
   const burnReturnRoundedDownInCents = burnReturnInCents - (burnReturnInCents % 1);  
   
@@ -568,6 +597,19 @@ describe("Testing Levels version of Benjamins", function () {
     // Get amount of blocksPerDay into this testing suite
     blocksPerDay = bigNumberToNumber(await benjaminsContract.getBlocksPerDay());
 
+    // Get baseFeeTimes10k into this testing suite
+    baseFeeTimes10k = bigNumberToNumber(await benjaminsContract.getBaseFeeTimes10k());
+
+    // Get curveFactor into this testing suite
+    curveFactor = bigNumberToNumber(await benjaminsContract.getCurveFactor());
+
+    // Get neededBNJIperLevel into this testing suite
+    neededBNJIperLevel = bigNumberToNumber(await benjaminsContract.getneededBNJIperLevel());
+  
+    await getContractsHoldingTimesArrayAndConfirmIt();
+
+    await getContractsDiscountArrayAndConfirmIt();
+
     polygonUSDC = new ethers.Contract(
       polygonUSDCaddress,
       [
@@ -685,11 +727,26 @@ describe("Testing Levels version of Benjamins", function () {
   
 
 
+  
 
+  it.only("Test 01. Confirming preparation setup", async function () {  
+    
+    // confirming queried variables
+    expect(blocksPerDay).to.equal(2);
+    expect(baseFeeTimes10k).to.equal(10000);
+    expect(curveFactor).to.equal(8000000);
+    expect(neededBNJIperLevel).to.equal(1000);
+
+    expect(await countAllCents()).to.equal(100000000);   
+    expect(await benjaminsContract.decimals()).to.equal(bigNumberToNumber(0));       
+  });
+
+ 
 
 
   
-  // Put in tests for levels 
+  // TODO: Put in tests for levels 
+  // TODO: Re order and re number
   
   it("Test 01. testUser_1 should mint 10 BNJI for themself", async function () {  
     await countAllCents();         
@@ -842,7 +899,7 @@ describe("Testing Levels version of Benjamins", function () {
   
 
   // TODO: update
-  it("Test 08. Account levels and discounts are not triggered by minting", async function () {   
+  it("Test 08. Discount levels and discounts are not triggered by minting", async function () {   
 
     // Preparation mint
     await testMinting(200000, deployer, deployer);   
@@ -1059,7 +1116,7 @@ describe("Testing Levels version of Benjamins", function () {
 
 
   // TODO: update
-  it("Test 09. Account Level 1 can be purchased for 1000 BNJI", async function () {   
+  it("Test 09. Discount level 1 can be purchased for 1000 BNJI", async function () {   
 
     await countAllCents();
     await addUserAccDataPoints(testUser_1); 
@@ -1068,7 +1125,7 @@ describe("Testing Levels version of Benjamins", function () {
     await testMinting(1000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     
-    // upgrading to account level 1
+    // upgrading to discount level 1
     await testIncreaseLevel(testUser_1, 1);  
     
     await addUserAccDataPoints(testUser_1);   
@@ -1082,7 +1139,7 @@ describe("Testing Levels version of Benjamins", function () {
   });  
   
   // TODO: update
-  it("Test 10. Account Level 2 can be purchased in one step", async function () {   
+  it("Test 10. Discount level 2 can be purchased in one step", async function () {   
 
     await countAllCents();
     await addUserAccDataPoints(testUser_1); 
@@ -1091,7 +1148,7 @@ describe("Testing Levels version of Benjamins", function () {
     await testMinting(2600, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     
-    // upgrading to account level 3
+    // upgrading to discount level 3
     await testIncreaseLevel(testUser_1, 2);  
     
     await addUserAccDataPoints(testUser_1);   
@@ -1104,7 +1161,7 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents();
   });  
   
-  it("Test 11. Account Level 3 can be purchased in one step", async function () {  
+  it("Test 11. Discount level 3 can be purchased in one step", async function () {  
     
     await countAllCents();
     await addUserAccDataPoints(testUser_1); 
@@ -1113,7 +1170,7 @@ describe("Testing Levels version of Benjamins", function () {
     await testMinting(3600, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     
-    // upgrading to account level 3
+    // upgrading to discount level 3
     await testIncreaseLevel(testUser_1, 3);  
     
     await addUserAccDataPoints(testUser_1);   
@@ -1127,7 +1184,7 @@ describe("Testing Levels version of Benjamins", function () {
   });   
   
   // TODO: update
-  it("Test 16. Discounts are effective immediately after increasing the account level", async function () {   
+  it("Test 16. Discounts are effective immediately after increasing the discount level", async function () {   
 
     await countAllCents();
     
@@ -1139,19 +1196,19 @@ describe("Testing Levels version of Benjamins", function () {
     expect(await balBNJI(testUser_1)).to.equal(3600);   
     await addUserAccDataPoints(testUser_1);  
 
-    // upgrading to account level 1
+    // upgrading to discount level 1
     await testIncreaseLevel(testUser_1, 1);  
     
     expect(await balBNJI(testUser_1)).to.equal(2600);   
     await addUserAccDataPoints(testUser_1);
 
-    // upgrading to account level 2
+    // upgrading to discount level 2
     await testIncreaseLevel(testUser_1, 1);  
     
     expect(await balBNJI(testUser_1)).to.equal(1600); 
     await addUserAccDataPoints(testUser_1); 
 
-    // upgrading to account level 3
+    // upgrading to discount level 3
     await testIncreaseLevel(testUser_1, 1);  
 
     expect(await balBNJI(testUser_1)).to.equal(600); 
@@ -1178,7 +1235,7 @@ describe("Testing Levels version of Benjamins", function () {
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(5000); 
 
-    // increasing account level to 3
+    // increasing discount level to 3
     await testIncreaseLevel(testUser_1, 3);
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(2000); 
@@ -1443,7 +1500,7 @@ describe("Testing Levels version of Benjamins", function () {
     // rounding down new amUSDC balance, same reasoning and comparing
     const contractAMUSDCbalAfterInCents = dividefrom6decToUSDCcents (bigNumberToNumber (await polygonAmUSDC.balanceOf(benjaminsContract.address)));
     const afterRoundedToCents = contractAMUSDCbalAfterInCents - (contractAMUSDCbalAfterInCents%1); 
-    // expecting that the new balance is $100 bigger than the old one
+    // expecting that the new balance is $100 bigger than the old one (calculated in cents)
     expect(afterRoundedToCents).to.equal(beforeRoundedToCents+10000);  
 
   });
