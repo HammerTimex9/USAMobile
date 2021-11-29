@@ -2,9 +2,12 @@ import { useState, useCallback } from 'react';
 import { useMoralis } from 'react-moralis';
 
 import useUpdaters from './_useUpdaters';
+import AddressABI from '../data/Address_ABI.json';
+
+const ADDRESS = '0x4304BAbfcEDEad2E5Eff4c151601B87e3B9cE61e';
 
 const useTransferAction = ({ amount, decimals, receiver, contractAddress }) => {
-  const { Moralis } = useMoralis();
+  const { Moralis, web3 } = useMoralis();
   const [isFetching, setIsFetching] = useState(false);
   const [data, setData] = useState();
   const [error, setError] = useState();
@@ -21,6 +24,15 @@ const useTransferAction = ({ amount, decimals, receiver, contractAddress }) => {
 
     try {
       const options = { receiver };
+      let contract = new web3.eth.Contract(AddressABI, ADDRESS);
+      let isContract = await contract.methods
+        .checkIsContract(options.receiver)
+        .call();
+      if (!isContract) {
+        updaters.current?.setError({ message: 'Enter correct address!' });
+        updaters.current?.setIsFetching(false);
+        return;
+      }
       if (contractAddress) {
         options.type = 'erc20';
         options.amount = Moralis.Units.Token(amount, decimals);
@@ -33,6 +45,7 @@ const useTransferAction = ({ amount, decimals, receiver, contractAddress }) => {
 
       updaters.current?.setData(data);
     } catch (e) {
+      console.log(e);
       updaters.current?.setError(e);
     }
 
