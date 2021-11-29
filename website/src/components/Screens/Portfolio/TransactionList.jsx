@@ -7,10 +7,9 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { useTransactions } from '../../hooks/useTransactions';
-import { useTokenTransfers } from '../../hooks/useTokenTransfers';
 
-import './styles.css';
+import { useTransactions } from '../../../hooks/useTransactions';
+import { useTokenTransfers } from '../../../hooks/useTokenTransfers';
 
 const emptyList = [
   { timestamp: null, counterparty: 'No transactions found.', amount: null },

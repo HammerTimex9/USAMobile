@@ -14,7 +14,8 @@ import { NavBar } from './Screens/NavBar';
 import { BottomFooter } from './Screens/BottomFooter';
 import './App.scss';
 
-const PortfolioPrices = lazy(() => import('./Screens/PortfolioPrices'));
+const Home = lazy(() => import('./Screens/Home'));
+const Portfolio = lazy(() => import('./Screens/Portfolio'));
 const SwapTrade = lazy(() => import('./Screens/SwapTrade'));
 const BuySell = lazy(() => import('./Screens/BuySell'));
 const SendReceive = lazy(() => import('./Screens/SendReceive'));
@@ -59,7 +60,6 @@ function App() {
   }, [hasMetamask, isAuthenticated, isPolygon, switchNetworkToPolygon]);
 
   const emptyPositions = !address || positions.length === 0;
-  const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
 
   return (
     <Stack alignItems="center" spacing={5} p={3}>
@@ -70,10 +70,13 @@ function App() {
           <NavBar />
           <Suspense fallback={<div>Loading...</div>}>
             <Switch>
+              <Route exact path="/">
+                <Home />
+              </Route>
               <CryptoRoute
                 exact
-                path="/PortfolioPrices"
-                component={PortfolioPrices}
+                path="/Portfolio"
+                component={Portfolio}
                 emptyPositions={emptyPositions}
               />
               <CryptoRoute
@@ -91,7 +94,7 @@ function App() {
                 component={SendReceive}
                 emptyPositions={emptyPositions}
               />
-              <Redirect to={isOnlyMatic ? '/SwapTrade' : '/PortfolioPrices'} />
+              <Redirect to="/" />
             </Switch>
           </Suspense>
         </>

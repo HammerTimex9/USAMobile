@@ -1,16 +1,14 @@
 import { useEffect } from 'react';
-
-import { Box } from '@mui/material';
 import { useMoralis } from 'react-moralis';
+import { Box } from '@mui/material';
 
-import { TokenTable } from '../Blocks/TokenTable';
-import { Heading } from '../UW/Heading';
+import { useExperts } from '../../../contexts/expertsContext';
+import { useNetwork } from '../../../contexts/networkContext';
+import { usePolygonNetwork } from '../../../hooks/usePolygonNetwork';
+import { Heading } from '../../UW/Heading';
+import { TokenTable } from './TokenTable';
 
-import { useExperts } from '../../contexts/expertsContext';
-import { useNetwork } from '../../contexts/networkContext';
-import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
-
-const PortfolioPrices = () => {
+const Portfolio = () => {
   const { setActionMode, setDialog } = useExperts();
 
   const { isAuthenticated, enableWeb3, isWeb3Enabled } = useMoralis();
@@ -38,7 +36,7 @@ const PortfolioPrices = () => {
   }, []);
 
   return (
-    <Box sx={{ textAlign: 'center', mt: 1, mb: 3 }}>
+    <Box>
       <Heading variant="h4">Portfolio and Prices</Heading>
       <br />
       <TokenTable />
@@ -46,4 +44,4 @@ const PortfolioPrices = () => {
   );
 };
 
-export default PortfolioPrices;
+export default Portfolio;

@@ -16,6 +16,7 @@ body {
     );
     --borderColor: #e2e8f0;
     --color: #1a202c;
+    --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
   }
   &.dark {
     --bg: linear-gradient(
@@ -28,6 +29,7 @@ body {
     );
     --borderColor: rgba(255, 255, 255, 0.16);
     --color: rgba(255, 255, 255, 0.92);
+    --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
   }
   --boxShadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
 
@@ -40,6 +42,19 @@ body {
 
 .nav-bar-icon {
   font-size: 1rem !important;
+}
+
+.uw-scrollbar {
+  &::-webkit-scrollbar {
+    appearance: none;
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbarThumbColor);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
 }
 
 #transakFiatOnOffRamp {
