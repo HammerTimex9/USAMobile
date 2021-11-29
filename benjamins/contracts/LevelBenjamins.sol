@@ -36,11 +36,11 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
   uint256 public USDCscaleFactor =    1000000;  // 6 decimals scale of USDC crypto currency
   uint256 public USDCcentsScaleFactor = 10000;  // 4 decimals scale of USDC crypto currency cents
-  uint256 public blocksPerDay = 2;              // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
+  uint256 public blocksPerDay;                  // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
   uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor
      
-  uint256 public curveFactor =   8000000;       // inverse slope of the bonding curve
-  uint256 public baseFeeTimes10k = 10000;       // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
+  uint256 public curveFactor;                   // inverse slope of the bonding curve
+  uint256 public baseFeeTimes10k;               // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
 
   uint256 public neededBNJIperLevel;            // amount of BNJI needed per discount level
   uint16[] public holdingTimes;                 // holding times in days
@@ -144,6 +144,11 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     polygonAMUSDC = IERC20(0x1a13F4Ca1d028320A707D99520AbFefca3998b7F);
     polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
 
+    // setting blocksPerDay, curveFactor and baseFeeTimes10k 
+    blocksPerDay =        2; 
+    curveFactor =   8000000;       
+    baseFeeTimes10k = 10000;    
+
     // setting neededBNJIperLevel, holdingTimes and discounts 
     neededBNJIperLevel = 1000;              // necessary amount of BNJI to lock per level (level 1 needs 1000 BNJI locked up, etc.)
     holdingTimes = [0, 30, 90, 300];        // holding times in days, relating to discount level (level 1 needs 30 days holding, etc.)
@@ -211,7 +216,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3");
     
-    uint256   amountOfBNJItoLock = (_amountOfLevelsToIncrease * neededBNJIperLevel);   // Todo: approval must be done in front end before
+    uint256 amountOfBNJItoLock = (_amountOfLevelsToIncrease * neededBNJIperLevel);   // Todo: approval must be done in front end before
 
     // transferring BNJI from msg.sender to this contract
     transfer(address(this), amountOfBNJItoLock);
@@ -596,7 +601,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     emit DiscountsUpdate(discounts);
   }     
     
-  function updateBaseFee( uint256 _newbaseFeeTimes10k) public onlyOwner {
+  function updateBaseFee(uint256 _newbaseFeeTimes10k) public onlyOwner {
     baseFeeTimes10k = _newbaseFeeTimes10k;
     emit BaseFeeUpdate(_newbaseFeeTimes10k);
   }

@@ -38,7 +38,7 @@ let holdingTimesInDays = [];
 let benjaminsContract;
 
 let polygonUSDC;
-const polygonUSDCaddress = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174';
+const polygonUSDCaddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
 
 let polygonAmUSDC;
 const polygonAmUSDCAddress = '0x1a13F4Ca1d028320A707D99520AbFefca3998b7F';
@@ -98,11 +98,10 @@ function confirmUserDataPoints(userToCheck, expectedUserLevelsArray, expectedUse
   user2DiscountDataArray = [];
 }
 
-async function getContractsHoldingTimesArrayAndConfirmIt() {
+async function getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray) {
   let holdingTimesInDaysWithBNs = [];
   holdingTimesInDaysWithBNs = await benjaminsContract.getHoldingTimes();
-
-  const expectedHoldingTimesArray  =  [0, 30, 90, 300];
+  holdingTimesInDays = [];
 
   for (let index = 0; index < holdingTimesInDaysWithBNs.length; index++) {     
     holdingTimesInDays.push(bigNumberToNumber(holdingTimesInDaysWithBNs[index]));
@@ -110,11 +109,10 @@ async function getContractsHoldingTimesArrayAndConfirmIt() {
   }
 }
 
-async function getContractsDiscountArrayAndConfirmIt() {
+async function getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray) {
   let contractsDiscountArrayWithBNs = [];
-  contractsDiscountArrayWithBNs = await benjaminsContract.getDiscounts();
-
-  const expectedDiscountsArray = [0, 10, 25,  50];  
+  contractsDiscountArrayWithBNs = await benjaminsContract.getDiscounts();   
+  levelDiscountsArray = [];
 
   for (let index = 0; index < contractsDiscountArrayWithBNs.length; index++) {     
     levelDiscountsArray.push(bigNumberToNumber(contractsDiscountArrayWithBNs[index]));
@@ -663,9 +661,11 @@ describe("Testing Levels version of Benjamins", function () {
     // Get neededBNJIperLevel into this testing suite
     neededBNJIperLevel = bigNumberToNumber(await benjaminsContract.getneededBNJIperLevel());
   
-    await getContractsHoldingTimesArrayAndConfirmIt();
+    const expectedHoldingTimesArray  =  [0, 30, 90, 300];
+    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray);
 
-    await getContractsDiscountArrayAndConfirmIt();
+    const expectedDiscountsArray = [0, 10, 25,  50]; 
+    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray);
 
     polygonUSDC = new ethers.Contract(
       polygonUSDCaddress,
@@ -1526,13 +1526,116 @@ describe("Testing Levels version of Benjamins", function () {
   });
   
   // todo: create "real world use simulation"
-  it("Test 26. real world use simulation", async function () { 
+  it("Test 26. Placeholder for real world use simulation", async function () { 
   });
   
 
   // TODO test checkGains and withdrawGains
 
   // todo: rename the following tests, should be the last ones
+
+  // todo: create "real world use simulation"
+  it("Test last0. testing setters and getters", async function () { 
+
+    const feeReceiver_BeforeChange = await benjaminsContract.getFeeReceiver();
+    expect(feeReceiver_BeforeChange).to.equal(feeReceiver);         
+    // only the owner can update
+    await expect( benjaminsContract.updateFeeReceiver(testUser_4) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updateFeeReceiver(testUser_4);
+    const feeReceiver_AfterChange = await benjaminsContract.getFeeReceiver();
+    expect(feeReceiver_AfterChange).to.equal(testUser_4);
+
+
+    const baseFee_BeforeChange = bigNumberToNumber( await benjaminsContract.getBaseFeeTimes10k());
+    expect(baseFee_BeforeChange).to.equal(baseFeeTimes10k);
+    // only the owner can update
+    await expect( benjaminsContract.updateBaseFee(7) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updateBaseFee(7); 
+    const baseFee_AfterChange = bigNumberToNumber( await benjaminsContract.getBaseFeeTimes10k());
+    expect(baseFee_AfterChange).to.equal(7);
+
+
+    const polygonUSDCaddress_BeforeChange = await benjaminsContract.getPolygonUSDC();
+    expect(polygonUSDCaddress_BeforeChange).to.equal(polygonUSDCaddress);
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonUSDC(benjaminsContract.address) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updatePolygonUSDC(benjaminsContract.address); 
+    const polygonUSDCaddress_AfterChange = await benjaminsContract.getPolygonUSDC();
+    expect(polygonUSDCaddress_AfterChange).to.equal(benjaminsContract.address);
+
+
+    const polygonAmUSDCAddress_BeforeChange = await benjaminsContract.getPolygonAMUSDC();
+    expect(polygonAmUSDCAddress_BeforeChange).to.equal(polygonAmUSDCAddress);
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonAMUSDC(benjaminsContract.address) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updatePolygonAMUSDC(benjaminsContract.address); 
+    const polygonAmUSDCAddress_AfterChange = await benjaminsContract.getPolygonAMUSDC();
+    expect(polygonAmUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
+
+
+    const blocksPerDay_BeforeChange = bigNumberToNumber(await benjaminsContract.getBlocksPerDay());
+    expect(blocksPerDay_BeforeChange).to.equal(blocksPerDay);
+    // only the owner can update
+    await expect( benjaminsContract.updateBlocksPerDay(14) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updateBlocksPerDay(14); 
+    const blocksPerDay_AfterChange = bigNumberToNumber(await benjaminsContract.getBlocksPerDay()); 
+    expect(blocksPerDay_AfterChange).to.equal(14);
+
+
+    const curveFactor_BeforeChange = bigNumberToNumber(await benjaminsContract.getCurveFactor());
+    expect(curveFactor_BeforeChange).to.equal(curveFactor);
+    // only the owner can update
+    await expect( benjaminsContract.updateCurveFactor(148769) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updateCurveFactor(148769); 
+    const curveFactor_AfterChange = bigNumberToNumber(await benjaminsContract.getCurveFactor());
+    expect(curveFactor_AfterChange).to.equal(148769);
+
+
+    const neededBNJIperLevel_BeforeChange = bigNumberToNumber(await benjaminsContract.getneededBNJIperLevel());
+    expect(neededBNJIperLevel_BeforeChange).to.equal(neededBNJIperLevel);
+    // only the owner can update
+    await expect( benjaminsContract.updateNeededBNJIperLevel(50000) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updateNeededBNJIperLevel(50000); 
+    const neededBNJIperLevel_AfterChange = bigNumberToNumber(await benjaminsContract.getneededBNJIperLevel());
+    expect(neededBNJIperLevel_AfterChange).to.equal(50000);
+    
+    
+    const expectedHoldingTimesArray_BeforeChange  =  [0, 30, 90, 300];
+    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray_BeforeChange);
+    const toChangeHoldingTimesArray = [11, 26, 1,  9900, 77, 123]; 
+    // only the owner can update
+    await expect( benjaminsContract.updateHoldingTimes(toChangeHoldingTimesArray) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updateHoldingTimes(toChangeHoldingTimesArray);     
+    await getContractsHoldingTimesArrayAndConfirmIt(toChangeHoldingTimesArray);
+
+    
+    const expectedDiscountsArray_BeforeChange = [0, 10, 25,  50];     
+    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray_BeforeChange);
+    const toChangeDiscountsArray = [78, 0, 257, 11,0,0,17];   
+     // only the owner can update
+     await expect( benjaminsContract.updateDiscounts(toChangeDiscountsArray) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updateDiscounts(toChangeDiscountsArray);          
+    await getContractsDiscountArrayAndConfirmIt(toChangeDiscountsArray);
+    
+  });
 
   it("Test last1. Activating pause() should lock public access to state changing functions, but allow owner", async function () { 
     
