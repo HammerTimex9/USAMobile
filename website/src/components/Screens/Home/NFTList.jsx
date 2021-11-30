@@ -54,7 +54,7 @@ const NFTList = () => {
   React.useEffect(() => {
     Moralis.Web3API.account.getNFTs({ chain: 'ropsten' }).then((data) => {
       setItems(data.result);
-      // setItems(mockData);
+      setItems(mockData);
     });
   }, [Moralis]);
 

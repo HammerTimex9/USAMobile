@@ -50,6 +50,7 @@ const useTransferAction = ({ amount, decimals, receiver, contractAddress }) => {
     }
 
     updaters.current?.setIsFetching(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amount, decimals, receiver, contractAddress, updaters, Moralis]);
 
   return { fetch, isFetching, data, error };

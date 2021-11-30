@@ -18,6 +18,7 @@ const useTokenInfo = (symbol) => {
     } else {
       updaters.current?.setData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symbol?.toLowerCase()]);
 
   return data;

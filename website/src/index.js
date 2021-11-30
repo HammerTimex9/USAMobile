@@ -12,8 +12,8 @@ import { QuoteProvider } from './contexts/quoteContext';
 import App from './components/App';
 import reportWebVitals from './components/Support/reportWebVitals';
 
-const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID;
-const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL;
+const appId = 'giVlpdXNLyuhimWSJm4JKmuHb5avCo9DpoPZftJ9';
+const serverUrl = 'https://19vhqyfouejb.usemoralis.com:2053/server';
 
 ReactDOM.render(
   <React.StrictMode>
