@@ -9,6 +9,10 @@ const styles = StyleSheet.create({
 	bodyWrapper:{
 		width: '100%'
 	},
+	pageHeadingWrapper:{ marginVertical: 16},
+	expertBoxWrapper:{
+		marginVertical: 8
+	},
 	swapPanelWrapper:{}
 });
 

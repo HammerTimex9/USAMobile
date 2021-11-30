@@ -3,6 +3,8 @@ import { View, Text } from "react-native";
 import AddressPanel from '../../Blocks/AddressPanel';
 import SendPanel from '../../Blocks/SendPanel';
 import ButtonsBar from './ButtonsBar';
+import ExpertStage from '../ExpertStage';
+
 import styles from './styles';
 
 // Interfaces
@@ -22,6 +24,12 @@ const SendReceive: React.FC<IProps> = ()=>{
 
   return(
     <View style={styles.container}>
+      <View style={styles.pageHeadingWrapper}>
+          <Text> Send/Receive</Text>
+      </View>
+      <View style={styles.expertBoxWrapper}>
+          <ExpertStage />
+        </View>
       <View style={styles.buttonsBarWrapper}>
         <ButtonsBar onSelect={toggleButton}/>
       </View>

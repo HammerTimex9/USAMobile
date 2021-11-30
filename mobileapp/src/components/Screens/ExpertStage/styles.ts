@@ -1,18 +1,16 @@
 import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-	container:{
-		display: 'flex',
-    	alignItems: 'center',
-    	padding: 10
-	},
+	container:{},
 	expertCardWrapper:{
 		display: 'flex',
-		width: '100%',
 		flexDirection:'row',
 		alignItems: 'flex-start',
-		justifyContent: 'center'
-		
+		justifyContent: 'center',
+		height: 150,
+		borderWidth:1,
+		borderRadius:10,
+		padding:8
 	},
 	textWrapper:{
 		flex: 2,
@@ -21,7 +19,10 @@ const styles = StyleSheet.create({
 	},
 	iconWrapper:{
 		flex: 1,
-		justifyContent: 'center'
+		height:'100%',
+		paddingRight:8,
+		justifyContent: 'center',
+		alignItems: 'flex-end'
 	},
 	icon:{
 		width:100,

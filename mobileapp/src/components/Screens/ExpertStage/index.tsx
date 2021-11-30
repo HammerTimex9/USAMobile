@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { Image, View, Text } from "react-native";
 
 import styles from './styles';
 
@@ -12,6 +12,7 @@ const ExpertStage = () => {
           <Text>Expert Stage Component</Text>
         </View>
         <View style={styles.iconWrapper}>
+          <Image style={styles.icon} source={require('../../../media/characters/Benicorn.png')} />
         </View>
       </View>
 
