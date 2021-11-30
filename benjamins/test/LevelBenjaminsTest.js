@@ -58,6 +58,10 @@ let user1LevelDataArray = [];
 let user1DiscountDataArray = [];
 let user2LevelDataArray = [];
 let user2DiscountDataArray = [];
+let user3LevelDataArray = [];
+let user3DiscountDataArray = [];
+let user4LevelDataArray = [];
+let user4DiscountDataArray = [];
 
 // querrying and saving discount level and account discount info for userToCheck, and saving them to an array for later confirmation
 async function addUserAccDataPoints(userToCheck){
@@ -72,6 +76,12 @@ async function addUserAccDataPoints(userToCheck){
   } else if (userToCheck == testUser_2) {
     user2LevelDataArray.push(userLevelNow);
     user2DiscountDataArray.push(userDiscountNow);
+  } else if (userToCheck == testUser_3) {
+    user3LevelDataArray.push(userLevelNow);
+    user3DiscountDataArray.push(userDiscountNow);
+  } else if (userToCheck == testUser_4) {
+    user4LevelDataArray.push(userLevelNow);
+    user4DiscountDataArray.push(userDiscountNow);
   } 
 }
 
@@ -477,6 +487,7 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   const afterLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[afterLevelIncrease_UsersDiscountLevel];
   const afterLevelIncrease_LockedBNJIExpected = afterLevelIncrease_UsersDiscountLevel * neededBNJIperLevel;
 
+  // updated unlock timestamp and amount of blocks to wait should now be updated, relating to new discount level
   const afterLevelIncrease_AmountOfBlocksToWaitExpected = holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] * blocksPerDay;
   const afterLevelIncrease_UnlockTimestampExpected = blockheightNow + (holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] * blocksPerDay);
   
@@ -492,13 +503,11 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   // the same amount should now be added to the benjaminsContract's balance of unlocked BNJI
   expect(afterLevelIncrease_BNJIbal_Contract).to.equal(beforeLevelIncrease_BNJIbal_Contract + costInBNJI);  
   
-  // unlock timestamp and amount of blocks to wait should be updated (increased) by using increase level functionality 
+  // unlock timestamp and amount of blocks to wait should be updated (increased) by when increasing level
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.be.greaterThan(beforeLevelIncrease_UsersUnlockTimestamp);
-  expect(afterLevelIncrease_AmountOfBlocksToWait).to.be.greaterThan(beforeLevelIncrease_AmountOfBlocksToWait);
-
-  // amount of blocks to wait after level increase should be equal to calculated value (see above)
-  expect(afterLevelIncrease_AmountOfBlocksToWait).to.equal(afterLevelIncrease_AmountOfBlocksToWaitExpected); 
-  // unlock timestamp after level increase should be equal to calculated value (see above)
+  expect(afterLevelIncrease_AmountOfBlocksToWait).to.be.greaterThan(beforeLevelIncrease_AmountOfBlocksToWait);  
+  // unlock timestamp and amount of blocks to wait should now be calculated relating to new discount level
+  expect(afterLevelIncrease_AmountOfBlocksToWait).to.equal(afterLevelIncrease_AmountOfBlocksToWaitExpected);  
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.equal(afterLevelIncrease_UnlockTimestampExpected);  
   
   // user's balance of locked BNJI after level increase should be equal to calculated value (see above)  
@@ -1168,9 +1177,11 @@ describe("Testing Levels version of Benjamins", function () {
 
 
   // TODO: update
-  it("Test 15. Discount level 1 can be purchased for 1000 BNJI", async function () {   
-
+  it.only("Test 15. Account upgrades starting from level 0 work as expected", async function () {   
+    
     await countAllCents();
+
+    // testUser_1 upgrades from discount level 0 to 1   
     await addUserAccDataPoints(testUser_1); 
 
     // minting 1000 BNJI to caller
@@ -1187,82 +1198,236 @@ describe("Testing Levels version of Benjamins", function () {
     const expectedUser1Discounts = [0,0,10];    
     confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
 
-    await countAllCents();
-  });  
-  
-  // TODO: update
-  it("Test 16. Discount level 2 can be purchased in one step", async function () {   
+    await countAllCents();    
+
+    // testUser_2 upgrades from discount level 0 to 2
+    await addUserAccDataPoints(testUser_2); 
+
+    // minting 2000 BNJI to caller
+    await testMinting(2000, testUser_2, testUser_2);   
+    await addUserAccDataPoints(testUser_2); 
+    
+    // upgrading to discount level 2
+    await testIncreaseLevel(testUser_2, 2, 0);  
+    
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    const expectedUser2Levels    = [0,0, 2];
+    const expectedUser2Discounts = [0,0,25];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
 
     await countAllCents();
-    await addUserAccDataPoints(testUser_1); 
+        
+    // testUser_3 upgrades from discount level 0 to 3 
+    await addUserAccDataPoints(testUser_3); 
 
-    // minting 2600 BNJI to caller
-    await testMinting(2600, testUser_1, testUser_1);   
-    await addUserAccDataPoints(testUser_1); 
+    // minting 3000 BNJI to caller
+    await testMinting(3000, testUser_3, testUser_3);   
+    await addUserAccDataPoints(testUser_3); 
     
     // upgrading to discount level 3
+    await testIncreaseLevel(testUser_3, 3, 0);  
+    
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(0); 
+
+    const expectedUser3Levels    = [0,0, 3];
+    const expectedUser3Discounts = [0,0,50];    
+    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+
+    await countAllCents();
+
+    // testUser_4 cannot upgrade from discount level 0 to above 3, reverts
+    await addUserAccDataPoints(testUser_4); 
+
+    // minting 4000 BNJI to caller
+    await testMinting(4000, testUser_4, testUser_4);   
+    await addUserAccDataPoints(testUser_4); 
+    
+    // upgrading above discount level 3 does not work and will be reverted
+    await expect( testIncreaseLevel(testUser_4, 4, 0) ).to.be.reverted;  
+    
+    await addUserAccDataPoints(testUser_4);   
+    expect(await balBNJI(testUser_4)).to.equal(4000); 
+
+    const expectedUser4Levels    = [0,0,0];
+    const expectedUser4Discounts = [0,0,0];    
+    confirmUserDataPoints(testUser_4, expectedUser4Levels, expectedUser4Discounts);
+
+    await countAllCents();
+
+
+  });  
+
+  // TODO: update
+  it.only("Test 16. Account upgrades starting from level 1 work as expected", async function () {   
+    
+    await countAllCents();
+
+    // Preparation: testUser_1 gets discount level 1    
+    await addUserAccDataPoints(testUser_1); 
+
+    // minting 2000 BNJI to caller
+    await testMinting(2000, testUser_1, testUser_1);   
+    await addUserAccDataPoints(testUser_1); 
+    
+    // upgrading to discount level 1
+    await testIncreaseLevel(testUser_1, 1, 0);  
+    
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(1000); 
+
+    // testUser_1 upgrades from discount level 1 to 2   
+    await testIncreaseLevel(testUser_1, 1, 1);  
+    
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    const expectedUser1Levels    = [0,0, 1, 2];
+    const expectedUser1Discounts = [0,0,10,25];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+
+    await countAllCents();    
+
+    // Preparation: testUser_2 gets discount level 1  
+    await addUserAccDataPoints(testUser_2); 
+
+    // minting 3000 BNJI to caller
+    await testMinting(3000, testUser_2, testUser_2);   
+    await addUserAccDataPoints(testUser_2); 
+    expect(await balBNJI(testUser_2)).to.equal(3000); 
+    
+    // upgrading to discount level 1
+    await testIncreaseLevel(testUser_2, 1, 0); 
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(2000); 
+    
+    // testUser_2 upgrades from discount level 1 to 3
+    await testIncreaseLevel(testUser_2, 2, 1);  
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    const expectedUser2Levels    = [0,0, 1, 3];
+    const expectedUser2Discounts = [0,0,10,50];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+
+    await countAllCents();
+
+    // Preparation: testUser_3 gets discount level 1  
+    await addUserAccDataPoints(testUser_3); 
+
+    // minting 4000 BNJI to caller
+    await testMinting(4000, testUser_3, testUser_3);   
+    await addUserAccDataPoints(testUser_3); 
+    expect(await balBNJI(testUser_3)).to.equal(4000); 
+    
+    // upgrading to discount level 1
+    await testIncreaseLevel(testUser_3, 1, 0); 
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(3000); 
+        
+    // testUser_3 cannot upgrade from discount level 1 to above 3, reverts
+    await expect( testIncreaseLevel(testUser_3, 3, 1) ).to.be.reverted;  
+    
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(3000); 
+
+    const expectedUser3Levels    = [0,0, 1, 1];
+    const expectedUser3Discounts = [0,0,10,10];    
+    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+
+    await countAllCents();
+
+  });  
+
+  
+  // TODO: update
+  it.only("Test 17. Account upgrades starting from level 2 work as expected", async function () {
+
+    await countAllCents();
+
+    // Preparation: testUser_1 gets discount level 2 
+    await addUserAccDataPoints(testUser_1); 
+
+    // minting 3000 BNJI to caller
+    await testMinting(3000, testUser_1, testUser_1);   
+    await addUserAccDataPoints(testUser_1); 
+    
+    // upgrading to discount level 2
     await testIncreaseLevel(testUser_1, 2, 0);  
     
     await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(600); 
+    expect(await balBNJI(testUser_1)).to.equal(1000); 
 
-    const expectedUser1Levels    = [0,0, 2];
-    const expectedUser1Discounts = [0,0,25];    
+    // testUser_1 upgrades from discount level 2 to 3   
+    await testIncreaseLevel(testUser_1, 1, 2);  
+    
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    const expectedUser1Levels    = [0,0, 2, 3];
+    const expectedUser1Discounts = [0,0,25,50];    
     confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+
+    await countAllCents();    
+
+    // Preparation: testUser_2 gets discount level 2   
+    await addUserAccDataPoints(testUser_2); 
+
+    // minting 4000 BNJI to caller
+    await testMinting(4000, testUser_2, testUser_2);   
+    await addUserAccDataPoints(testUser_2); 
+    expect(await balBNJI(testUser_2)).to.equal(4000); 
+    
+    // upgrading to discount level 2
+    await testIncreaseLevel(testUser_2, 2, 0); 
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(2000); 
+        
+    // testUser_2 cannot upgrade from discount level 2 to above 3, reverts
+    await expect( testIncreaseLevel(testUser_2, 2, 2) ).to.be.reverted;  
+    
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(2000); 
+
+    const expectedUser2Levels    = [0,0, 2, 2];
+    const expectedUser2Discounts = [0,0,25,25];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
 
     await countAllCents();
   });  
   
-  it("Test 17. Discount level 3 can be purchased in one step", async function () {  
+  // TODO: update
+  it.only("Test 18. Account upgrades starting from level 3 are reverted as expected", async function () {   
     
     await countAllCents();
+
+    // Preparation: testUser_1 gets discount level 3       
     await addUserAccDataPoints(testUser_1); 
 
-    // minting 3600 BNJI to caller
-    await testMinting(3600, testUser_1, testUser_1);   
+    // minting 4000 BNJI to caller
+    await testMinting(4000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
+    expect(await balBNJI(testUser_1)).to.equal(4000); 
     
     // upgrading to discount level 3
-    await testIncreaseLevel(testUser_1, 3, 0);  
+    await testIncreaseLevel(testUser_1, 3, 0); 
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(1000); 
+        
+    // testUser_1 cannot upgrade from discount level 3 to above 3, reverts
+    await expect( testIncreaseLevel(testUser_1, 1, 3) ).to.be.reverted;  
     
     await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(600); 
+    expect(await balBNJI(testUser_1)).to.equal(1000); 
 
-    const expectedUser1Levels    = [0,0, 3];
-    const expectedUser1Discounts = [0,0,50];    
+    const expectedUser1Levels    = [0,0, 3, 3];
+    const expectedUser1Discounts = [0,0,50,50];    
     confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
 
     await countAllCents();
-  });   
-
-
-  
-  // TODO: update
-  it("Test 18. Users can't purchase more levels than level 3", async function () {   
-
-    await countAllCents();
-    await addUserAccDataPoints(testUser_1); 
-
-    // minting 4600 BNJI to caller
-    await testMinting(4600, testUser_1, testUser_1);   
-    await addUserAccDataPoints(testUser_1); 
-    expect(await balBNJI(testUser_1)).to.equal(4600); 
-    
-    await expect( testIncreaseLevel(testUser_1, 4, 0) ).to.be.revertedWith(
-      "You can increase the discount level up to level 3"
-    );  
-    
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(4600); 
-
-    const expectedUser1Levels    = [0,0,0];
-    const expectedUser1Discounts = [0,0,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
-
-    await countAllCents();
-
-  }); 
-
+  });  
   
   // TODO: update
   it("Test 19. Discount changes are effective immediately after increasing the discount level", async function () {   
@@ -1440,7 +1605,7 @@ describe("Testing Levels version of Benjamins", function () {
 
     await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
 
-    // downgrading 4 levels will be reverted
+    // downgrading below level 0 does not work and will be reverted
     await expect( testDecreaseLevel(testUser_1, 4, 0) ).to.be.reverted;  
 
     await addUserAccDataPoints(testUser_1);   

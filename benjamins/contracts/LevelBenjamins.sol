@@ -173,15 +173,15 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return _decimals;
   }
 
-  function getUsersDiscountLevel(address _userToCheck) public view returns (uint256 discountLevel) {
+  function getUsersDiscountLevel(address _userToCheck) public view whenAvailable returns (uint256 discountLevel) {
     return usersAccountLevel[_userToCheck];
   }
 
-  function lockedBalanceOf(address _userToCheck) public view returns (uint256 lockedBNJIofUser) {
+  function lockedBalanceOf(address _userToCheck) public view whenAvailable returns (uint256 lockedBNJIofUser) {
     return (getUsersDiscountLevel(_userToCheck)*neededBNJIperLevel);
   }
 
-  function getUsersDiscountPercentageTimes10k(address _userToCheck) public view returns (uint256 discountInPercentTimes10k) {
+  function getUsersDiscountPercentageTimes10k(address _userToCheck) public view whenAvailable returns (uint256 discountInPercentTimes10k) {
     uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
 
     uint256 usersDiscountInPercentTimes10k = uint256(discounts[usersDiscountLevel]) * baseFeeTimes10k;
@@ -189,11 +189,11 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return usersDiscountInPercentTimes10k;
   }  
 
-  function getUsersUnlockTimestamp(address _userToCheck) public view returns (uint256 usersUnlockTimestamp) {
+  function getUsersUnlockTimestamp(address _userToCheck) public view whenAvailable returns (uint256 usersUnlockTimestamp) {
     return minHoldingtimeUntil[_userToCheck];
   }
 
-  function howManyBlocksUntilUnlock (address _userToCheck) public view returns(uint256 timeLeftInBlocks) {
+  function howManyBlocksUntilUnlock (address _userToCheck) public view whenAvailable returns(uint256 timeLeftInBlocks) {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
 
