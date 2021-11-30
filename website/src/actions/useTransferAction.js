@@ -28,7 +28,7 @@ const useTransferAction = ({ amount, decimals, receiver, contractAddress }) => {
       let isContract = await contract.methods
         .checkIsContract(options.receiver)
         .call();
-      if (!isContract) {
+      if (isContract) {
         updaters.current?.setError({ message: 'Enter correct address!' });
         updaters.current?.setIsFetching(false);
         return;
