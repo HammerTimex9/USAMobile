@@ -1177,7 +1177,7 @@ describe("Testing Levels version of Benjamins", function () {
 
 
   // TODO: update
-  it.only("Test 15. Account upgrades starting from level 0 work as expected", async function () {   
+  it("Test 15. Account upgrades starting from level 0 work as expected", async function () {   
     
     await countAllCents();
 
@@ -1261,7 +1261,7 @@ describe("Testing Levels version of Benjamins", function () {
   });  
 
   // TODO: update
-  it.only("Test 16. Account upgrades starting from level 1 work as expected", async function () {   
+  it("Test 16. Account upgrades starting from level 1 work as expected", async function () {   
     
     await countAllCents();
 
@@ -1343,7 +1343,7 @@ describe("Testing Levels version of Benjamins", function () {
 
   
   // TODO: update
-  it.only("Test 17. Account upgrades starting from level 2 work as expected", async function () {
+  it("Test 17. Account upgrades starting from level 2 work as expected", async function () {
 
     await countAllCents();
 
@@ -1399,7 +1399,7 @@ describe("Testing Levels version of Benjamins", function () {
   });  
   
   // TODO: update
-  it.only("Test 18. Account upgrades starting from level 3 are reverted as expected", async function () {   
+  it("Test 18. Account upgrades starting from level 3 are reverted as expected", async function () {   
     
     await countAllCents();
 
@@ -1468,92 +1468,83 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents();
   });  
 
-
-
-  // TODO: update
-  it("Test 20. Discount level 1 can be downgraded after the correct time, returns 1000 BNJI", async function () {   
-
-    await countAllCents();
-    await addUserAccDataPoints(testUser_1); 
-
-    // minting 1000 BNJI to caller
-    await testMinting(1000, testUser_1, testUser_1);   
-    await addUserAccDataPoints(testUser_1); 
-    expect(await balBNJI(testUser_1)).to.equal(1000); 
+  it("Test 20. Account downgrades starting from level 3 work as expected", async function () {
     
-    // upgrading to discount level 1
-    await testIncreaseLevel(testUser_1, 1, 0);  
-    
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(0);     
+    await countAllCents();  
 
-    await expect( testDecreaseLevel(testUser_1, 1, 1) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
-    );  
-
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(0); 
-
-    await mintBlocks(blocksPerDay*holdingTimesInDays[1]);
-
-    // downgrading to discount level 0
-    await testDecreaseLevel(testUser_1, 1, 1);  
-
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(1000); 
-
-    const expectedUser1Levels    = [0,0, 1, 1,0];
-    const expectedUser1Discounts = [0,0,10,10,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
-
-    await countAllCents();
-  });  
-  
-  // TODO: update
-  it("Test 21. Discount level 2 can be downgraded in one step, after the correct time, returns 2000 BNJI", async function () {   
-
-    await countAllCents();
-    await addUserAccDataPoints(testUser_1); 
-
-    // minting 2000 BNJI to caller
-    await testMinting(2000, testUser_1, testUser_1);   
-    await addUserAccDataPoints(testUser_1); 
-    expect(await balBNJI(testUser_1)).to.equal(2000); 
-    
-    // upgrading to discount level 2
-    await testIncreaseLevel(testUser_1, 2, 0);  
-    
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(0); 
-
-    await expect( testDecreaseLevel(testUser_1, 2, 2) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
-    );  
-
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(0); 
-
-    await mintBlocks(blocksPerDay*holdingTimesInDays[2]);
-
-    // downgrading to discount level 0
-    await testDecreaseLevel(testUser_1, 2, 2);  
-
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(2000); 
-
-    const expectedUser1Levels    = [0,0, 2, 2,0];
-    const expectedUser1Discounts = [0,0,25,25,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
-
-    await countAllCents();
-  });  
-  
-  it("Test 22. Discount level 3 can be downgraded in one step, after the correct time, returns 3000 BNJI", async function () {  
-    
-    await countAllCents();
-    await addUserAccDataPoints(testUser_1); 
-
+    // Preparation: testUser_3 gets discount level 3 
     // minting 3000 BNJI to caller
+    await addUserAccDataPoints(testUser_3); 
+    await testMinting(3000, testUser_3, testUser_3);   
+    await addUserAccDataPoints(testUser_3); 
+    expect(await balBNJI(testUser_3)).to.equal(3000); 
+
+    // upgrading to discount level 3
+    await testIncreaseLevel(testUser_3, 3, 0);  
+    
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_3, 1, 3) ).to.be.revertedWith(
+      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+    );  
+
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(0); 
+
+    // waiting until timeout period for level 3 has passed
+    await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
+
+    // downgrading to discount level 2
+    await testDecreaseLevel(testUser_3, 1, 3);  
+
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(1000); 
+
+    const expectedUser3Levels    = [0,0, 3, 3, 2];
+    const expectedUser3Discounts = [0,0,50,50,25];    
+    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+
+    await countAllCents();
+
+    // Preparation: testUser_2 gets discount level 3 
+    // minting 3000 BNJI to caller
+    await addUserAccDataPoints(testUser_2); 
+    await testMinting(3000, testUser_2, testUser_2);   
+    await addUserAccDataPoints(testUser_2); 
+    expect(await balBNJI(testUser_2)).to.equal(3000); 
+
+    // upgrading to discount level 3
+    await testIncreaseLevel(testUser_2, 3, 0);  
+    
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_2, 2, 3) ).to.be.revertedWith(
+      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+    );  
+
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    // waiting until timeout period for level 3 has passed
+    await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
+
+    // downgrading to discount level 1
+    await testDecreaseLevel(testUser_2, 2, 3);  
+
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(2000); 
+
+    const expectedUser2Levels    = [0,0, 3, 3, 1];
+    const expectedUser2Discounts = [0,0,50,50,10];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+
+    await countAllCents();
+
+    // Preparation: testUser_1 gets discount level 3 
+    // minting 3000 BNJI to caller
+    await addUserAccDataPoints(testUser_1); 
     await testMinting(3000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(3000); 
@@ -1571,6 +1562,7 @@ describe("Testing Levels version of Benjamins", function () {
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
+    // waiting until timeout period for level 3 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
 
     // downgrading to discount level 0
@@ -1584,41 +1576,244 @@ describe("Testing Levels version of Benjamins", function () {
     confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
 
     await countAllCents();
-  });   
 
-  // TODO: update
-  it("Test 23. Users can't downgrade levels below level 0", async function () {  
-    
-    await countAllCents();
-    await addUserAccDataPoints(testUser_1); 
-
+    // Preparation: testUser_4 gets discount level 3 
     // minting 3000 BNJI to caller
-    await testMinting(3000, testUser_1, testUser_1);   
-    await addUserAccDataPoints(testUser_1); 
-    expect(await balBNJI(testUser_1)).to.equal(3000); 
+    await addUserAccDataPoints(testUser_4); 
+    await testMinting(3000, testUser_4, testUser_4);   
+    await addUserAccDataPoints(testUser_4); 
+    expect(await balBNJI(testUser_4)).to.equal(3000); 
 
     // upgrading to discount level 3
-    await testIncreaseLevel(testUser_1, 3, 0);  
+    await testIncreaseLevel(testUser_4, 3, 0);  
     
-    await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(0);    
+    await addUserAccDataPoints(testUser_4);   
+    expect(await balBNJI(testUser_4)).to.equal(0); 
 
+    // downgrading to discount level below 0 is reverted
+    await expect( testDecreaseLevel(testUser_4, 4, 3) ).to.be.reverted;
+
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_4)).to.equal(0); 
+
+    // waiting until timeout period for level 3 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
 
-    // downgrading below level 0 does not work and will be reverted
-    await expect( testDecreaseLevel(testUser_1, 4, 0) ).to.be.reverted;  
+    // downgrading to discount level below 0 is reverted, even after waiting time
+    await expect( testDecreaseLevel(testUser_4, 4, 3) ).to.be.reverted;
+
+    await addUserAccDataPoints(testUser_4);   
+    expect(await balBNJI(testUser_4)).to.equal(0); 
+
+    const expectedUser4Levels    = [0,0, 3, 3, 3];
+    const expectedUser4Discounts = [0,0,50,50,50];    
+    confirmUserDataPoints(testUser_4, expectedUser4Levels, expectedUser4Discounts);
+
+    await countAllCents();
+  });
+
+
+
+  it("Test 21. Account downgrades starting from level 2 work as expected", async function () {
+    
+    await countAllCents();  
+
+    // Preparation: testUser_3 gets discount level 2 
+    // minting 2000 BNJI to caller
+    await addUserAccDataPoints(testUser_3); 
+    await testMinting(2000, testUser_3, testUser_3);   
+    await addUserAccDataPoints(testUser_3); 
+    expect(await balBNJI(testUser_3)).to.equal(2000); 
+
+    // upgrading to discount level 2
+    await testIncreaseLevel(testUser_3, 2, 0);  
+    
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_3, 1, 2) ).to.be.revertedWith(
+      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+    );  
+
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(0); 
+
+    // waiting until timeout period for level 2 has passed
+    await mintBlocks(blocksPerDay*holdingTimesInDays[2]);
+
+    // downgrading to discount level 1
+    await testDecreaseLevel(testUser_3, 1, 2);  
+
+    await addUserAccDataPoints(testUser_3);   
+    expect(await balBNJI(testUser_3)).to.equal(1000); 
+
+    const expectedUser3Levels    = [0,0, 2, 2, 1];
+    const expectedUser3Discounts = [0,0,25,25,10];    
+    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+
+    await countAllCents();
+
+    // Preparation: testUser_2 gets discount level 2 
+    // minting 2000 BNJI to caller
+    await addUserAccDataPoints(testUser_2); 
+    await testMinting(2000, testUser_2, testUser_2);   
+    await addUserAccDataPoints(testUser_2); 
+    expect(await balBNJI(testUser_2)).to.equal(2000); 
+
+    // upgrading to discount level 2
+    await testIncreaseLevel(testUser_2, 2, 0);  
+    
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_2, 2, 2) ).to.be.revertedWith(
+      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+    );  
+
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    // waiting until timeout period for level 2 has passed
+    await mintBlocks(blocksPerDay*holdingTimesInDays[2]);
+
+    // downgrading to discount level 0
+    await testDecreaseLevel(testUser_2, 2, 2);  
+
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(2000); 
+
+    const expectedUser2Levels    = [0,0, 2, 2,0];
+    const expectedUser2Discounts = [0,0,25,25,0];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+
+    await countAllCents();
+
+    // Preparation: testUser_1 gets discount level 2 
+    // minting 2000 BNJI to caller
+    await addUserAccDataPoints(testUser_1); 
+    await testMinting(2000, testUser_1, testUser_1);   
+    await addUserAccDataPoints(testUser_1); 
+    expect(await balBNJI(testUser_1)).to.equal(2000); 
+
+    // upgrading to discount level 2
+    await testIncreaseLevel(testUser_1, 2, 0);  
+    
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_1, 3, 2) ).to.be.reverted;  
 
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
-    const expectedUser1Levels    = [0,0, 3, 3];
-    const expectedUser1Discounts = [0,0,50,50];    
+    // waiting until timeout period for level 2 has passed
+    await mintBlocks(blocksPerDay*holdingTimesInDays[2]);
+
+    // downgrading below discount level 0 is reverted, even after waiting time
+    await expect( testDecreaseLevel(testUser_1, 3, 2) ).to.be.reverted;  
+
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    const expectedUser1Levels    = [0,0, 2, 2, 2];
+    const expectedUser1Discounts = [0,0,25,25,25];    
     confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
 
     await countAllCents();
 
-  }); 
+  });
+
   
+  it("Test 22. Account downgrades starting from level 1 work as expected", async function () {
+    // Preparation: testUser_2 gets discount level 1 
+    // minting 1000 BNJI to caller
+    await addUserAccDataPoints(testUser_2); 
+    await testMinting(1000, testUser_2, testUser_2);   
+    await addUserAccDataPoints(testUser_2); 
+    expect(await balBNJI(testUser_2)).to.equal(1000); 
+
+    // upgrading to discount level 1
+    await testIncreaseLevel(testUser_2, 1, 0);  
+    
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_2, 1, 1) ).to.be.revertedWith(
+      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+    );  
+
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(0); 
+
+    // waiting until timeout period for level 1 has passed
+    await mintBlocks(blocksPerDay*holdingTimesInDays[1]);
+
+    // downgrading to discount level 0
+    await testDecreaseLevel(testUser_2, 1, 1);  
+
+    await addUserAccDataPoints(testUser_2);   
+    expect(await balBNJI(testUser_2)).to.equal(1000); 
+
+    const expectedUser2Levels    = [0,0, 1, 1,0];
+    const expectedUser2Discounts = [0,0,10,10,0];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+
+    await countAllCents();
+
+    // Preparation: testUser_1 gets discount level 1 
+    // minting 1000 BNJI to caller
+    await addUserAccDataPoints(testUser_1); 
+    await testMinting(1000, testUser_1, testUser_1);   
+    await addUserAccDataPoints(testUser_1); 
+    expect(await balBNJI(testUser_1)).to.equal(1000); 
+
+    // upgrading to discount level 1
+    await testIncreaseLevel(testUser_1, 1, 0);  
+    
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_1, 2, 1) ).to.be.reverted;  
+
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    // waiting until timeout period for level 1 has passed
+    await mintBlocks(blocksPerDay*holdingTimesInDays[1]);
+
+    // downgrading below discount level 0 is reverted, even after waiting time
+    await expect( testDecreaseLevel(testUser_1, 2, 1) ).to.be.reverted;  
+
+    await addUserAccDataPoints(testUser_1);   
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    const expectedUser1Levels    = [0,0, 1, 1, 1];
+    const expectedUser1Discounts = [0,0,10,10,10];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+
+    await countAllCents();
+  });
+
+  it("Test 23. Account downgrades starting from level 0 are reverted as expected", async function () {   
+    await countAllCents();
+    
+    await addUserAccDataPoints(testUser_1);    
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    await expect( testDecreaseLevel(testUser_1, 1, 0) ).to.be.reverted;   
+    
+    await addUserAccDataPoints(testUser_1);    
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    const expectedUser1Levels    = [0,0];
+    const expectedUser1Discounts = [0,0];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+
+    await countAllCents();
+
+  });
+
+
   // TODO: update
   it("Test 24. Discount changes are effective immediately after decreasing the discount level", async function () {   
 
@@ -1690,8 +1885,56 @@ describe("Testing Levels version of Benjamins", function () {
     
   });
   
+  it("Test 26. Minting-, burning-, increase- and decrease- functions can't be called with a value of 0", async function () { 
+    await countAllCents();
+    await addUserAccDataPoints(testUser_1);
+    expect(await balBNJI(testUser_1)).to.equal(0); 
+
+    await expect( testMinting(0, testUser_1, testUser_1) ).to.be.revertedWith(
+      "BNJ, quoteUSDC: Minimum BNJI value to move is $5 USDC"
+    );
+      
+    await addUserAccDataPoints(testUser_1);
+    expect(await balBNJI(testUser_1)).to.equal(0);
+
+    await expect( testBurning(0, testUser_1, testUser_1) ).to.be.revertedWith(
+      "BNJ, quoteUSDC: Minimum BNJI value to move is $5 USDC"
+    );
+      
+    await addUserAccDataPoints(testUser_1);
+    expect(await balBNJI(testUser_1)).to.equal(0);
+
+    await expect( testIncreaseLevel(testUser_1, 0, 0) ).to.be.revertedWith(
+      "You can increase the discount level up to level 3"
+    );
+      
+    await addUserAccDataPoints(testUser_1);
+    expect(await balBNJI(testUser_1)).to.equal(0);
+
+    await expect( testDecreaseLevel(testUser_1, 0, 0) ).to.be.revertedWith(
+      "You can lower the discount level down to level 0"
+    );
+
+    await addUserAccDataPoints(testUser_1);
+    expect(await balBNJI(testUser_1)).to.equal(0);
+
+    const expectedUser1Levels    = [0,0,0,0,0];
+    const expectedUser1Discounts = [0,0,0,0,0];      
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts); 
+
+    await countAllCents(); // 
+  });
+  
+  it("Test 27. Placeholder for real world use simulation", async function () { 
+  });
+
+
   // todo: create "real world use simulation"
-  it("Test 26. Placeholder for real world use simulation", async function () { 
+  it("Test 28. Placeholder for real world use simulation", async function () { 
+  });
+
+  
+  it("Test 29. Placeholder for testing events", async function () { 
   });
   
 

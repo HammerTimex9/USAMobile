@@ -243,7 +243,7 @@ contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     uint256 endAmountOfLevels = usersDiscountLevelNow - _amountOfLevelsToDecrease;
 
-    require(_amountOfLevelsToDecrease <= usersDiscountLevelNow && endAmountOfLevels >=0, "You can lower the discount level until 0");
+    require(_amountOfLevelsToDecrease > 0 &&_amountOfLevelsToDecrease <= usersDiscountLevelNow && endAmountOfLevels >=0, "You can lower the discount level down to level 0");
 
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;  
