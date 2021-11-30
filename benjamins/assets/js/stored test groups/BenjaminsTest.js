@@ -535,12 +535,10 @@ async function getLockedBalanceOf(userToCheck) {
   return (bigNumberToNumber (await benjaminsContract.lockedBalanceOf(userToCheck)));
 }
 
-
 async function getDiscountLevel(userToCheck){
   const usersDiscountLevel = bigNumberToNumber (await benjaminsContract.getUsersDiscountLevel(userToCheck));
   return usersDiscountLevel;
 }
-
 
 async function getDiscountPercentage(userToCheck){
   const usersDiscountPercentage = (bigNumberToNumber(await benjaminsContract.getUsersDiscountPercentageTimes10k(userToCheck)))/baseFeeTimes10k;
@@ -622,6 +620,29 @@ async function testDecreaseLevel(callingAccAddress, amountOfLevelsToDecrease, ex
 
 }
 
+async function endBurn() {
+  for (let index = 0; index < testUserAddressesArray.length; index++) {
+    const callingAcc = testUserAddressesArray[index];
+
+    const balanceBNJI = await balBNJI(callingAcc);
+
+    if (balanceBNJI>0){
+      console.log(balanceBNJI, `Endburn from testUser_${index}`);
+      await testBurning(balanceBNJI, callingAcc, callingAcc);
+      expect(await balBNJI(callingAcc)).to.equal(0);
+    }    
+  }
+
+  const balBNJIdeployer = await balBNJI(deployer);
+  console.log(balBNJIdeployer, `Endburn from deployer`);
+  await testBurning(balBNJIdeployer, deployer, deployer);
+
+  expect(await balBNJI(deployer)).to.equal(0);
+
+  const totalSupplyExisting = bigNumberToNumber(await benjaminsContract.totalSupply()); 
+  expect(totalSupplyExisting).to.equal(0);
+
+}
 
 
 
@@ -632,8 +653,7 @@ async function testDecreaseLevel(callingAccAddress, amountOfLevelsToDecrease, ex
 
 
 
-
-describe("Testing Levels version of Benjamins", function () {
+describe("Testing Benjamins", function () {
 
   // setting instances of contracts
   beforeEach(async function() {   
@@ -655,8 +675,8 @@ describe("Testing Levels version of Benjamins", function () {
     testUserAddressesArray.push(testUser_5);    
     
     // Deploy contract
-    await fixture(["LevelBenjamins"]);
-    benjaminsContract = await ethers.getContract("LevelBenjamins");      
+    await fixture(["Benjamins"]);
+    benjaminsContract = await ethers.getContract("Benjamins");      
 
     // Get amount of blocksPerDay into this testing suite
     blocksPerDay = bigNumberToNumber(await benjaminsContract.getBlocksPerDay());
@@ -1925,16 +1945,12 @@ describe("Testing Levels version of Benjamins", function () {
     await countAllCents(); // 
   });
   
+  // todo: create "real world use simulation"
   it("Test 27. Placeholder for real world use simulation", async function () { 
   });
 
-
-  // todo: create "real world use simulation"
-  it("Test 28. Placeholder for real world use simulation", async function () { 
-  });
-
-  
-  it("Test 29. Placeholder for testing events", async function () { 
+  // TODO: better put these into the respective testing funcions, to test always, as much as possible
+  it("Test 28. Placeholder for testing events", async function () { 
   });
   
 
@@ -2297,26 +2313,8 @@ describe("Testing Levels version of Benjamins", function () {
 
     await countAllCents();
 
-    for (let index = 0; index < testUserAddressesArray.length; index++) {
-      const callingAcc = testUserAddressesArray[index];
-
-      const balanceBNJI = await balBNJI(callingAcc);
-
-      if (balanceBNJI>0){
-        console.log(balanceBNJI, `Endburn from testUser_${index}`);
-        await testBurning(balanceBNJI, callingAcc, callingAcc);
-        expect(await balBNJI(callingAcc)).to.equal(0);
-      }    
-    }
-
-    const balBNJIdeployer = await balBNJI(deployer);
-    console.log(balBNJIdeployer, `Endburn from deployer`);
-    await testBurning(balBNJIdeployer, deployer, deployer);
-
-    expect(await balBNJI(deployer)).to.equal(0);
-
-    const totalSupplyExisting = bigNumberToNumber(await benjaminsContract.totalSupply()); 
-    expect(totalSupplyExisting).to.equal(0);
+    
+    
 
     await countAllCents();
   });

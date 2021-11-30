@@ -25,7 +25,7 @@ import "hardhat/console.sol";
 // Collected fees and interest are withdrawable to the owner to a set recipient address.
 // Fee discounts are calculated based on BNJI balance.
 // Reentrancy is protected against via OpenZeppelin's ReentrancyGuard
-contract LevelBenjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
+contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
   ILendingPool public polygonLendingPool;       // Aave lending pool on Polygon
   IERC20 public polygonUSDC;                    // USDC crypto currency on Polygon
