@@ -216,7 +216,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3");
     
-    uint256 amountOfBNJItoLock = (_amountOfLevelsToIncrease * neededBNJIperLevel);   // Todo: approval must be done in front end before
+    uint256 amountOfBNJItoLock = (_amountOfLevelsToIncrease * neededBNJIperLevel);
 
     // transferring BNJI from msg.sender to this contract
     transfer(address(this), amountOfBNJItoLock);
@@ -439,21 +439,46 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     }
   }    
 
-
   // TODO: test and look at in depth
   function checkGains() public view onlyOwner returns (uint256 availableNowIn6dec) {
-    uint256 availableIn6dec = polygonAMUSDC.balanceOf(address(this)) - reserveInUSDCin6dec;
-    // leaving $100 extra as a redundant mathmatical buffer
-    uint256 availableBufferedIn6dec = availableIn6dec - 100*USDCscaleFactor;
-    return availableBufferedIn6dec;
+
+    uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
+
+    // calculating with $100 extra as a redundant mathmatical buffer
+    uint256 bufferIn6dec = 0 /* 100*USDCscaleFactor*/;
+
+    console.log(bufferIn6dec, 'bufferIn6dec, checkGains');
+    console.log(amUSDCbalOfContractIn6dec, 'amUSDCbalOfContractIn6dec, checkGains');
+    console.log(reserveInUSDCin6dec, 'reserveInUSDCin6dec, checkGains');
+
+    if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
+      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;
+      console.log(amUSDCbalBufferedIn6dec, 'amUSDCbalBufferedIn6dec, checkGains');
+
+      if (amUSDCbalBufferedIn6dec > reserveInUSDCin6dec) {
+        uint256 availableIn6dec = amUSDCbalOfContractIn6dec - reserveInUSDCin6dec;
+        console.log(availableIn6dec, 'availableIn6dec, checkGains');
+        return availableIn6dec;
+      } 
+      else {
+        return 0;
+      }
+    } 
+    else {
+      return 0;
+    }        
   }
 
   // TODO: test and look at in depth
   // Withdraw available fees and interest gains from lending pool to receiver address.
   function withdrawGains(uint256 _amountIn6dec) public onlyOwner {
     uint256 availableIn6dec = checkGains();
+
+    console.log(availableIn6dec, 'availableIn6dec, withdrawGains');
+    console.log(_amountIn6dec, '_amountIn6dec, withdrawGains');
+
     require(availableIn6dec > _amountIn6dec, "Insufficient funds.");
-    polygonAMUSDC.transfer(feeReceiver, _amountIn6dec);
+    polygonAMUSDC.transfer(feeReceiver, _amountIn6dec); 
     emit ProfitTaken(availableIn6dec, _amountIn6dec);
   }
 

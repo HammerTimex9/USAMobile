@@ -187,7 +187,6 @@ async function countAllCents() {
 
 }
 
-// TODO: create revert situation without USDC approval
 async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
 
   const callingAccUSDCBalanceBeforeMintInCents = await balUSDCinCents(callingAccAddress);  
@@ -202,7 +201,7 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   const amountToApproveIn6dec = await calcMintApprovalAndPrep(amountToMint, true);  
  
   //now a block gets minted, signed writing to chain
-  await polygonUSDC.connect(callingAccSigner).approve(benjaminsContract.address, amountToApproveIn6dec); // TODO: create revert case
+  await polygonUSDC.connect(callingAccSigner).approve(benjaminsContract.address, amountToApproveIn6dec);
   
   const givenAllowanceToBNJIcontractIn6dec = await polygonUSDC.allowance(callingAccAddress, benjaminsContract.address); 
   expect(Number (amountToApproveIn6dec)).to.equal(Number (givenAllowanceToBNJIcontractIn6dec));

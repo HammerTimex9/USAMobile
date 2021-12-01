@@ -130,6 +130,8 @@ async function getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray) {
   }
 }
 
+const waitFor = delay => new Promise(resolve => setTimeout(resolve, delay));
+
 // simulate the passing of blocks
 async function mintBlocks (amountOfBlocksToMint) {
   for (let i = 0; i < amountOfBlocksToMint; i++) {
@@ -794,7 +796,7 @@ describe("Testing Benjamins", function () {
         value: ethers.utils.parseEther("10") // 10 MATIC
       })
       
-      await polygonUSDC.connect(deployerSigner).transfer(testingUser, (3000*scale6dec) );
+      await polygonUSDC.connect(deployerSigner).transfer(testingUser, (10000*scale6dec) );
              
     } 
 
@@ -811,6 +813,12 @@ describe("Testing Benjamins", function () {
     
   })     
   
+
+
+
+
+
+
   
 
   it("Test 01. Confirming preparation setup", async function () {  
@@ -1942,22 +1950,101 @@ describe("Testing Benjamins", function () {
 
     const expectedUser1Levels    = [0,0,0,0,0];
     const expectedUser1Discounts = [0,0,0,0,0];      
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts); 
-
-    await countAllCents(); // 
+    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);     
   });
   
-  // todo: create "real world use simulation"
-  it("Test 27. Placeholder for real world use simulation", async function () { 
+ 
+  it.only("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
+    await countAllCents();
+
+    // minting 40000 BNJI to caller
+    await testMinting(40000, testUser_1, testUser_1);    
+
+    // minting 40000 BNJI to caller
+    await testMinting(40000, testUser_2, testUser_2);  
+    
+    // minting 40000 BNJI to caller
+    await testMinting(40000, testUser_3, testUser_3);    
+    await testIncreaseLevel(testUser_3,3,0);
+ 
+    await mintBlocks(10000);
+    console.log('minted  10000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  20000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  30000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  40000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  50000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  60000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  70000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  80000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted  90000 blocks total');
+    waitFor(4000);
+
+    await mintBlocks(10000);
+    console.log('minted 100000 blocks total');
+    waitFor(4000);
+
+    const blockheight1 = await getBlockheightNow();
+    console.log(blockheight1, 'blockheight1');
+
+    const checkedGainsInCents = dividefrom6decToUSDCcents(await benjaminsContract.connect(deployerSigner).checkGains());
+    console.log(checkedGainsInCents, 'checkedGainsInCents, BenjaminsTest');
+    const blockheight2 = await getBlockheightNow();
+    console.log(blockheight2, 'blockheight2');
+
+    const toWithdrawBufferedIn6dec = (multiplyFromUSDCcentsTo6dec(Math.floor(checkedGainsInCents - 2)));
+    console.log(toWithdrawBufferedIn6dec, 'toWithdrawBufferedIn6dec, BenjaminsTest');
+
+    await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawBufferedIn6dec);
+    const blockheight3 = await getBlockheightNow();
+    console.log(blockheight3, 'blockheight3');
+    
+    
+    
+
+    const checkedGainsInCents2 = dividefrom6decToUSDCcents(await benjaminsContract.connect(deployerSigner).checkGains());
+    const blockheight4 = await getBlockheightNow();
+    console.log(blockheight4, 'blockheight4');
+    
+  });
+
+
+
+
+
+
+
+  // todo: create "mixing function use" to show that they don't hinder each other
+  it("Test 28. Placeholder for mixing function use", async function () { 
   });
 
   // TODO: better put these into the respective testing funcions, to test always, as much as possible
-  it("Test 28. Placeholder for testing events", async function () { 
-  });
+  it("Test 29. Placeholder for testing events", async function () { 
+  });  
   
-
-  // TODO test checkGains and withdrawGains
-
   // todo: rename the following tests, should be the last ones
 
   // todo: create "real world use simulation"
@@ -2316,7 +2403,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
 
     
-    
+    // is now endburn function
 
     await countAllCents();
   });
