@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;  // TODO: put in fixed version for deployment
 
 // importing interface for Aave's lending pool
 import "./ILendingPool.sol";
-// importing openZeppelin's SafeMath library
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 // importing openZeppelin's ERC20 contract
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // importing openZeppelin's Pausable contract
@@ -91,6 +89,9 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // event for updating the contract's approval to Aave's USDC lending pool
   event LendingPoolApprovalUpdate(uint256 amountToApproveIn6dec);
 
+  // event for updating Aave's lendingPool address
+  event LendingPoolUpdated(address lendingPoolAddressNow);  
+
   // event for updating the table of necessary BNJI amounts per discount level
   event NeededBNJIperLevelUpdate(uint256 neededBNJIperLevel);
 
@@ -169,7 +170,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   }
 
   // Overriding OpenZeppelin's ERC20 function
-  function decimals() public view override returns (uint8) {
+  function decimals() public view override whenAvailable returns (uint8) {
     return _decimals;
   }
 
@@ -208,7 +209,6 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     }
 
   }
-
   
   function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * neededBNJIperLevel) {
     
@@ -235,7 +235,6 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // emitting event with all related useful details
     emit DiscountLevelIncreased (msg.sender, blockHeightNow, endAmountOfLevels, discountShouldBeActiveUntil);  
   }  
-
 
   function decreaseDiscountLevels (uint256 _amountOfLevelsToDecrease) public whenAvailable {
 
@@ -440,15 +439,19 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     }
   }    
 
+
+  // TODO: test and look at in depth
   function checkGains() public view onlyOwner returns (uint256 availableNowIn6dec) {
     uint256 availableIn6dec = polygonAMUSDC.balanceOf(address(this)) - reserveInUSDCin6dec;
-    return availableIn6dec;
+    // leaving $100 extra as a redundant mathmatical buffer
+    uint256 availableBufferedIn6dec = availableIn6dec - 100*USDCscaleFactor;
+    return availableBufferedIn6dec;
   }
 
   // TODO: test and look at in depth
   // Withdraw available fees and interest gains from lending pool to receiver address.
   function withdrawGains(uint256 _amountIn6dec) public onlyOwner {
-    uint256 availableIn6dec = polygonAMUSDC.balanceOf(address(this)) - reserveInUSDCin6dec;
+    uint256 availableIn6dec = checkGains();
     require(availableIn6dec > _amountIn6dec, "Insufficient funds.");
     polygonAMUSDC.transfer(feeReceiver, _amountIn6dec);
     emit ProfitTaken(availableIn6dec, _amountIn6dec);
@@ -472,6 +475,10 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return address(polygonAMUSDC);           
   }
 
+  function getPolygonLendingPool() public view returns (address addressNow) {
+    return address(polygonLendingPool);           
+  }
+ 
   function getBlocksPerDay() public view returns (uint256 amountOfBlocksPerDayNow) {
     return blocksPerDay;           
   }
@@ -516,50 +523,31 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     erc20contract.transfer(msg.sender, accumulatedTokens);              // Sending it to calling owner
   } 
 
-  // Fallback receives all incoming funds of any type.
+  // Receives all incoming Matic, sent directly (there is no need to send Matic)
   receive() external payable {
     // blind accumulate all other payment types and tokens.
   }
 
-  /*  // TODO: talk to Aave, find out if they transfer funds to new lending pool or what
-        // they want us to do in such a case, (maybe just simplify this function to set newAddress)
-    
-        // event for updating Aave's lendingPool address
-        event LendingPoolUpdated(address account);  
-
-        // NOTE: used to update in case a better Aave lendingpool comes out
-        // Updating the lending pool and transfering all the deposited funds from it to the new one
-        function updatePolygonLendingPool(address newAddress) public onlyOwner {
-            // withdrawing all USDC from old lending pool address to BNJI contract
-            polygonLendingPool.withdraw(address(polygonUSDC), type(uint).max, address(this));
-            //emit LendingPoolWithdrawal (uint256 amount); // TODO: ideally find and emit the exact amount withdrawn
-
-            // setting new lending pool address and emitting event
-            polygonLendingPool = ILendingPool(newAddress);
-            emit LendingPoolUpdated(newAddress);
-
-            // getting USDC balance of BNJI contract, approving and depositing it to new lending pool
-            uint256 bnjiContractUSDCBal = polygonUSDC.balanceOf(address(this));
-            polygonUSDC.approve(address(polygonLendingPool), bnjiContractUSDCBal);
-            polygonLendingPool.deposit(address(polygonUSDC), bnjiContractUSDCBal, address(this), 0);
-            // emitting related event
-            emit LendingPoolDeposit(bnjiContractUSDCBal, address(this));
-        }
-  */
-
-  // Update the feeReceiver address.
+  // Update Aave's lending pool address on Polygon
+  function updatePolygonLendingPoolAddress (address newAddress) public onlyOwner {
+    // setting new lending pool address and emitting event
+    polygonLendingPool = ILendingPool(newAddress);
+    emit LendingPoolUpdated(newAddress);
+  }        
+ 
+  // Update the feeReceiver address
   function updateFeeReceiver(address newFeeReceiver) public onlyOwner {
     feeReceiver = newFeeReceiver;     
     emit AddressUpdate(newFeeReceiver, "feeReceiver");           
   }  
 
-  // Update the USDC token address on Polygon.
+  // Update the USDC token address on Polygon
   function updatePolygonUSDC(address newAddress) public onlyOwner {
     polygonUSDC = IERC20(newAddress);
     emit AddressUpdate(newAddress, "polygonUSDC");
   }  
 
-  // Update the amUSDC token address on Polygon.
+  // Update the amUSDC token address on Polygon
   function updatePolygonAMUSDC(address newAddress) public onlyOwner {
     polygonAMUSDC = IERC20(newAddress);
     emit AddressUpdate(newAddress, "polygonAMUSDC");
