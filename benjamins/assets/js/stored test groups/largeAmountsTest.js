@@ -483,7 +483,7 @@ async function runMintOrBurnLoop(loopsToRun, runMint, accOrderArray, testNr) {
   const valueBNJIexistingInCents = dividefrom6decToUSDCcents(await benjaminsContract.quoteUSDC(endTokenBalance, false));
 
   console.log('at the end of all loops so far, this many tokens exist:', endTokenBalance);  
-  if (endTokenBalance>0) {console.log(valueBNJIexistingInCents/100, `if all these tokens were burnt, they would be worth this much USDC, before fees (to take off)`)};
+  if (endTokenBalance>0) {console.log(valueBNJIexistingInCents/100, `if all these tokens were burnt, they would be worth this much USDC, before fees (1% goes to feeReceiver)`)};
   console.log(protocolUSDCbalWithoutInterestInCentsGlobalV/100, 'protocol should have this many (am)USDC, without interest so far');
   const reserveTracked = await showReserveInCents();
   expect(reserveTracked).to.equal(protocolUSDCbalWithoutInterestInCentsGlobalV); 

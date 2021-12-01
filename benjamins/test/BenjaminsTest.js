@@ -779,12 +779,12 @@ describe("Testing Benjamins", function () {
     const amountInMaxInWEI = ethers.utils.parseEther("3999950");   
     await polygonQuickswapRouter.connect(deployerSigner).swapTokensForExactTokens( amountToReceiveUSDCIn6dec, amountInMaxInWEI , [polygonWMATICaddress, polygonUSDCaddress], deployer, 1665102928);  
                  
-    await benjaminsContract.connect(deployerSigner).unpause(); 
-
     resetTrackers();
     
     // First setup mint for 100k USDC
     await testMinting(889000, deployer, deployer);    
+
+    await benjaminsContract.connect(deployerSigner).unpause(); 
         
     for (let index = 0; index < testUserAddressesArray.length; index++) {
       const testingUser = testUserAddressesArray[index];      
@@ -808,12 +808,14 @@ describe("Testing Benjamins", function () {
     );  
 
     await countAllCents();    
-    await checkTestAddresses(3000,10,0, true);
+    
   })     
   
   
 
   it("Test 01. Confirming preparation setup", async function () {  
+    
+    await checkTestAddresses(3000,10,0, true);
     
     // confirming queried variables
     expect(blocksPerDay).to.equal(2);
