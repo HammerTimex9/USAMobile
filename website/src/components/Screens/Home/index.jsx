@@ -17,7 +17,7 @@ const Home = () => {
 
   return (
     <Box>
-      <NFTList />
+      {/* <NFTList /> */}
       <TokenList />
     </Box>
   );
