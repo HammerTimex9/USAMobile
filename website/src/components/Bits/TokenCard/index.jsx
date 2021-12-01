@@ -8,8 +8,8 @@ import LoadIcon from '../../../media/load.gif';
 import './styles.scss';
 
 const TokenCard = ({ symbol, onClose }, ref) => {
-  const data = useTokenInfo(symbol);
-
+  const { data, prices } = useTokenInfo(symbol);
+  console.log('prices => ', prices);
   const handleClick = (link) => {
     window.open(link, '_blank');
   };
