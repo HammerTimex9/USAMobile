@@ -445,19 +445,28 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
 
     // calculating with $100 extra as a redundant mathmatical buffer
-    uint256 bufferIn6dec = 0 /* 100*USDCscaleFactor*/;
+    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value
 
-    console.log(bufferIn6dec, 'bufferIn6dec, checkGains');
+    //console.log(bufferIn6dec, 'bufferIn6dec, checkGains');
+    console.log(bufferIn6dec/USDCscaleFactor, 'buffer in dollars, checkGains');
+
     console.log(amUSDCbalOfContractIn6dec, 'amUSDCbalOfContractIn6dec, checkGains');
-    console.log(reserveInUSDCin6dec, 'reserveInUSDCin6dec, checkGains');
+    console.log(amUSDCbalOfContractIn6dec/USDCscaleFactor, 'amUSDCbalOfContract in dollars, checkGains');
+
+    //console.log(reserveInUSDCin6dec, 'reserveInUSDCin6dec, checkGains');
+    //console.log(reserveInUSDCin6dec/USDCscaleFactor, 'reserveInUSDC in dollars, checkGains');
 
     if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
       uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;
-      console.log(amUSDCbalBufferedIn6dec, 'amUSDCbalBufferedIn6dec, checkGains');
+      //console.log(amUSDCbalBufferedIn6dec, 'amUSDCbalBufferedIn6dec, checkGains');
+      console.log(amUSDCbalBufferedIn6dec/USDCscaleFactor, 'amUSDCbalBuffered in dollars, checkGains');
+      console.log(reserveInUSDCin6dec/USDCscaleFactor, 'reserveInUSDC in dollars, checkGains');
 
       if (amUSDCbalBufferedIn6dec > reserveInUSDCin6dec) {
-        uint256 availableIn6dec = amUSDCbalOfContractIn6dec - reserveInUSDCin6dec;
-        console.log(availableIn6dec, 'availableIn6dec, checkGains');
+        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;
+        //console.log(availableIn6dec, 'availableIn6dec, checkGains');
+        console.log(availableIn6dec/USDCscaleFactor, 'available in dollars, checkGains');
+
         return availableIn6dec;
       } 
       else {
@@ -474,8 +483,11 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   function withdrawGains(uint256 _amountIn6dec) public onlyOwner {
     uint256 availableIn6dec = checkGains();
 
-    console.log(availableIn6dec, 'availableIn6dec, withdrawGains');
-    console.log(_amountIn6dec, '_amountIn6dec, withdrawGains');
+    //console.log(availableIn6dec, 'availableIn6dec, withdrawGains');
+    console.log(availableIn6dec/USDCscaleFactor, 'available in dollars, withdrawGains');
+
+    //console.log(_amountIn6dec, '_amountIn6dec, withdrawGains');
+    console.log(_amountIn6dec/USDCscaleFactor, '_amount in dollars, withdrawGains');
 
     require(availableIn6dec > _amountIn6dec, "Insufficient funds.");
     polygonAMUSDC.transfer(feeReceiver, _amountIn6dec); 

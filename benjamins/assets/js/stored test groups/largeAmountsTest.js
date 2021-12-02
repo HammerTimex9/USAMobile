@@ -640,7 +640,7 @@ describe("Benjamins, testing large amounts", function () {
 
     //function swapTokensForExactTokens(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)
     const amountToReceiveUSDCIn6dec = 4210000 * (10**6);
-    const amountInMaxInWEI = ethers.utils.parseEther("6000000"); //82000000 * (10**18);   
+    const amountInMaxInWEI = ethers.utils.parseEther("6000000"); //6000000 * (10**18);   
     await polygonQuickswapRouter.connect(deployerSigner).swapTokensForExactTokens( amountToReceiveUSDCIn6dec, amountInMaxInWEI , [polygonWMATICaddress, polygonUSDCaddress], deployer, 1665102928);  
    
      

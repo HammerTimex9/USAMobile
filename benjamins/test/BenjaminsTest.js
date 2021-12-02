@@ -40,8 +40,8 @@ let benjaminsContract;
 let polygonUSDC;
 const polygonUSDCaddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
 
-let polygonAmUSDC;
-const polygonAmUSDCAddress = '0x1a13F4Ca1d028320A707D99520AbFefca3998b7F';
+let polygonAMUSDC;
+const polygonAMUSDCAddress = '0x1a13F4Ca1d028320A707D99520AbFefca3998b7F';
 
 let polygonWMATIC;
 const polygonWMATICaddress = '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270';
@@ -150,6 +150,10 @@ async function balUSDCinCents(userToQuery) {
 
 async function balUSDC(userToQuery) {
   return (await balUSDCinCents(userToQuery)/100);
+}
+
+async function balAMUSDC(userToQuery) {
+  return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonAMUSDC.balanceOf(userToQuery))/100);;
 }
 
 async function balUSDCin6decBN(userToQuery) {
@@ -709,8 +713,8 @@ describe("Testing Benjamins", function () {
       deployerSigner
     );
 
-    polygonAmUSDC = new ethers.Contract(
-      polygonAmUSDCAddress,
+    polygonAMUSDC = new ethers.Contract(
+      polygonAMUSDCAddress,
       [
         'function approve(address spender, uint256 amount) external returns (bool)',
         'function allowance(address owner, address spender) external view returns (uint256)',
@@ -742,7 +746,7 @@ describe("Testing Benjamins", function () {
       
     await whaleSigner.sendTransaction({
       to: deployer,
-      value: ethers.utils.parseEther("5000000") // 5,000,000 MATIC
+      value: ethers.utils.parseEther("5201000") // 5,201,000 MATIC
     })
 
     await hre.network.provider.request({
@@ -761,7 +765,7 @@ describe("Testing Benjamins", function () {
       deployerSigner
     );
     
-    await polygonWMATIC.connect(deployerSigner).deposit( {value: ethers.utils.parseEther("4000000")} );
+    await polygonWMATIC.connect(deployerSigner).deposit( {value: ethers.utils.parseEther("5200000")} );
   
     polygonQuickswapRouter = new ethers.Contract(
       polygonQuickswapRouterAddress,
@@ -775,16 +779,16 @@ describe("Testing Benjamins", function () {
       deployerSigner
     );     
 
-    await polygonWMATIC.connect(deployerSigner).approve( polygonQuickswapRouterAddress, ethers.utils.parseEther("15000000") );
+    await polygonWMATIC.connect(deployerSigner).approve( polygonQuickswapRouterAddress, ethers.utils.parseEther("82000000000") );
 
-    const amountToReceiveUSDCIn6dec = 1000000 * (10**6)
-    const amountInMaxInWEI = ethers.utils.parseEther("3999950");   
+    const amountToReceiveUSDCIn6dec = 4210000 * (10**6)
+    const amountInMaxInWEI = ethers.utils.parseEther("6000000");   
     await polygonQuickswapRouter.connect(deployerSigner).swapTokensForExactTokens( amountToReceiveUSDCIn6dec, amountInMaxInWEI , [polygonWMATICaddress, polygonUSDCaddress], deployer, 1665102928);  
                  
     resetTrackers();
     
     // First setup mint for 100k USDC
-    await testMinting(889000, deployer, deployer);    
+    await testMinting(890000, deployer, deployer);    
 
     await benjaminsContract.connect(deployerSigner).unpause(); 
         
@@ -823,7 +827,8 @@ describe("Testing Benjamins", function () {
 
   it("Test 01. Confirming preparation setup", async function () {  
     
-    await checkTestAddresses(3000,10,0, true);
+    // confirming that every test user has 10,000 USDC, 10 MATIC and 0 BNJI at start
+    await checkTestAddresses(10000,10,0, true);
     
     // confirming queried variables
     expect(blocksPerDay).to.equal(2);
@@ -831,7 +836,7 @@ describe("Testing Benjamins", function () {
     expect(curveFactor).to.equal(8000000);
     expect(neededBNJIperLevel).to.equal(1000);
 
-    expect(await countAllCents()).to.equal(100000000);   
+    expect(await countAllCents()).to.equal(421000000);   
     expect(await benjaminsContract.decimals()).to.equal(bigNumberToNumber(0));       
   });
 
@@ -1953,24 +1958,38 @@ describe("Testing Benjamins", function () {
     confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);     
   });
   
- 
+  
+  // TODO: runs, clean up
   it.only("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
     await countAllCents();
 
-    // minting 40000 BNJI to caller
-    await testMinting(40000, testUser_1, testUser_1);    
+    const balUSDCDdeployer_start = await balUSDC(deployer);
+    console.log (balUSDCDdeployer_start, 'balUSDCDdeployer_start');
 
-    // minting 40000 BNJI to caller
-    await testMinting(40000, testUser_2, testUser_2);  
+    await polygonUSDC.connect(deployerSigner).transfer(testUser_5, (4000000*scale6dec) );
+
+    const balUSDCDtestUser_5_beforeMint = await balUSDC(testUser_5);
+    console.log (balUSDCDtestUser_5_beforeMint, 'balUSDCDtestUser_5_beforeMint');
+
+    const totalSupplyNow12 = bigNumberToNumber( await benjaminsContract.totalSupply() ); 
+    console.log (totalSupplyNow12);
+
+    // minting 4,800,000 BNJI to testUser_5
+    await testMinting(4800000, testUser_5, testUser_5); 
+
+    const balBNJI_testUser_5 = await balBNJI(testUser_5);
+    console.log (balBNJI_testUser_5, 'balBNJI_testUser_5');
+
+    const balUSDCDtestUser_5_afterMint = await balUSDC(testUser_5);
+    console.log (balUSDCDtestUser_5_afterMint, 'balUSDCDtestUser_5_afterMint');
+
+    const balAMUSDCDcontract = await balAMUSDC(benjaminsContract.address);
+    console.log (balAMUSDCDcontract, 'balAMUSDCDcontract');
     
-    // minting 40000 BNJI to caller
-    await testMinting(40000, testUser_3, testUser_3);    
-    await testIncreaseLevel(testUser_3,3,0);
- 
     await mintBlocks(10000);
     console.log('minted  10000 blocks total');
     waitFor(4000);
-
+   
     await mintBlocks(10000);
     console.log('minted  20000 blocks total');
     waitFor(4000);
@@ -2015,15 +2034,15 @@ describe("Testing Benjamins", function () {
     const blockheight2 = await getBlockheightNow();
     console.log(blockheight2, 'blockheight2');
 
-    const toWithdrawBufferedIn6dec = (multiplyFromUSDCcentsTo6dec(Math.floor(checkedGainsInCents - 2)));
+    // $10 buffer on this side
+    const toWithdrawBufferedIn6dec = (multiplyFromUSDCcentsTo6dec(Math.floor(checkedGainsInCents/* - 1000*/)));
     console.log(toWithdrawBufferedIn6dec, 'toWithdrawBufferedIn6dec, BenjaminsTest');
-
-    await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawBufferedIn6dec);
-    const blockheight3 = await getBlockheightNow();
-    console.log(blockheight3, 'blockheight3');
     
-    
-    
+    if (toWithdrawBufferedIn6dec > 0 ) {
+      await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawBufferedIn6dec);
+      const blockheight3 = await getBlockheightNow();
+      console.log(blockheight3, 'blockheight3');
+    }   
 
     const checkedGainsInCents2 = dividefrom6decToUSDCcents(await benjaminsContract.connect(deployerSigner).checkGains());
     const blockheight4 = await getBlockheightNow();
@@ -2083,15 +2102,15 @@ describe("Testing Benjamins", function () {
     expect(polygonUSDCaddress_AfterChange).to.equal(benjaminsContract.address);
 
 
-    const polygonAmUSDCAddress_BeforeChange = await benjaminsContract.getPolygonAMUSDC();
-    expect(polygonAmUSDCAddress_BeforeChange).to.equal(polygonAmUSDCAddress);
+    const polygonAMUSDCAddress_BeforeChange = await benjaminsContract.getpolygonAMUSDC();
+    expect(polygonAMUSDCAddress_BeforeChange).to.equal(polygonAMUSDCAddress);
     // only the owner can update
-    await expect( benjaminsContract.updatePolygonAMUSDC(benjaminsContract.address) ).to.be.revertedWith(
+    await expect( benjaminsContract.updatepolygonAMUSDC(benjaminsContract.address) ).to.be.revertedWith(
       "Ownable: caller is not the owner"
     );   
-    await benjaminsContract.connect(deployerSigner).updatePolygonAMUSDC(benjaminsContract.address); 
-    const polygonAmUSDCAddress_AfterChange = await benjaminsContract.getPolygonAMUSDC();
-    expect(polygonAmUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
+    await benjaminsContract.connect(deployerSigner).updatepolygonAMUSDC(benjaminsContract.address); 
+    const polygonAMUSDCAddress_AfterChange = await benjaminsContract.getpolygonAMUSDC();
+    expect(polygonAMUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
 
 
     const blocksPerDay_BeforeChange = bigNumberToNumber(await benjaminsContract.getBlocksPerDay());
@@ -2206,8 +2225,8 @@ describe("Testing Benjamins", function () {
       "Benjamins is paused."
     );
         
-    // test preparation verification, contract owner should have 889000 tokens from "First Setup mint for 100k USDC"
-    expect(await balBNJI(deployer)).to.equal(1089000);
+    // test preparation verification, contract owner should have 890000 tokens from "First Setup mint for 100k USDC"
+    expect(await balBNJI(deployer)).to.equal(1090000);
        
     // when paused is active, contract owner can use transfer 40 BNJI from themself to testUser_2
     expect(await balBNJI(testUser_2)).to.equal(0);        
@@ -2351,7 +2370,7 @@ describe("Testing Benjamins", function () {
     );  
 
     // reverts as expected: cleanERC20Tips does not accept amUSDC address as argument
-    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonAmUSDCAddress) ).to.be.revertedWith(
+    await expect( benjaminsContract.connect(deployerSigner).cleanERC20Tips(polygonAMUSDCAddress) ).to.be.revertedWith(
       "ERC20 cannot be amUSDC."
     ); 
 
@@ -2382,14 +2401,14 @@ describe("Testing Benjamins", function () {
     // Note: Not using countAllCents here, as $10 of USDC will be converted into amUSDC, which are not tracked the same way.
 
     // getting contracts amUSDC balance
-    const contractAMUSDCbalBeforeInCents = dividefrom6decToUSDCcents (bigNumberToNumber (await polygonAmUSDC.balanceOf(benjaminsContract.address)));
+    const contractAMUSDCbalBeforeInCents = dividefrom6decToUSDCcents (bigNumberToNumber (await polygonAMUSDC.balanceOf(benjaminsContract.address)));
     // since it constantly changes in tiny amounts, due to accruing interest, rounding it down to whole cents
     const beforeRoundedToCents = contractAMUSDCbalBeforeInCents - (contractAMUSDCbalBeforeInCents%1); 
     expect(beforeRoundedToCents).to.equal(9879012);
     // owner deposits an extra $100 USDC into the lending pool on contracts behalf
     await depositAdditionalUSDC(100*scale6dec);
     // rounding down new amUSDC balance, same reasoning and comparing
-    const contractAMUSDCbalAfterInCents = dividefrom6decToUSDCcents (bigNumberToNumber (await polygonAmUSDC.balanceOf(benjaminsContract.address)));
+    const contractAMUSDCbalAfterInCents = dividefrom6decToUSDCcents (bigNumberToNumber (await polygonAMUSDC.balanceOf(benjaminsContract.address)));
     const afterRoundedToCents = contractAMUSDCbalAfterInCents - (contractAMUSDCbalAfterInCents%1); 
     // expecting that the new balance is $100 bigger than the old one (calculated in cents)
     expect(afterRoundedToCents).to.equal(beforeRoundedToCents+10000);  
