@@ -184,9 +184,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   function getUsersDiscountPercentageTimes10k(address _userToCheck) public view whenAvailable returns (uint256 discountInPercentTimes10k) {
     uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
-
-    uint256 usersDiscountInPercentTimes10k = uint256(discounts[usersDiscountLevel]) * baseFeeTimes10k;
-
+    uint256 usersDiscountInPercentTimes10k = uint256(discounts[usersDiscountLevel]) * 10000;
     return usersDiscountInPercentTimes10k;
   }  
 
@@ -438,34 +436,19 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       polygonUSDC.transfer(_payee, _afterFeeUSDCin6dec);
     }
   }    
-
-  // TODO: test and look at in depth
+  
   function checkGains() public view onlyOwner returns (uint256 availableNowIn6dec) {
 
     uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
 
     // calculating with $100 extra as a redundant mathmatical buffer
-    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value
-
-    //console.log(bufferIn6dec, 'bufferIn6dec, checkGains');
-    console.log(bufferIn6dec/USDCscaleFactor, 'buffer in dollars, checkGains');
-
-    console.log(amUSDCbalOfContractIn6dec, 'amUSDCbalOfContractIn6dec, checkGains');
-    console.log(amUSDCbalOfContractIn6dec/USDCscaleFactor, 'amUSDCbalOfContract in dollars, checkGains');
-
-    //console.log(reserveInUSDCin6dec, 'reserveInUSDCin6dec, checkGains');
-    //console.log(reserveInUSDCin6dec/USDCscaleFactor, 'reserveInUSDC in dollars, checkGains');
+    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value        
 
     if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
-      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;
-      //console.log(amUSDCbalBufferedIn6dec, 'amUSDCbalBufferedIn6dec, checkGains');
-      console.log(amUSDCbalBufferedIn6dec/USDCscaleFactor, 'amUSDCbalBuffered in dollars, checkGains');
-      console.log(reserveInUSDCin6dec/USDCscaleFactor, 'reserveInUSDC in dollars, checkGains');
+      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;      
 
       if (amUSDCbalBufferedIn6dec > reserveInUSDCin6dec) {
-        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;
-        //console.log(availableIn6dec, 'availableIn6dec, checkGains');
-        console.log(availableIn6dec/USDCscaleFactor, 'available in dollars, checkGains');
+        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;        
 
         return availableIn6dec;
       } 
@@ -477,8 +460,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       return 0;
     }        
   }
-
-  // TODO: test and look at in depth
+  
   // Withdraw available fees and interest gains from lending pool to receiver address.
   function withdrawGains(uint256 _amountIn6dec) public onlyOwner {
     uint256 availableIn6dec = checkGains();
@@ -496,48 +478,48 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   // Returns the reserveInUSDCin6dec tracker, which logs the amount of USDC (in 6 decimals format),
   // to be 100% backed against burning tokens at all times
-  function getReserveIn6dec() public view returns (uint256 reserveInUSDCin6decNow) {
+  function getReserveIn6dec() public view whenAvailable returns (uint256 reserveInUSDCin6decNow) {
     return reserveInUSDCin6dec;
   }
     
-  function getFeeReceiver() public view returns (address feeReceiverNow) {
+  function getFeeReceiver() public view whenAvailable returns (address feeReceiverNow) {
     return feeReceiver;           
   } 
 
-  function getPolygonUSDC() public view returns (address addressNow) {
+  function getPolygonUSDC() public view whenAvailable returns (address addressNow) {
     return address(polygonUSDC);           
   }
 
-  function getPolygonAMUSDC() public view returns (address addressNow) {
+  function getPolygonAMUSDC() public view whenAvailable returns (address addressNow) {
     return address(polygonAMUSDC);           
   }
 
-  function getPolygonLendingPool() public view returns (address addressNow) {
+  function getPolygonLendingPool() public view whenAvailable returns (address addressNow) {
     return address(polygonLendingPool);           
   }
  
-  function getBlocksPerDay() public view returns (uint256 amountOfBlocksPerDayNow) {
+  function getBlocksPerDay() public view whenAvailable returns (uint256 amountOfBlocksPerDayNow) {
     return blocksPerDay;           
   }
 
   // Returns the inverse slope of the bonding curve
-  function getCurveFactor() public view returns (uint256 curveFactorNow) {
+  function getCurveFactor() public view whenAvailable returns (uint256 curveFactorNow) {
     return curveFactor;
   }
 
-  function getneededBNJIperLevel() public view returns (uint256 neededBNJIperLevelNow) {
+  function getneededBNJIperLevel() public view whenAvailable returns (uint256 neededBNJIperLevelNow) {
     return neededBNJIperLevel;           
   }
 
-  function getHoldingTimes() public view returns (uint16[] memory holdingTimesNow) {
+  function getHoldingTimes() public view whenAvailable returns (uint16[] memory holdingTimesNow) {
     return holdingTimes;           
   }
 
-  function getDiscounts() public view returns (uint16[] memory discountsNow) {
+  function getDiscounts() public view whenAvailable returns (uint16[] memory discountsNow) {
     return discounts;           
   }
 
-  function getBaseFeeTimes10k() public view returns (uint256 baseFeeTimes10kNow){
+  function getBaseFeeTimes10k() public view whenAvailable returns (uint256 baseFeeTimes10kNow){
     return baseFeeTimes10k;
   }
       
