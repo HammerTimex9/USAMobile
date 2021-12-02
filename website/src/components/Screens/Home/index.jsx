@@ -17,7 +17,7 @@ const Home = () => {
 
   return (
     <Box>
-      <NFTList />
+      {false && <NFTList />}
       <TokenList />
     </Box>
   );
