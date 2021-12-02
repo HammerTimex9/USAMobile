@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 import { Button, Stack } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import LoopIcon from '@mui/icons-material/Loop';
 import LinkIcon from '@mui/icons-material/Link';
@@ -18,10 +19,12 @@ export const NavBar = () => {
 
   return (
     <Stack direction="row" spacing={1} className="NavBar">
-      <Link
-        to="/PortfolioPrices"
-        className={`${emptyPositions ? 'disabled' : ''}`}
-      >
+      <Link to="/">
+        <Button variant="uw" startIcon={<HomeIcon />}>
+          Home
+        </Button>
+      </Link>
+      <Link to="/Portfolio" className={`${emptyPositions ? 'disabled' : ''}`}>
         <Button variant="uw" startIcon={<VisibilityIcon />}>
           Portfolio
         </Button>

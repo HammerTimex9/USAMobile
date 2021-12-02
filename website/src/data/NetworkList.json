@@ -2,11 +2,13 @@
   "1": {
     "id": 1,
     "name": "eth",
-    "symbol": "ETH"
+    "symbol": "ETH",
+    "decimals": 18
   },
   "137": {
     "id": 137,
     "name": "polygon",
-    "symbol": "MATIC"
+    "symbol": "MATIC",
+    "decimals": 18
   }
 }

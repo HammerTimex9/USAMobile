@@ -1,0 +1,76 @@
+.token-card {
+  height: calc(100vh - 150px);
+  position: relative;
+  background-color: #fff;
+  border-radius: 1.5rem;
+  padding: 16px 32px;
+
+  .header-title {
+    align-self: center;
+    margin-left: 20px;
+    color: #000;
+  }
+
+  .price {
+    font-size: 23px;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .title {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.9;
+    color: #000;
+  }
+
+  .percent {
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(22, 163, 74, 1);
+  }
+
+  .i-price {
+    font-size: 13px;
+    color: rgba(22, 163, 74, 1);
+  }
+
+  .negative {
+    color: red;
+  }
+
+  .button-wrap {
+    position: absolute;
+    bottom: 30px;
+    width: calc(100% - 96px);
+  }
+
+  .button-wrap .link-button {
+    background-color: transparent;
+    box-shadow: none;
+    border: solid 1px #111;
+    color: #111;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .button-wrap .link-button:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    border: none;
+  }
+  .trading-view {
+    width: 100%;
+    height: 42vh;
+    margin-top: 20px;
+  }
+
+  .loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    transform: translate(-50%, -50%);
+  }
+}

@@ -3,6 +3,7 @@ import { useMoralis } from 'react-moralis';
 
 import { usePositions } from '../contexts/portfolioContext';
 import useUpdaters from './_useUpdaters';
+import tokens from '../data/TokenList.json';
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
@@ -42,7 +43,9 @@ const useSwapAction = ({
 
       updaters.current?.setIsApproved(true);
       getPositions();
+
       window.confirm('Are you sure?');
+
       const data = await Moralis.Plugins.oneInch.swap({
         chain,
         fromTokenAddress: fromTokenAddress || NATIVE_ADDRESS,
@@ -51,6 +54,22 @@ const useSwapAction = ({
         fromAddress,
         slippage,
       });
+
+      if (toTokenAddress) {
+        const token = tokens.find((t) => t.address === toTokenAddress);
+        await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: token.address,
+              symbol: token.symbol,
+              decimals: token.decimals,
+              image: token.image,
+            },
+          },
+        });
+      }
 
       updaters.current?.setData(data);
       getPositions();

@@ -3,7 +3,6 @@ import { useMoralis } from 'react-moralis';
 
 import { useNetwork } from '../contexts/networkContext';
 import geckoCoinIds from '../data/geckoCoinIds.json';
-import allPolygonTokens from '../data/allPolygonTokens.json';
 
 const PortfolioContext = React.createContext();
 
@@ -35,56 +34,61 @@ export const PortfolioProvider = (props) => {
       Moralis.Web3API.account.getTokenBalances(options),
     ])
       .then(([native, erc20]) => {
-        const nativeId = geckoCoinIds[network.symbol.toLowerCase()];
-        const tokens = erc20.filter(({ symbol }) => allPolygonTokens[symbol]);
+        const tokens = erc20.filter(
+          ({ symbol }) => geckoCoinIds[symbol.toLowerCase()]
+        );
+        const ids = [network, ...tokens].map(
+          ({ symbol }) => geckoCoinIds[symbol.toLowerCase()]
+        );
         return Promise.all([
           fetch(
-            `https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=${nativeId}`
+            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`
           )
             .then((response) => response.json())
-            .then((data) => data[nativeId].usd),
+            .then((data) => {
+              const map = {};
+              data.forEach((item) => {
+                map[item.symbol.toUpperCase()] = item;
+              });
+              return map;
+            }),
           Promise.all(
             tokens.map((item) =>
-              Moralis.Web3API.token
-                .getTokenPrice({
-                  address: item.token_address,
-                  chain: network.name,
-                  exchange: 'quickswap',
-                })
-                .then((data) => data.usdPrice)
+              Moralis.Web3API.token.getTokenPrice({
+                address: item.token_address,
+                chain: network.name,
+                exchange: 'quickswap',
+              })
             )
           ),
-        ]).then(([nativePrice, prices]) => {
+        ]).then(([markets, prices]) => {
           const positions = [
             {
-              symbol: network.symbol,
-              balance: native.balance,
-              price: nativePrice,
+              ...network,
+              ...native,
+              price: markets[network.symbol].current_price,
             },
-            ...tokens.map(({ symbol, balance, token_address }, i) => ({
-              symbol,
-              balance,
-              price: prices[i],
-              token_address,
-            })),
-          ].map((item) => {
-            const { name, decimals, logoURI } = allPolygonTokens[item.symbol];
-            const tokens = item.balance / 10 ** decimals || 0;
-            const value = tokens * item.price || 0;
-            return {
-              id: geckoCoinIds[item.symbol.toLowerCase()],
+            ...tokens.map((item, i) => ({
               ...item,
-              tokens,
-              value,
-              decimals,
-              image: logoURI,
-              name: name.replace('(PoS)', '').trim(),
-            };
-          });
+              price: prices[i].usdPrice,
+            })),
+          ]
+            .map((item) => {
+              const tokens = item.balance / 10 ** item.decimals || 0;
+              const value = tokens * item.price || 0;
+              return {
+                ...item,
+                tokens,
+                value,
+                image: markets[item.symbol].image,
+                name: item.name.replace('(PoS)', '').trim(),
+              };
+            })
+            .filter((value) => value);
           const totalValue = positions.reduce((s, item) => s + item.value, 0);
           setPositions(positions);
           setTotalValue(totalValue);
-          setMaticPrice(nativePrice);
+          setMaticPrice(positions[0].price);
         });
       })
       .catch(() => {
