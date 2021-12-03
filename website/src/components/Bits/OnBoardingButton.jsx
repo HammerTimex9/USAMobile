@@ -20,7 +20,6 @@ export function OnBoardingButton() {
       onboarding.current = new MetaMaskOnboarding();
     }
   }, []);
-
   React.useEffect(() => {
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       if (user?.attributes.ethAddress || window.ethereum.selectedAddress) {

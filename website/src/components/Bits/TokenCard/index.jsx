@@ -5,10 +5,12 @@ import TradingViewWidget from 'react-tradingview-widget';
 
 import useTokenInfo from '../../../actions/useTokenInfo';
 import LoadIcon from '../../../media/load.gif';
+import { useNetwork } from '../../../contexts/networkContext';
 import './styles.scss';
 
 const TokenCard = ({ symbol, onClose }, ref) => {
   const { data, prices } = useTokenInfo(symbol);
+  const { network } = useNetwork();
   console.log('prices => ', prices);
   const handleClick = (link) => {
     window.open(link, '_blank');
@@ -164,7 +166,11 @@ const TokenCard = ({ symbol, onClose }, ref) => {
             className="button-wrap"
           >
             {links.blockchain_site
-              .filter((a, index) => a && a.indexOf('polygonscan') > -1)
+              .filter(
+                (a, index) =>
+                  a &&
+                  a.indexOf(network.name ? network.name : 'polygonscan') > -1
+              )
               .map((b, index) => (
                 <Button
                   onClick={() => handleClick(b)}
