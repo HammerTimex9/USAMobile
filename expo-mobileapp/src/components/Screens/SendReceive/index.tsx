@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 
 
@@ -44,7 +44,7 @@ const SendReceive: React.FC<IProps> = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.pageHeadingWrapper}>
         <Text> Send/Receive</Text>
       </View>
@@ -72,7 +72,7 @@ const SendReceive: React.FC<IProps> = () => {
 
       </View>
 
-    </View>
+    </ScrollView>
   );
 }
 
