@@ -50,7 +50,7 @@ let polygonQuickswapRouter;
 const polygonQuickswapRouterAddress = '0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff';
 
 let polygonLendingPool;
-const polygonLendingPoolAddress = '0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf';
+let polygonLendingPoolAddress; // = '0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf'; TODO:take out if redundant
 
 let testUser_1_Signer;
 
@@ -718,6 +718,9 @@ describe("Testing Benjamins", function () {
 
     // Get neededBNJIperLevel into this testing suite
     neededBNJIperLevel = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getneededBNJIperLevel());
+
+    // Get polygonLendingPoolAddress into this testing suite
+    polygonLendingPoolAddress = await benjaminsContract.connect(deployerSigner).getPolygonLendingPool();
   
     const expectedHoldingTimesArray  =  [0, 30, 90, 300];
     await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray);
@@ -858,7 +861,7 @@ describe("Testing Benjamins", function () {
     expect(baseFeeTimes10k).to.equal(10000);
     expect(curveFactor).to.equal(8000000);
     expect(neededBNJIperLevel).to.equal(1000);
-
+    expect(polygonLendingPoolAddress).to.equal('0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf'); 
     expect(await countAllCents()).to.equal(421000000);   
     expect(await benjaminsContract.decimals()).to.equal(bigNumberToNumber(0));       
   });
@@ -981,7 +984,7 @@ describe("Testing Benjamins", function () {
     expect(await balBNJI(testUser_4)).to.equal(1000);
   });
 
-  // TODO: update 
+  
   it("Test recount. testUser_1 mints 1100 tokens, burns in next block, no need for waiting time", async function () {   
     
     await countAllCents(); 
@@ -1066,7 +1069,7 @@ describe("Testing Benjamins", function () {
   });  
   
 
-  // TODO: update
+  
   it("Test 09. Discount levels and discounts are not triggered by minting", async function () {   
 
     // Preparation mint
@@ -1284,7 +1287,7 @@ describe("Testing Benjamins", function () {
 
 
 
-  // TODO: update
+  
   it("Test 15. Account upgrades starting from level 0 work as expected", async function () {   
     
     await countAllCents();
@@ -1368,7 +1371,7 @@ describe("Testing Benjamins", function () {
 
   });  
 
-  // TODO: update
+  
   it("Test 16. Account upgrades starting from level 1 work as expected", async function () {   
     
     await countAllCents();
@@ -1450,7 +1453,7 @@ describe("Testing Benjamins", function () {
   });  
 
   
-  // TODO: update
+  
   it("Test 17. Account upgrades starting from level 2 work as expected", async function () {
 
     await countAllCents();
@@ -1506,7 +1509,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
   });  
   
-  // TODO: update
+  
   it("Test 18. Account upgrades starting from level 3 are reverted as expected", async function () {   
     
     await countAllCents();
@@ -1537,7 +1540,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
   });  
   
-  // TODO: update
+  
   it("Test 19. Discount changes are effective immediately after increasing the discount level", async function () {   
 
     await countAllCents();
@@ -1922,7 +1925,7 @@ describe("Testing Benjamins", function () {
   });
 
 
-  // TODO: update
+  
   it("Test 24. Discount changes are effective immediately after decreasing the discount level", async function () {   
 
     await countAllCents();
@@ -1960,30 +1963,35 @@ describe("Testing Benjamins", function () {
 
     await countAllCents();
   });  
-
-  
-  // TODO: update, include locked amount
+ 
   it("Test 25. Downgrading accounts is not triggrered by burning", async function () { 
 
     await countAllCents();
     await addUserAccDataPoints(testUser_1);
-    expect(await balBNJI(testUser_1)).to.equal(0);             
+    expect(await balBNJI(testUser_1)).to.equal(0);    
+    const lockedBNJI_beforeMint = bigNumberToNumber( await benjaminsContract.lockedBalanceOf(testUser_1) ); 
+    expect(lockedBNJI_beforeMint).to.equal(0);    
 
     // minting 5000 BNJI to caller
     await testMinting(5000, testUser_1, testUser_1);      
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(5000); 
+    const lockedBNJI_afterMint = bigNumberToNumber( await benjaminsContract.lockedBalanceOf(testUser_1) ); 
+    expect(lockedBNJI_afterMint).to.equal(0);    
 
     // increasing discount level to 3
     await testIncreaseLevel(testUser_1, 3, 0);
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(2000); 
+    const lockedBNJI_afterLevel3 = bigNumberToNumber( await benjaminsContract.lockedBalanceOf(testUser_1) ); 
+    expect(lockedBNJI_afterLevel3).to.equal(3000);    
     
     // burning 2000 tokens, returns go to caller, no needed holding times
-    await testBurning(2000, testUser_1, testUser_1);
-    
+    await testBurning(2000, testUser_1, testUser_1);    
     await addUserAccDataPoints(testUser_1);  
-    expect(await balBNJI(testUser_1)).to.equal(0);         
+    expect(await balBNJI(testUser_1)).to.equal(0);       
+    const lockedBNJI_afterBurnUnlocked = bigNumberToNumber( await benjaminsContract.lockedBalanceOf(testUser_1) ); 
+    expect(lockedBNJI_afterBurnUnlocked).to.equal(3000);      
 
     const expectedUser1Levels    = [0,0, 3, 3];
     const expectedUser1Discounts = [0,0,50,50];          
@@ -2137,9 +2145,7 @@ describe("Testing Benjamins", function () {
   it("Test 29. Placeholder for testing events", async function () { 
   });  
   
-  // todo: rename the following tests, should be the last ones
-
-  // todo: create "real world use simulation"
+    
   it("Test last0. testing setters and getters", async function () { 
 
     const feeReceiver_BeforeChange = await benjaminsContract.getFeeReceiver();
@@ -2163,30 +2169,7 @@ describe("Testing Benjamins", function () {
     const baseFee_AfterChange = bigNumberToNumber( await benjaminsContract.getBaseFeeTimes10k());
     expect(baseFee_AfterChange).to.equal(7);
 
-
-    const polygonUSDCaddress_BeforeChange = await benjaminsContract.getPolygonUSDC();
-    expect(polygonUSDCaddress_BeforeChange).to.equal(polygonUSDCaddress);
-    // only the owner can update
-    await expect( benjaminsContract.updatePolygonUSDC(benjaminsContract.address) ).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );   
-    await benjaminsContract.connect(deployerSigner).updatePolygonUSDC(benjaminsContract.address); 
-    const polygonUSDCaddress_AfterChange = await benjaminsContract.getPolygonUSDC();
-    expect(polygonUSDCaddress_AfterChange).to.equal(benjaminsContract.address);
-
-
-    const polygonAMUSDCAddress_BeforeChange = await benjaminsContract.getPolygonAMUSDC();
-    expect(polygonAMUSDCAddress_BeforeChange).to.equal(polygonAMUSDCAddress);
-
-    // only the owner can update
-    await expect( benjaminsContract.updatePolygonAMUSDC(benjaminsContract.address) ).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );   
-    await benjaminsContract.connect(deployerSigner).updatePolygonAMUSDC(benjaminsContract.address); 
-    const polygonAMUSDCAddress_AfterChange = await benjaminsContract.getPolygonAMUSDC();
-    expect(polygonAMUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
-
-
+    
     const blocksPerDay_BeforeChange = bigNumberToNumber(await benjaminsContract.getBlocksPerDay());
     expect(blocksPerDay_BeforeChange).to.equal(blocksPerDay);
     // only the owner can update
@@ -2218,7 +2201,53 @@ describe("Testing Benjamins", function () {
     await benjaminsContract.connect(deployerSigner).updateNeededBNJIperLevel(50000); 
     const neededBNJIperLevel_AfterChange = bigNumberToNumber(await benjaminsContract.getneededBNJIperLevel());
     expect(neededBNJIperLevel_AfterChange).to.equal(50000);
+
+
+    const lendingPoolApproval_BeforeChange = bigNumberToNumber(await polygonUSDC.allowance(benjaminsContract.address,'0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf'));
+    expect(lendingPoolApproval_BeforeChange).to.equal(0);
+    const newLendingPoolApproval = multiplyFromUSDCto6dec(1000); 
+    // only the owner can update
+    await expect( benjaminsContract.updateApproveLendingPool(newLendingPoolApproval) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );                       
+    await benjaminsContract.connect(deployerSigner).updateApproveLendingPool(newLendingPoolApproval); 
+    const lendingPoolApproval_AfterChange = bigNumberToNumber(await polygonUSDC.allowance(benjaminsContract.address,'0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf'));
+    expect(lendingPoolApproval_AfterChange).to.equal(newLendingPoolApproval);
+     
+
+    const polygonLendingPoolAddress_BeforeChange = await benjaminsContract.getPolygonLendingPool();
+    expect(polygonLendingPoolAddress_BeforeChange).to.equal('0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf');
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonLendingPoolAddress(polygonUSDCaddress) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updatePolygonLendingPoolAddress(polygonUSDCaddress);
+    const polygonLendingPoolAddress_AfterChange = await benjaminsContract.getPolygonLendingPool();
+    expect(polygonLendingPoolAddress_AfterChange).to.equal(polygonUSDCaddress);
     
+    
+    const polygonUSDCaddress_BeforeChange = await benjaminsContract.getPolygonUSDC();
+    expect(polygonUSDCaddress_BeforeChange).to.equal(polygonUSDCaddress);
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonUSDC(benjaminsContract.address) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updatePolygonUSDC(benjaminsContract.address); 
+    const polygonUSDCaddress_AfterChange = await benjaminsContract.getPolygonUSDC();
+    expect(polygonUSDCaddress_AfterChange).to.equal(benjaminsContract.address);
+
+
+    const polygonAMUSDCAddress_BeforeChange = await benjaminsContract.getPolygonAMUSDC();
+    expect(polygonAMUSDCAddress_BeforeChange).to.equal(polygonAMUSDCAddress);
+
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonAMUSDC(benjaminsContract.address) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    await benjaminsContract.connect(deployerSigner).updatePolygonAMUSDC(benjaminsContract.address); 
+    const polygonAMUSDCAddress_AfterChange = await benjaminsContract.getPolygonAMUSDC();
+    expect(polygonAMUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
+
     
     const expectedHoldingTimesArray_BeforeChange  =  [0, 30, 90, 300];
     await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray_BeforeChange);
@@ -2364,6 +2393,10 @@ describe("Testing Benjamins", function () {
       "Benjamins is paused."
     );
 
+    // when pause has been activated, normal users cannot use decreaseDiscountLevels
+    await expect( benjaminsContract.connect(testUser_1_Signer).getPolygonLendingPool()).to.be.revertedWith(
+      "Benjamins is paused."
+    );
 
     // test preparation verification, contract owner should have 890000 tokens from "First Setup mint for 100k USDC"
     expect(await balBNJI(deployer)).to.equal(1090000);
@@ -2414,6 +2447,10 @@ describe("Testing Benjamins", function () {
     // when paused is active, contract owner can use quoteUSDC
     const tokenValueIn6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).quoteUSDC(100, true));
     expect(tokenValueIn6dec).to.equal(27260000);
+
+    // when pause has been activated, contract owner can use getPolygonLendingPool
+    const polygonLendingPoolQueried = await benjaminsContract.connect(deployerSigner).getPolygonLendingPool();
+    expect(polygonLendingPoolQueried).to.equal('0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf');
     
     // when pause has been activated, contract owner can use getBlocksPerDay
     const blocksperday = await benjaminsContract.connect(deployerSigner).getBlocksPerDay();
@@ -2622,18 +2659,4 @@ describe("Testing Benjamins", function () {
   });
 
 
-  // TODO: re check, burns only deployer's tokens / setup mint - should probably becomee a function and run at the end of longer scenarios
-  it("Test last5 or function. All tokens that exist can be burned, and the connected USDC paid out by the protocol", async function () { 
-
-    await countAllCents();
-
-    
-    // is now endburn function
-
-    await countAllCents();
-  });
-
-  
-
-  // TODO put in reentrancy guard test? */
 }); 

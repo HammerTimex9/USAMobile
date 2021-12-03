@@ -28,19 +28,17 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   ILendingPool public polygonLendingPool;       // Aave lending pool on Polygon
   IERC20 public polygonUSDC;                    // USDC crypto currency on Polygon
   IERC20 public polygonAMUSDC;                  // Aave's amUSDC crypto currency on Polygon
-
   address public feeReceiver;                   // beneficiary address for collected fees
 
   uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor  
-  uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
-  uint256 public USDCscaleFactor =    1000000;  // 6 decimals scale of USDC crypto currency
-  uint256 public USDCcentsScaleFactor = 10000;  // 4 decimals scale of USDC crypto currency cents
+  uint256 private USDCscaleFactor =    1000000; // 6 decimals scale of USDC crypto currency
+  uint256 private USDCcentsScaleFactor = 10000; // 4 decimals scale of USDC crypto currency cents
   uint256 public blocksPerDay;                  // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
-     
   uint256 public curveFactor;                   // inverse slope of the bonding curve
   uint256 public baseFeeTimes10k;               // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
-
+  uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
   uint256 public neededBNJIperLevel;            // amount of BNJI needed per discount level
+  
   uint16[] public holdingTimes;                 // holding times in days
   uint16[] public discounts;                    // discounts in percent
   
