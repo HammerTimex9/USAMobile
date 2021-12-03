@@ -38,7 +38,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint256 public baseFeeTimes10k;               // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
   uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
   uint256 public neededBNJIperLevel;            // amount of BNJI needed per discount level
-  
+
   uint16[] public holdingTimes;                 // holding times in days
   uint16[] public discounts;                    // discounts in percent
   
@@ -60,10 +60,10 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   event LendingPoolWithdrawal (uint256 amountUSDCBeforeFeein6dec, address receiver);
 
   // event for increasing discount level
-  event DiscountLevelIncreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel, uint256 minimumHoldingUntil); 
+  event DiscountLevelIncreased(address owner, uint256 blockHeightNow, uint256 amountOfBNJIlocked,  uint256 newDiscountLevel, uint256 minimumHoldingUntil); 
  
   // event for decreasing discount level
-  event DiscountLevelDecreased(address owner, uint256 blockHeightNow,  uint256 newDiscountLevel);
+  event DiscountLevelDecreased(address owner, uint256 blockHeightNow, uint256 amountOfBNJIunlocked, uint256 newDiscountLevel);
 
   // event for exchanging USDC and BNJI
   event Exchanged(
@@ -71,7 +71,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     address fromAddress,
     address toAddress,
     uint256 inTokens,
-    uint256 beforeFeeUSDCin6dec,
+    uint256 beforeFeeCalcInUSDCin6dec,
     uint256 feeUSDCin6dec
   );
 
@@ -185,35 +185,36 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   // Execute mint or burn
   function changeSupply(address _forWhom, uint256 _amountBNJI, bool isMint) internal nonReentrant whenAvailable {
-    uint256 beforeFeeInUSDCin6dec;
+    uint256 beforeFeeCalcInUSDCin6dec;
     // Calculate change in tokens and value of difference
     if (isMint == true) {
-      beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, true);
+      beforeFeeCalcInUSDCin6dec = quoteUSDC(_amountBNJI, true);
     } else {
-      beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, false);
+      beforeFeeCalcInUSDCin6dec = quoteUSDC(_amountBNJI, false);
     }
     // baseFeeTimes10k is brought into full percent format by dividing by 10000, then applied as percent by dividing by 100
-    uint256 feeNotRoundedIn6dec = (beforeFeeInUSDCin6dec * baseFeeTimes10k) / 1000000;
+    uint256 feeNotRoundedIn6dec = (beforeFeeCalcInUSDCin6dec * baseFeeTimes10k) / 1000000;
     // rounding down to full cents
     uint256 feeRoundedDownIn6dec = feeNotRoundedIn6dec - (feeNotRoundedIn6dec % USDCcentsScaleFactor);
     // Execute exchange
     if (isMint == true) {
       // moving funds for minting
-      moveUSDC(msg.sender, _forWhom, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec, true);
+      moveUSDC(msg.sender, _forWhom, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec, true);
       // minting
       _mint(_forWhom, _amountBNJI);
       // update reserve
-      reserveInUSDCin6dec += beforeFeeInUSDCin6dec;
+      reserveInUSDCin6dec += beforeFeeCalcInUSDCin6dec;
     } else {
       // burning
       _burn(msg.sender, _amountBNJI);
       // moving funds for burning
-      moveUSDC(msg.sender, _forWhom, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec, false);
+      moveUSDC(msg.sender, _forWhom, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec, false);
       // update reserve            
-      reserveInUSDCin6dec -= beforeFeeInUSDCin6dec;
+      reserveInUSDCin6dec -= beforeFeeCalcInUSDCin6dec;
     }
-
-    emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec);
+    console.log(beforeFeeCalcInUSDCin6dec, 'beforeFeeCalcInUSDCin6dec, BNJ');
+    console.log(feeRoundedDownIn6dec, 'feeRoundedDownIn6dec, BNJ');
+    emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec);
   }
 
   // Quote USDC for mint or burn
@@ -260,13 +261,13 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   function moveUSDC(
     address _payer,
     address _payee,
-    uint256 _beforeFeeInUSDCin6dec,
+    uint256 _beforeFeeCalcInUSDCin6dec,
     uint256 _feeRoundedDownIn6dec,
     bool isMint
   ) internal whenAvailable {
     if (isMint == true) {
       // on minting, fee is added to price
-      uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec + _feeRoundedDownIn6dec;
+      uint256 _afterFeeUSDCin6dec = _beforeFeeCalcInUSDCin6dec + _feeRoundedDownIn6dec;
 
       // pull USDC from user (_payer), push to this contract
       polygonUSDC.transferFrom(_payer, address(this), _afterFeeUSDCin6dec);
@@ -275,17 +276,17 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       polygonUSDC.transfer(feeReceiver, _feeRoundedDownIn6dec);
 
       // this contract gives the Aave lending pool allowance to pull in the amount without fee from this contract
-      polygonUSDC.approve(address(polygonLendingPool), _beforeFeeInUSDCin6dec);
+      polygonUSDC.approve(address(polygonLendingPool), _beforeFeeCalcInUSDCin6dec);
 
       // lending pool is queried to pull in the approved USDC (in 6 decimals format)
-      polygonLendingPool.deposit(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this), 0);
-      emit LendingPoolDeposit(_beforeFeeInUSDCin6dec, _payer);
+      polygonLendingPool.deposit(address(polygonUSDC), _beforeFeeCalcInUSDCin6dec, address(this), 0);
+      emit LendingPoolDeposit(_beforeFeeCalcInUSDCin6dec, _payer);
     } else {
       // on burning, fee is substracted from return
-      uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec - _feeRoundedDownIn6dec;
+      uint256 _afterFeeUSDCin6dec = _beforeFeeCalcInUSDCin6dec - _feeRoundedDownIn6dec;
             
       // lending pool is queried to push USDC (in 6 decimals format) including fee back to this contract
-      polygonLendingPool.withdraw(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this));      
+      polygonLendingPool.withdraw(address(polygonUSDC), _beforeFeeCalcInUSDCin6dec, address(this));      
 
       // pushing fee from this contract to feeReceiver address
       polygonUSDC.transfer(feeReceiver, _feeRoundedDownIn6dec);
@@ -293,7 +294,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       // pushing USDC from this contract to user (_payee)
       polygonUSDC.transfer(_payee, _afterFeeUSDCin6dec);
 
-      emit LendingPoolWithdrawal(_beforeFeeInUSDCin6dec, _payee);
+      emit LendingPoolWithdrawal(_beforeFeeCalcInUSDCin6dec, _payee);
     }
   }       
 
@@ -313,14 +314,14 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     uint256 amountOfTimeToLock = holdingTimes[endAmountOfLevels] * blocksPerDay;
 
-    uint256 discountShouldBeActiveUntil = blockHeightNow + amountOfTimeToLock;    
+    uint256 unlockTimestamp = blockHeightNow + amountOfTimeToLock;    
 
-    minHoldingtimeUntil[msg.sender] = discountShouldBeActiveUntil;
+    minHoldingtimeUntil[msg.sender] = unlockTimestamp;
     
     usersAccountLevel[msg.sender] = endAmountOfLevels;    
 
     // emitting event with all related useful details
-    emit DiscountLevelIncreased (msg.sender, blockHeightNow, endAmountOfLevels, discountShouldBeActiveUntil);  
+    emit DiscountLevelIncreased (msg.sender, blockHeightNow, amountOfBNJItoLock, endAmountOfLevels, unlockTimestamp);  
   }  
 
   function decreaseDiscountLevels (uint256 _amountOfLevelsToDecrease) public whenAvailable {
@@ -347,7 +348,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // this contract pushes msg.sender amountOfBNJIunlocked to msg.sender
     transferFrom(address(this), msg.sender, amountOfBNJIunlocked);    
 
-    emit DiscountLevelDecreased(msg.sender, blockHeightNow, endAmountOfLevels);      
+    emit DiscountLevelDecreased(msg.sender, blockHeightNow, amountOfBNJIunlocked, endAmountOfLevels);      
   }
 
   // Modified ERC20 transfer()   
