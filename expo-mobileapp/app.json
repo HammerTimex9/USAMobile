@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "USAWallet",
+    "slug": "usawallet",
+    "version": "1.0.0",
+    "sdkVersion": "43.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "android": {
+      "package": "com.usawallet"
+    },
+    "ios": {
+      "bundleIdentifier": "com.usawallet"
+    }
+  }
+}
