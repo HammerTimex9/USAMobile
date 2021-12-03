@@ -288,6 +288,9 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   const callingAccUSDCBalanceBeforeMintInCents = await balUSDCinCents(callingAccAddress);  
   const feeReceiverUSDCBalanceBeforeMintInCents = await balUSDCinCents(feeReceiver);  
   
+  const totalSupplyBeforeMint = bigNumberToNumber(await benjaminsContract.totalSupply());
+  const reserveBeforeMintIn6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getReserveIn6dec());
+
   // allowing benjaminsContract to handle USDC for ${callingAcc}   
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
   
@@ -306,14 +309,23 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   // descr: function mintTo(uint256 _amount, address _toWhom) public whenAvailable {  
   await benjaminsContract.connect(callingAccSigner).mintTo(amountToMint, receivingAddress);  
 
-  const totalSupplyAfterMint = bigNumberToNumber( await benjaminsContract.totalSupply() ); 
- 
+  const totalSupplyAfterMint = bigNumberToNumber(await benjaminsContract.totalSupply()); 
+  const reserveAfterMintIn6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getReserveIn6dec());  
+
   const callingAccUSDCBalanceAfterMintInCents = await balUSDCinCents(callingAccAddress);   
   const feeReceiverUSDCBalanceAfterMintInCents = await balUSDCinCents(feeReceiver); 
  
   const callingAccMintPricePaidInCents = callingAccUSDCBalanceBeforeMintInCents - callingAccUSDCBalanceAfterMintInCents;
  
-  const feeReceiverUSDCdiffMintInCents = feeReceiverUSDCBalanceAfterMintInCents - feeReceiverUSDCBalanceBeforeMintInCents;     
+  const feeReceiverUSDCdiffMintInCents = feeReceiverUSDCBalanceAfterMintInCents - feeReceiverUSDCBalanceBeforeMintInCents;  
+  
+  const mintPriceWithoutFeeIn6dec = multiplyFromUSDCcentsTo6dec(callingAccMintPricePaidInCents) - multiplyFromUSDCto6dec(mintFeeInUSDCShouldBeNowGlobalV);
+  
+  expect(totalSupplyAfterMint).to.equal(totalSupplyBeforeMint + amountToMint);
+
+  // reserve in protocol is expected to be increased by the mint price without the fees,
+  // since protocol only receives the amount before fees
+  expect(reserveAfterMintIn6dec).to.equal(reserveBeforeMintIn6dec + mintPriceWithoutFeeIn6dec);
   
   // since amUSDC amounts change due to interest accrued, transfer amount WITHOUT fees are saved globally for comparison
   // here, transfer amount refers to USDC cents amounts of funds received by the protocol, from the user
@@ -325,12 +337,16 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   tokensExistQueriedGlobalV = totalSupplyAfterMint;
   mintAllowanceInUSDCCentsWasNowGlobalV = dividefrom6decToUSDCcents(givenAllowanceToBNJIcontractIn6dec);
   
+  confirmMint();
 };
 
 async function testBurning(amountToBurn, callingAccAddress, receivingAddress) { 
 
   const receivingAddressUSDCBalanceBeforeBurnInCents = await balUSDCinCents(receivingAddress); 
   const feeReceiverUSDCBalanceBeforeBurnInCents = await balUSDCinCents(feeReceiver); 
+
+  const totalSupplyBeforeBurn = bigNumberToNumber(await benjaminsContract.totalSupply());
+  const reserveBeforeBurnIn6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getReserveIn6dec());
   
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
 
@@ -340,12 +356,22 @@ async function testBurning(amountToBurn, callingAccAddress, receivingAddress) {
   await benjaminsContract.connect(callingAccSigner).burnTo(amountToBurn, receivingAddress);    
 
   const totalSupplyAfterBurn = bigNumberToNumber( await benjaminsContract.totalSupply() ); 
-  const receivingAccUSDCBalanceAfterBurnInCents = await balUSDCinCents(receivingAddress);    
-  
+  const reserveAfterBurnIn6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getReserveIn6dec());
+
+  const receivingAccUSDCBalanceAfterBurnInCents = await balUSDCinCents(receivingAddress);      
   const feeReceiverUSDCBalanceAfterBurnInCents = await balUSDCinCents(feeReceiver); 
   
   const receivingAccBurnReturnReceivedInCents = receivingAccUSDCBalanceAfterBurnInCents - receivingAddressUSDCBalanceBeforeBurnInCents;  
-  const feeReceiverUSDCdiffBurnInCents = feeReceiverUSDCBalanceAfterBurnInCents - feeReceiverUSDCBalanceBeforeBurnInCents;       
+  const feeReceiverUSDCdiffBurnInCents = feeReceiverUSDCBalanceAfterBurnInCents - feeReceiverUSDCBalanceBeforeBurnInCents; 
+  
+  
+  const burnReturnAfterFeeIn6dec = multiplyFromUSDCcentsTo6dec(receivingAccBurnReturnReceivedInCents + feeReceiverUSDCdiffBurnInCents);  
+
+  expect(totalSupplyAfterBurn).to.equal(totalSupplyBeforeBurn - amountToBurn);
+
+  // reserve in protocol is expected to be decreased by the burn return including the fees, 
+  // since both are paid by the protocol, then split between user and feeReceiver
+  expect(reserveAfterBurnIn6dec).to.equal(reserveBeforeBurnIn6dec - burnReturnAfterFeeIn6dec);
 
   // since amUSDC amounts change due to interest accrued, transfer amount WITHOUT fees are saved globally for comparison
   // here, transfer amount refers to USDC cents amounts of funds paid out by the protocol, to the user, plus fees, paid by protocol to feeReceiver
@@ -2007,7 +2033,7 @@ describe("Testing Benjamins", function () {
   
   
   // TODO: runs, clean up
-  it("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
+  it.skip("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
     await countAllCents();
 
     const balUSDCDdeployer_start = await balUSDC(deployer);

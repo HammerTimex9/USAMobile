@@ -287,14 +287,15 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec - _feeRoundedDownIn6dec;
             
       // lending pool is queried to push USDC (in 6 decimals format) including fee back to this contract
-      polygonLendingPool.withdraw(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this));
-      emit LendingPoolWithdrawal(_beforeFeeInUSDCin6dec, _payee);
+      polygonLendingPool.withdraw(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this));      
 
       // pushing fee from this contract to feeReceiver address
       polygonUSDC.transfer(feeReceiver, _feeRoundedDownIn6dec);
 
       // pushing USDC from this contract to user (_payee)
       polygonUSDC.transfer(_payee, _afterFeeUSDCin6dec);
+
+      emit LendingPoolWithdrawal(_beforeFeeInUSDCin6dec, _payee);
     }
   }       
 
@@ -348,8 +349,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // this contract pushes msg.sender amountOfBNJIunlocked to msg.sender
     transferFrom(address(this), msg.sender, amountOfBNJIunlocked);    
 
-    emit DiscountLevelDecreased(msg.sender, blockHeightNow, endAmountOfLevels);  
-    
+    emit DiscountLevelDecreased(msg.sender, blockHeightNow, endAmountOfLevels);      
   }
 
   // Modified ERC20 transfer()   
