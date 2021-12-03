@@ -20,8 +20,8 @@ import "hardhat/console.sol";
 // Price is set via bonding curve vs. USDC.
 // All USDC is deposited in a singular lending pool (nominaly at AAVE).
 // 100% USDC is maintained against burning. (see variable reserveInUSDCin6dec, in 6 decimals format)
-// Collected fees and interest are withdrawable to the owner to a set recipient address.
-// Fee discounts are calculated based on BNJI balance.
+// Collected fees and interest are withdrawable by the owner to a set recipient address.
+// Fee discounts are calculated based on discount level, attained by locking BNJI.
 // Reentrancy is protected against via OpenZeppelin's ReentrancyGuard
 contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
@@ -31,11 +31,11 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   address public feeReceiver;                   // beneficiary address for collected fees
 
+  uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor  
   uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
   uint256 public USDCscaleFactor =    1000000;  // 6 decimals scale of USDC crypto currency
   uint256 public USDCcentsScaleFactor = 10000;  // 4 decimals scale of USDC crypto currency cents
   uint256 public blocksPerDay;                  // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
-  uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor
      
   uint256 public curveFactor;                   // inverse slope of the bonding curve
   uint256 public baseFeeTimes10k;               // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
@@ -159,55 +159,145 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     pause();
   }
   
-  // pausing funcionality from OpenZeppelin's Pausable
-  function pause() public onlyOwner {
-    _pause();
+  // Buy BNJI with USDC.
+  function mint(uint256 _amount) public {
+    mintTo(_amount, msg.sender);
   }
 
-  // unpausing funcionality from OpenZeppelin's Pausable
-  function unpause() public onlyOwner {
-    _unpause();
+  // Buy BNJI with USDC for another address.
+  function mintTo(uint256 _amount, address _toWhom) public whenAvailable {   
+    // minting to user
+    changeSupply(_toWhom, _amount, true);
   }
 
-  // Overriding OpenZeppelin's ERC20 function
-  function decimals() public view override whenAvailable returns (uint8) {
-    return _decimals;
+  // Sell BNJI for USDC.
+  function burn(uint256 _amount) public {
+    burnTo(_amount, msg.sender);
   }
 
-  function getUsersDiscountLevel(address _userToCheck) public view whenAvailable returns (uint256 discountLevel) {
-    return usersAccountLevel[_userToCheck];
+  // Sell your BNJI and send USDC to another address.
+  function burnTo(uint256 _amount, address _toWhom)
+    public
+    whenAvailable
+    hasTheBenjamins(_amount)
+    wontBreakTheBank(_amount)   
+  {
+    changeSupply(_toWhom, _amount, false);
   }
 
-  function lockedBalanceOf(address _userToCheck) public view whenAvailable returns (uint256 lockedBNJIofUser) {
-    return (getUsersDiscountLevel(_userToCheck)*neededBNJIperLevel);
-  }
-
-  function getUsersDiscountPercentageTimes10k(address _userToCheck) public view whenAvailable returns (uint256 discountInPercentTimes10k) {
-    uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
-    uint256 usersDiscountInPercentTimes10k = uint256(discounts[usersDiscountLevel]) * 10000;
-    return usersDiscountInPercentTimes10k;
-  }  
-
-  function getUsersUnlockTimestamp(address _userToCheck) public view whenAvailable returns (uint256 usersUnlockTimestamp) {
-    return minHoldingtimeUntil[_userToCheck];
-  }
-
-  function howManyBlocksUntilUnlock (address _userToCheck) public view whenAvailable returns(uint256 timeLeftInBlocks) {
-    // this is now, expressed in blockheight
-    uint256 blockHeightNow = block.number;
-
-    uint256 willUnlockAtThisBlockheight = getUsersUnlockTimestamp(_userToCheck);
-   
-    int256 amountOfBlocksStillLocked = int256(willUnlockAtThisBlockheight) - int256(blockHeightNow);
-
-    if (amountOfBlocksStillLocked < 0) {
-      return 0;
+  // Execute mint or burn
+  function changeSupply(address _forWhom, uint256 _amountBNJI, bool isMint) internal nonReentrant whenAvailable {
+    uint256 beforeFeeInUSDCin6dec;
+    // Calculate change in tokens and value of difference
+    if (isMint == true) {
+      beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, true);
     } else {
-      return uint256(amountOfBlocksStillLocked);
+      beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, false);
+    }
+    // baseFeeTimes10k is brought into full percent format by dividing by 10000, then applied as percent by dividing by 100
+    uint256 feeNotRoundedIn6dec = (beforeFeeInUSDCin6dec * baseFeeTimes10k) / 1000000;
+    // rounding down to full cents
+    uint256 feeRoundedDownIn6dec = feeNotRoundedIn6dec - (feeNotRoundedIn6dec % USDCcentsScaleFactor);
+    // Execute exchange
+    if (isMint == true) {
+      // moving funds for minting
+      moveUSDC(msg.sender, _forWhom, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec, true);
+      // minting
+      _mint(_forWhom, _amountBNJI);
+      // update reserve
+      reserveInUSDCin6dec += beforeFeeInUSDCin6dec;
+    } else {
+      // burning
+      _burn(msg.sender, _amountBNJI);
+      // moving funds for burning
+      moveUSDC(msg.sender, _forWhom, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec, false);
+      // update reserve            
+      reserveInUSDCin6dec -= beforeFeeInUSDCin6dec;
     }
 
+    emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec);
   }
+
+  // Quote USDC for mint or burn
+  // based on BNJI in circulation and amount to mint/burn
+  function quoteUSDC(uint256 _amount, bool isMint) public view whenAvailable returns (uint256) {
+
+    uint256 supply = totalSupply();                     // total supply of BNJI
+    uint256 supply2 = supply*supply;                    // Supply squared
+    uint256 supplyAfterTx;                              // post-mint supply, see below
+    uint256 supplyAfterTx2;                             // post-mint supply squared, see below
+    uint256 squareDiff;                                 // difference in supply, before and after, see below
+
+    // this calculation is for minting BNJI
+    if (isMint==true){                                  
+      supplyAfterTx = supply + _amount;               
+      supplyAfterTx2 = supplyAfterTx*supplyAfterTx;   
+      squareDiff = supplyAfterTx2 - supply2;
+    } 
+        
+    // this calculation is for burning BNJI
+    else {                                              
+      supplyAfterTx = supply - _amount;               
+      supplyAfterTx2 = supplyAfterTx*supplyAfterTx;
+      squareDiff = supply2 - supplyAfterTx2;
+    }
+
+    // bringing difference into 6 decimals format for USDC
+    uint256 scaledSquareDiff = squareDiff * USDCscaleFactor;       
+
+    // finishing bonding curve calculation 
+    uint256 amountInUSDCin6dec = scaledSquareDiff / curveFactor;    
+
+    // rounding down to USDC cents
+    uint256 endAmountUSDCin6dec = amountInUSDCin6dec - (amountInUSDCin6dec % USDCcentsScaleFactor); 
+
+    // the amount of BNJI to be moved must be at least currently valued at $5 of USDC
+    require (endAmountUSDCin6dec >= 5000000, "BNJ, quoteUSDC: Minimum BNJI value to move is $5 USDC" );
+
+    // returning USDC value of BNJI before fees
+    return endAmountUSDCin6dec;                         
+  }    
   
+  // Move USDC for a supply change.  Note: sign of amount is the mint/burn direction.
+  function moveUSDC(
+    address _payer,
+    address _payee,
+    uint256 _beforeFeeInUSDCin6dec,
+    uint256 _feeRoundedDownIn6dec,
+    bool isMint
+  ) internal whenAvailable {
+    if (isMint == true) {
+      // on minting, fee is added to price
+      uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec + _feeRoundedDownIn6dec;
+
+      // pull USDC from user (_payer), push to this contract
+      polygonUSDC.transferFrom(_payer, address(this), _afterFeeUSDCin6dec);
+
+      // pushing fee from this contract to feeReceiver address
+      polygonUSDC.transfer(feeReceiver, _feeRoundedDownIn6dec);
+
+      // this contract gives the Aave lending pool allowance to pull in the amount without fee from this contract
+      polygonUSDC.approve(address(polygonLendingPool), _beforeFeeInUSDCin6dec);
+
+      // lending pool is queried to pull in the approved USDC (in 6 decimals format)
+      polygonLendingPool.deposit(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this), 0);
+      emit LendingPoolDeposit(_beforeFeeInUSDCin6dec, _payer);
+    } else {
+      // on burning, fee is substracted from return
+      uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec - _feeRoundedDownIn6dec;
+            
+      // lending pool is queried to push USDC (in 6 decimals format) including fee back to this contract
+      polygonLendingPool.withdraw(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this));
+      emit LendingPoolWithdrawal(_beforeFeeInUSDCin6dec, _payee);
+
+      // pushing fee from this contract to feeReceiver address
+      polygonUSDC.transfer(feeReceiver, _feeRoundedDownIn6dec);
+
+      // pushing USDC from this contract to user (_payee)
+      polygonUSDC.transfer(_payee, _afterFeeUSDCin6dec);
+    }
+  }       
+
   function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * neededBNJIperLevel) {
     
     uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) + _amountOfLevelsToIncrease;
@@ -262,10 +352,6 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     
   }
 
-
-
-
-
   // Modified ERC20 transfer()   
   function transfer(address recipient, uint256 amountBNJI)
     public
@@ -298,182 +384,43 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return true;
   }
 
-  // Buy BNJI with USDC.
-  function mint(uint256 _amount) public {
-    mintTo(_amount, msg.sender);
+  // Overriding OpenZeppelin's ERC20 function
+  function decimals() public view override whenAvailable returns (uint8) {
+    return _decimals;
   }
 
-  // Buy BNJI with USDC for another address.
-  function mintTo(uint256 _amount, address _toWhom) public whenAvailable {   
-    // minting to user
-    changeSupply(_toWhom, _amount, true);
+  function getUsersDiscountLevel(address _userToCheck) public view whenAvailable returns (uint256 discountLevel) {
+    return usersAccountLevel[_userToCheck];
   }
 
-  // Sell BNJI for USDC.
-  function burn(uint256 _amount) public {
-    burnTo(_amount, msg.sender);
+  function lockedBalanceOf(address _userToCheck) public view whenAvailable returns (uint256 lockedBNJIofUser) {
+    return (getUsersDiscountLevel(_userToCheck)*neededBNJIperLevel);
   }
 
-  // Sell your BNJI and send USDC to another address.
-  function burnTo(uint256 _amount, address _toWhom)
-    public
-    whenAvailable
-    hasTheBenjamins(_amount)
-    wontBreakTheBank(_amount)   
-  {
-    changeSupply(_toWhom, _amount, false);
+  function getUsersDiscountPercentageTimes10k(address _userToCheck) public view whenAvailable returns (uint256 discountInPercentTimes10k) {
+    uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
+    uint256 usersDiscountInPercentTimes10k = uint256(discounts[usersDiscountLevel]) * 10000;
+    return usersDiscountInPercentTimes10k;
+  }  
+
+  function getUsersUnlockTimestamp(address _userToCheck) public view whenAvailable returns (uint256 usersUnlockTimestamp) {
+    return minHoldingtimeUntil[_userToCheck];
   }
 
-  // Quote USDC for mint or burn
-  // based on BNJI in circulation and amount to mint/burn
-  function quoteUSDC(uint256 _amount, bool isMint) public view whenAvailable returns (uint256) {
+  function howManyBlocksUntilUnlock (address _userToCheck) public view whenAvailable returns(uint256 timeLeftInBlocks) {
+    // this is now, expressed in blockheight
+    uint256 blockHeightNow = block.number;
 
-    uint256 supply = totalSupply();                     // total supply of BNJI
-    uint256 supply2 = supply*supply;                    // Supply squared
-    uint256 supplyAfterTx;                              // post-mint supply, see below
-    uint256 supplyAfterTx2;                             // post-mint supply squared, see below
-    uint256 squareDiff;                                 // difference in supply, before and after, see below
+    uint256 willUnlockAtThisBlockheight = getUsersUnlockTimestamp(_userToCheck);
+   
+    int256 amountOfBlocksStillLocked = int256(willUnlockAtThisBlockheight) - int256(blockHeightNow);
 
-    // this calculation is for minting BNJI
-    if (isMint==true){                                  
-      supplyAfterTx = supply + _amount;               
-      supplyAfterTx2 = supplyAfterTx*supplyAfterTx;   
-      squareDiff = supplyAfterTx2 - supply2;
-    } 
-        
-    // this calculation is for burning BNJI
-    else {                                              
-      supplyAfterTx = supply - _amount;               
-      supplyAfterTx2 = supplyAfterTx*supplyAfterTx;
-      squareDiff = supply2 - supplyAfterTx2;
-    }
-
-    // bringing difference into 6 decimals format for USDC
-    uint256 scaledSquareDiff = squareDiff * USDCscaleFactor;       
-
-    // finishing bonding curve calculation 
-    uint256 amountInUSDCin6dec = scaledSquareDiff / curveFactor;    
-
-    // rounding down to USDC cents
-    uint256 endAmountUSDCin6dec = amountInUSDCin6dec - (amountInUSDCin6dec % USDCcentsScaleFactor); 
-
-    // the amount of BNJI to be moved must be at least currently valued at $5 of USDC
-    require (endAmountUSDCin6dec >= 5000000, "BNJ, quoteUSDC: Minimum BNJI value to move is $5 USDC" );
-
-    // returning USDC value of BNJI before fees
-    return endAmountUSDCin6dec;                         
-  }
-    
-  // Execute mint or burn
-  function changeSupply(address _forWhom, uint256 _amountBNJI, bool isMint) internal nonReentrant whenAvailable {
-    uint256 beforeFeeInUSDCin6dec;
-    // Calculate change in tokens and value of difference
-    if (isMint == true) {
-      beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, true);
-    } else {
-      beforeFeeInUSDCin6dec = quoteUSDC(_amountBNJI, false);
-    }
-    // baseFeeTimes10k is brought into full percent format by dividing by 10000, then applied as percent by dividing by 100
-    uint256 feeNotRoundedIn6dec = (beforeFeeInUSDCin6dec * baseFeeTimes10k) / 1000000;
-    // rounding down to full cents
-    uint256 feeRoundedDownIn6dec = feeNotRoundedIn6dec - (feeNotRoundedIn6dec % USDCcentsScaleFactor);
-    // Execute exchange
-    if (isMint == true) {
-      // moving funds for minting
-      moveUSDC(msg.sender, _forWhom, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec, true);
-      // minting
-      _mint(_forWhom, _amountBNJI);
-      // update reserve
-      reserveInUSDCin6dec += beforeFeeInUSDCin6dec;
-    } else {
-      // burning
-      _burn(msg.sender, _amountBNJI);
-      // moving funds for burning
-      moveUSDC(msg.sender, _forWhom, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec, false);
-      // update reserve            
-      reserveInUSDCin6dec -= beforeFeeInUSDCin6dec;
-    }
-
-    emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec);
-  }
-
-  // Move USDC for a supply change.  Note: sign of amount is the mint/burn direction.
-  function moveUSDC(
-    address _payer,
-    address _payee,
-    uint256 _beforeFeeInUSDCin6dec,
-    uint256 _feeRoundedDownIn6dec,
-    bool isMint
-  ) internal whenAvailable {
-    if (isMint == true) {
-      // on minting, fee is added to price
-      uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec + _feeRoundedDownIn6dec;
-
-      // pull USDC from user (_payer), push to this contract
-      polygonUSDC.transferFrom(_payer, address(this), _afterFeeUSDCin6dec);
-
-      // pushing fee from this contract to feeReceiver address
-      polygonUSDC.transfer(feeReceiver, _feeRoundedDownIn6dec);
-
-      // this contract gives the Aave lending pool allowance to pull in the amount without fee from this contract
-      polygonUSDC.approve(address(polygonLendingPool), _beforeFeeInUSDCin6dec);
-
-      // lending pool is queried to pull in the approved USDC (in 6 decimals format)
-      polygonLendingPool.deposit(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this), 0);
-      emit LendingPoolDeposit(_beforeFeeInUSDCin6dec, _payer);
-    } else {
-      // on burning, fee is substracted from return
-      uint256 _afterFeeUSDCin6dec = _beforeFeeInUSDCin6dec - _feeRoundedDownIn6dec;
-            
-      // lending pool is queried to push USDC (in 6 decimals format) including fee back to this contract
-      polygonLendingPool.withdraw(address(polygonUSDC), _beforeFeeInUSDCin6dec, address(this));
-      emit LendingPoolWithdrawal(_beforeFeeInUSDCin6dec, _payee);
-
-      // pushing fee from this contract to feeReceiver address
-      polygonUSDC.transfer(feeReceiver, _feeRoundedDownIn6dec);
-
-      // pushing USDC from this contract to user (_payee)
-      polygonUSDC.transfer(_payee, _afterFeeUSDCin6dec);
-    }
-  }    
-  
-  function checkGains() public view onlyOwner returns (uint256 availableNowIn6dec) {
-
-    uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
-
-    // calculating with $100 extra as a redundant mathmatical buffer
-    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value        
-
-    if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
-      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;      
-
-      if (amUSDCbalBufferedIn6dec > reserveInUSDCin6dec) {
-        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;        
-
-        return availableIn6dec;
-      } 
-      else {
-        return 0;
-      }
-    } 
-    else {
+    if (amountOfBlocksStillLocked < 0) {
       return 0;
-    }        
-  }
-  
-  // Withdraw available fees and interest gains from lending pool to receiver address.
-  function withdrawGains(uint256 _amountIn6dec) public onlyOwner {
-    uint256 availableIn6dec = checkGains();
+    } else {
+      return uint256(amountOfBlocksStillLocked);
+    }
 
-    //console.log(availableIn6dec, 'availableIn6dec, withdrawGains');
-    console.log(availableIn6dec/USDCscaleFactor, 'available in dollars, withdrawGains');
-
-    //console.log(_amountIn6dec, '_amountIn6dec, withdrawGains');
-    console.log(_amountIn6dec/USDCscaleFactor, '_amount in dollars, withdrawGains');
-
-    require(availableIn6dec > _amountIn6dec, "Insufficient funds.");
-    polygonAMUSDC.transfer(feeReceiver, _amountIn6dec); 
-    emit ProfitTaken(availableIn6dec, _amountIn6dec);
   }
 
   // Returns the reserveInUSDCin6dec tracker, which logs the amount of USDC (in 6 decimals format),
@@ -522,6 +469,56 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   function getBaseFeeTimes10k() public view whenAvailable returns (uint256 baseFeeTimes10kNow){
     return baseFeeTimes10k;
   }
+
+  
+  // pausing funcionality from OpenZeppelin's Pausable
+  function pause() public onlyOwner {
+    _pause();
+  }
+
+  // unpausing funcionality from OpenZeppelin's Pausable
+  function unpause() public onlyOwner {
+    _unpause();
+  }
+  
+  function checkGains() public view onlyOwner returns (uint256 availableNowIn6dec) {
+
+    uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
+
+    // calculating with $100 extra as a redundant mathmatical buffer
+    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value        
+
+    if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
+      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;      
+
+      if (amUSDCbalBufferedIn6dec > reserveInUSDCin6dec) {
+        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;        
+
+        return availableIn6dec;
+      } 
+      else {
+        return 0;
+      }
+    } 
+    else {
+      return 0;
+    }        
+  }
+  
+  // Withdraw available fees and interest gains from lending pool to receiver address.
+  function withdrawGains(uint256 _amountIn6dec) public onlyOwner {
+    uint256 availableIn6dec = checkGains();
+
+    //console.log(availableIn6dec, 'availableIn6dec, withdrawGains');
+    console.log(availableIn6dec/USDCscaleFactor, 'available in dollars, withdrawGains');
+
+    //console.log(_amountIn6dec, '_amountIn6dec, withdrawGains');
+    console.log(_amountIn6dec/USDCscaleFactor, '_amount in dollars, withdrawGains');
+
+    require(availableIn6dec > _amountIn6dec, "Insufficient funds.");
+    polygonAMUSDC.transfer(feeReceiver, _amountIn6dec); 
+    emit ProfitTaken(availableIn6dec, _amountIn6dec);
+  }
       
   // function for owner to withdraw MATIC that were sent directly to contract by mistake
   function cleanMATICtips() public onlyOwner {
@@ -540,12 +537,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     IERC20 erc20contract = IERC20(erc20ContractAddress);                // Instance of ERC20 token at erc20ContractAddress    
     uint256 accumulatedTokens = erc20contract.balanceOf(address(this)); // Querying balance of this token, owned by this contract    
     erc20contract.transfer(msg.sender, accumulatedTokens);              // Sending it to calling owner
-  } 
-
-  // Receives all incoming Matic, sent directly (there is no need to send Matic)
-  receive() external payable {
-    // blind accumulate all other payment types and tokens.
-  }
+  }   
 
   // Update Aave's lending pool address on Polygon
   function updatePolygonLendingPoolAddress (address newAddress) public onlyOwner {
@@ -611,5 +603,9 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   function updateBaseFee(uint256 _newbaseFeeTimes10k) public onlyOwner {
     baseFeeTimes10k = _newbaseFeeTimes10k;
     emit BaseFeeUpdate(_newbaseFeeTimes10k);
+  }
+
+  // Receives all incoming Matic, sent directly (there is no need to send Matic in this way though)
+  receive() external payable {    
   }
 }

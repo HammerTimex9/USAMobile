@@ -2217,7 +2217,7 @@ describe("Testing Benjamins", function () {
     
   });
 
-  it("Test last1. Activating pause() should lock public access to state changing functions, but allow owner", async function () { 
+  it("Test last1. Activating pause() should lock public access to chosen functions, but allow owner", async function () { 
     
     await countAllCents();
 
@@ -2271,10 +2271,7 @@ describe("Testing Benjamins", function () {
     // when pause has been activated, normal users cannot use quoteUSDC
     await expect( benjaminsContract.connect(testUser_1_Signer).quoteUSDC(100, true)).to.be.revertedWith(
       "Benjamins is paused."
-    );
-        
-
-
+    );    
 
     // when pause has been activated, normal users cannot use getBlocksPerDay
     await expect( benjaminsContract.connect(testUser_1_Signer).getBlocksPerDay()).to.be.revertedWith(
@@ -2391,7 +2388,6 @@ describe("Testing Benjamins", function () {
     // when paused is active, contract owner can use quoteUSDC
     const tokenValueIn6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).quoteUSDC(100, true));
     expect(tokenValueIn6dec).to.equal(27260000);
-
     
     // when pause has been activated, contract owner can use getBlocksPerDay
     const blocksperday = await benjaminsContract.connect(deployerSigner).getBlocksPerDay();
@@ -2471,7 +2467,7 @@ describe("Testing Benjamins", function () {
     await benjaminsContract.connect(deployerSigner).unpause();
     expect(await benjaminsContract.paused()).to.equal(false);
       
-    await countAllCents();//
+    await countAllCents();
     
   });
 
