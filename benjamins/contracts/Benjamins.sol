@@ -212,8 +212,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
       // update reserve            
       reserveInUSDCin6dec -= beforeFeeCalcInUSDCin6dec;
     }
-    console.log(beforeFeeCalcInUSDCin6dec, 'beforeFeeCalcInUSDCin6dec, BNJ');
-    console.log(feeRoundedDownIn6dec, 'feeRoundedDownIn6dec, BNJ');
+    
     emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec);
   }
 
@@ -507,12 +506,6 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // Withdraw available fees and interest gains from lending pool to receiver address.
   function withdrawGains(uint256 _amountIn6dec) public onlyOwner {
     uint256 availableIn6dec = checkGains();
-
-    //console.log(availableIn6dec, 'availableIn6dec, withdrawGains');
-    console.log(availableIn6dec/USDCscaleFactor, 'available in dollars, withdrawGains');
-
-    //console.log(_amountIn6dec, '_amountIn6dec, withdrawGains');
-    console.log(_amountIn6dec/USDCscaleFactor, '_amount in dollars, withdrawGains');
 
     require(availableIn6dec > _amountIn6dec, "Insufficient funds.");
     polygonAMUSDC.transfer(feeReceiver, _amountIn6dec); 

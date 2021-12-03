@@ -863,7 +863,10 @@ describe("Testing Benjamins", function () {
     expect(neededBNJIperLevel).to.equal(1000);
     expect(polygonLendingPoolAddress).to.equal('0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf'); 
     expect(await countAllCents()).to.equal(421000000);   
-    expect(await benjaminsContract.decimals()).to.equal(bigNumberToNumber(0));       
+    expect(await benjaminsContract.decimals()).to.equal(bigNumberToNumber(0));   
+    expect(await benjaminsContract.name()).to.equal('Benjamins');   
+    expect(await benjaminsContract.symbol()).to.equal('BNJI');   
+
   });
 
   // TODO: Put in tests for levels 
@@ -1296,20 +1299,20 @@ describe("Testing Benjamins", function () {
   
   // TODO: re organize / number the tests
 
-  it.only("Test recount14. Minting, burning, upgrading and downgrading accounts emit events as expected", async function () {   
+  it("Test recount14. Minting, burning, upgrading and downgrading accounts emit events as expected", async function () {   
 
     // minting 1000 BNJI to caller     
     const amountToApproveIn6dec_forMint = await calcMintApprovalAndPrep(1000);   
     await polygonUSDC.connect(testUser_1_Signer).approve(benjaminsContract.address, amountToApproveIn6dec_forMint); // TODO: create revert case
            
-    const beforeFeeInUSDCin6decMint = multiplyFromUSDCto6dec(mintPriceTotalInUSDCshouldBeNowGlobalV) - multiplyFromUSDCto6dec(mintFeeInUSDCshouldBeNowGlobalV);
+    const beforeFeeCalcInUSDCin6decMint = multiplyFromUSDCto6dec(mintPriceTotalInUSDCshouldBeNowGlobalV) - multiplyFromUSDCto6dec(mintFeeInUSDCshouldBeNowGlobalV);
     const feeInUSDCin6decMint = multiplyFromUSDCto6dec(mintFeeInUSDCshouldBeNowGlobalV);
 
     await expect( benjaminsContract.connect(testUser_1_Signer).mint(1000))
     .to.emit(benjaminsContract, 'Exchanged')
-    .withArgs(true, testUser_1, testUser_1, 1000, beforeFeeInUSDCin6decMint, feeInUSDCin6decMint);  
+    .withArgs(true, testUser_1, testUser_1, 1000, beforeFeeCalcInUSDCin6decMint, feeInUSDCin6decMint);  
 
-    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec);
+    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec);
     
 
     // upgrading to discount level 1 and confirming event was emitted as expected
@@ -1327,23 +1330,19 @@ describe("Testing Benjamins", function () {
     await expect( benjaminsContract.connect(testUser_1_Signer).decreaseDiscountLevels(1))
     .to.emit(benjaminsContract, 'DiscountLevelDecreased')
     .withArgs(testUser_1, (blockBeforeDecrease+1), 1000, 0);
-     
-    
+        
     await calcBurnVariables(1000);
-    const beforeFeeInUSDCin6decBurn = multiplyFromUSDCto6dec(burnReturnWOfeeInUSDCshouldBeNowGlobalV) 
+    
     const feeInUSDCin6decBurn = multiplyFromUSDCto6dec(burnFeeInUSDCshouldBeNowGlobalV);
-
-    console.log(beforeFeeInUSDCin6decBurn, 'beforeFeeInUSDCin6decBurn');
-    console.log(feeInUSDCin6decBurn, 'feeInUSDCin6decBurn');
+    const beforeFeeCalcInUSDCin6decBurn = multiplyFromUSDCto6dec(burnReturnWOfeeInUSDCshouldBeNowGlobalV) + feeInUSDCin6decBurn; 
     
     const totalSupplyExistingNow = bigNumberToNumber(await benjaminsContract.totalSupply()); 
-    console.log(totalSupplyExistingNow, 'totalSupplyExistingNow');
-
+    
     await expect( benjaminsContract.connect(testUser_1_Signer).burn(1000))
     .to.emit(benjaminsContract, 'Exchanged')
-    .withArgs(false, testUser_1, testUser_1, 1000, beforeFeeInUSDCin6decBurn, feeInUSDCin6decBurn);  
+    .withArgs(false, testUser_1, testUser_1, 1000, beforeFeeCalcInUSDCin6decBurn, feeInUSDCin6decBurn);  
 
-    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeInUSDCin6dec, feeRoundedDownIn6dec); */
+    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec); */
 
 
 
@@ -2101,99 +2100,56 @@ describe("Testing Benjamins", function () {
   
   
   // TODO: runs, clean up
-  it.skip("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
-    await countAllCents();
-
-    const balUSDCDdeployer_start = await balUSDC(deployer);
-    console.log (balUSDCDdeployer_start, 'balUSDCDdeployer_start');
-
+  it("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
+    
     await polygonUSDC.connect(deployerSigner).transfer(testUser_5, (4000000*scale6dec) );
-
-    const balUSDCDtestUser_5_beforeMint = await balUSDC(testUser_5);
-    console.log (balUSDCDtestUser_5_beforeMint, 'balUSDCDtestUser_5_beforeMint');
-
-    const totalSupplyNow12 = bigNumberToNumber( await benjaminsContract.totalSupply() ); 
-    console.log (totalSupplyNow12);
-
     // minting 4,800,000 BNJI to testUser_5
     await testMinting(4800000, testUser_5, testUser_5); 
 
-    const balBNJI_testUser_5 = await balBNJI(testUser_5);
-    console.log (balBNJI_testUser_5, 'balBNJI_testUser_5');
-
-    const balUSDCDtestUser_5_afterMint = await balUSDC(testUser_5);
-    console.log (balUSDCDtestUser_5_afterMint, 'balUSDCDtestUser_5_afterMint');
-
-    const balAMUSDCDcontract = await balAMUSDC(benjaminsContract.address);
-    console.log (balAMUSDCDcontract, 'balAMUSDCDcontract');
+    const balAMUSDCD_feeReceiver_start = await balAMUSDC(feeReceiver);    
+    expect(balAMUSDCD_feeReceiver_start).to.equal(0);
     
     await mintBlocks(10000);
-    console.log('minted  10000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
    
     await mintBlocks(10000);
-    console.log('minted  20000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
     await mintBlocks(10000);
-    console.log('minted  30000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
     await mintBlocks(10000);
-    console.log('minted  40000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
     await mintBlocks(10000);
-    console.log('minted  50000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
     await mintBlocks(10000);
-    console.log('minted  60000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
     await mintBlocks(10000);
-    console.log('minted  70000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
     await mintBlocks(10000);
-    console.log('minted  80000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
     await mintBlocks(10000);
-    console.log('minted  90000 blocks total');
-    waitFor(4000);
+    waitFor(2000);
 
-    await mintBlocks(10000);
-    console.log('minted 100000 blocks total');
-    waitFor(4000);
-
-    const blockheight1 = await getBlockheightNow();
-    console.log(blockheight1, 'blockheight1');
+    await mintBlocks(10000);    
+    waitFor(2000);
 
     const checkedGainsInCents = dividefrom6decToUSDCcents(await benjaminsContract.connect(deployerSigner).checkGains());
-    console.log(checkedGainsInCents, 'checkedGainsInCents, BenjaminsTest');
-    const blockheight2 = await getBlockheightNow();
-    console.log(blockheight2, 'blockheight2');
-
-    // $10 buffer on this side
-    const toWithdrawBufferedIn6dec = (multiplyFromUSDCcentsTo6dec(Math.floor(checkedGainsInCents/* - 1000*/)));
-    console.log(toWithdrawBufferedIn6dec, 'toWithdrawBufferedIn6dec, BenjaminsTest');
-    
+    const toWithdrawBufferedIn6dec = (multiplyFromUSDCcentsTo6dec(Math.floor(checkedGainsInCents)));
+   
     if (toWithdrawBufferedIn6dec > 0 ) {
-      await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawBufferedIn6dec);
-      const blockheight3 = await getBlockheightNow();
-      console.log(blockheight3, 'blockheight3');
+      await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawBufferedIn6dec);     
     }   
 
-    const checkedGainsInCents2 = dividefrom6decToUSDCcents(await benjaminsContract.connect(deployerSigner).checkGains());
-    const blockheight4 = await getBlockheightNow();
-    console.log(blockheight4, 'blockheight4');
+    const balAMUSDCD_feeReceiver_end = await balAMUSDC(feeReceiver);    
+    expect(balAMUSDCD_feeReceiver_end).to.equal(balAMUSDCD_feeReceiver_start + (dividefrom6decToUSDCcents(toWithdrawBufferedIn6dec)/100));
     
   });
-
-
-
-
 
 
 
@@ -2363,6 +2319,178 @@ describe("Testing Benjamins", function () {
     .withArgs(toChangeDiscountsArray);         
     await getContractsDiscountArrayAndConfirmIt(toChangeDiscountsArray);
     
+  });
+
+    
+  it("Test recountlast0. testing setters and getters, while contract is paused", async function () { 
+
+    // owner activates pause()
+    await benjaminsContract.connect(deployerSigner).pause(); 
+
+    const feeReceiver_BeforeChange = await benjaminsContract.connect(deployerSigner).getFeeReceiver();
+    expect(feeReceiver_BeforeChange).to.equal(feeReceiver);         
+    // only the owner can update
+    await expect( benjaminsContract.updateFeeReceiver(testUser_4) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );   
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateFeeReceiver(testUser_4))
+    .to.emit(benjaminsContract, 'AddressUpdate')
+    .withArgs(testUser_4, 'feeReceiver');                 
+    const feeReceiver_AfterChange = await benjaminsContract.connect(deployerSigner).getFeeReceiver();
+    expect(feeReceiver_AfterChange).to.equal(testUser_4);
+
+
+    const baseFee_BeforeChange = bigNumberToNumber( await benjaminsContract.connect(deployerSigner).getBaseFeeTimes10k());
+    expect(baseFee_BeforeChange).to.equal(baseFeeTimes10k);
+    // only the owner can update
+    await expect( benjaminsContract.updateBaseFee(7) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );       
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateBaseFee(7))
+    .to.emit(benjaminsContract, 'BaseFeeUpdate')
+    .withArgs(7);  
+    const baseFee_AfterChange = bigNumberToNumber( await benjaminsContract.connect(deployerSigner).getBaseFeeTimes10k());
+    expect(baseFee_AfterChange).to.equal(7);
+
+    
+    const blocksPerDay_BeforeChange = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getBlocksPerDay());
+    expect(blocksPerDay_BeforeChange).to.equal(blocksPerDay);
+    // only the owner can update
+    await expect( benjaminsContract.updateBlocksPerDay(14) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );    
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateBlocksPerDay(14))
+    .to.emit(benjaminsContract, 'BlocksPerDayUpdate')
+    .withArgs(14);  
+    const blocksPerDay_AfterChange = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getBlocksPerDay()); 
+    expect(blocksPerDay_AfterChange).to.equal(14);
+
+
+    const curveFactor_BeforeChange = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getCurveFactor());
+    expect(curveFactor_BeforeChange).to.equal(curveFactor);
+    // only the owner can update
+    await expect( benjaminsContract.updateCurveFactor(148769) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );       
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateCurveFactor(148769))
+    .to.emit(benjaminsContract, 'CurveFactorUpdate')
+    .withArgs(148769);   
+    const curveFactor_AfterChange = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getCurveFactor());
+    expect(curveFactor_AfterChange).to.equal(148769);
+
+
+    const neededBNJIperLevel_BeforeChange = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getneededBNJIperLevel());
+    expect(neededBNJIperLevel_BeforeChange).to.equal(neededBNJIperLevel);
+    // only the owner can update
+    await expect( benjaminsContract.updateNeededBNJIperLevel(50000) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );       
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateNeededBNJIperLevel(50000))
+    .to.emit(benjaminsContract, 'NeededBNJIperLevelUpdate')
+    .withArgs(50000);   
+    const neededBNJIperLevel_AfterChange = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getneededBNJIperLevel());
+    expect(neededBNJIperLevel_AfterChange).to.equal(50000);
+
+
+    const lendingPoolApproval_BeforeChange = bigNumberToNumber(await polygonUSDC.allowance(benjaminsContract.address,'0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf'));
+    expect(lendingPoolApproval_BeforeChange).to.equal(0);
+    const newLendingPoolApproval = multiplyFromUSDCto6dec(1000); 
+    // only the owner can update
+    await expect( benjaminsContract.updateApproveLendingPool(newLendingPoolApproval) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );             
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateApproveLendingPool(newLendingPoolApproval))
+    .to.emit(benjaminsContract, 'LendingPoolApprovalUpdate')
+    .withArgs(newLendingPoolApproval);   
+    const lendingPoolApproval_AfterChange = bigNumberToNumber(await polygonUSDC.allowance(benjaminsContract.address,'0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf'));
+    expect(lendingPoolApproval_AfterChange).to.equal(newLendingPoolApproval);
+     
+
+    const polygonLendingPoolAddress_BeforeChange = await benjaminsContract.connect(deployerSigner).getPolygonLendingPool();
+    expect(polygonLendingPoolAddress_BeforeChange).to.equal('0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf');
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonLendingPoolAddress(polygonUSDCaddress) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );       
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updatePolygonLendingPoolAddress(polygonUSDCaddress))
+    .to.emit(benjaminsContract, 'LendingPoolUpdated')
+    .withArgs(polygonUSDCaddress);   
+    const polygonLendingPoolAddress_AfterChange = await benjaminsContract.connect(deployerSigner).getPolygonLendingPool();
+    expect(polygonLendingPoolAddress_AfterChange).to.equal(polygonUSDCaddress);
+    
+    
+    const polygonUSDCaddress_BeforeChange = await benjaminsContract.connect(deployerSigner).getPolygonUSDC();
+    expect(polygonUSDCaddress_BeforeChange).to.equal(polygonUSDCaddress);
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonUSDC(benjaminsContract.address) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );  
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updatePolygonUSDC(benjaminsContract.address))
+    .to.emit(benjaminsContract, 'AddressUpdate')
+    .withArgs(benjaminsContract.address,'polygonUSDC'); 
+    const polygonUSDCaddress_AfterChange = await benjaminsContract.connect(deployerSigner).getPolygonUSDC();
+    expect(polygonUSDCaddress_AfterChange).to.equal(benjaminsContract.address);
+
+
+    const polygonAMUSDCAddress_BeforeChange = await benjaminsContract.connect(deployerSigner).getPolygonAMUSDC();
+    expect(polygonAMUSDCAddress_BeforeChange).to.equal(polygonAMUSDCAddress);
+
+    // only the owner can update
+    await expect( benjaminsContract.updatePolygonAMUSDC(benjaminsContract.address) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );       
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updatePolygonAMUSDC(benjaminsContract.address))
+    .to.emit(benjaminsContract, 'AddressUpdate')
+    .withArgs(benjaminsContract.address,'polygonAMUSDC'); 
+    const polygonAMUSDCAddress_AfterChange = await benjaminsContract.connect(deployerSigner).getPolygonAMUSDC();
+    expect(polygonAMUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
+
+    
+    const expectedHoldingTimesArray_BeforeChange  =  [0, 30, 90, 300];
+    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray_BeforeChange);
+    const toChangeHoldingTimesArray = [11, 26, 1,  9900, 77, 123]; 
+    // only the owner can update
+    await expect( benjaminsContract.updateHoldingTimes(toChangeHoldingTimesArray) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );       
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateHoldingTimes(toChangeHoldingTimesArray))
+    .to.emit(benjaminsContract, 'HoldingTimesUpdate')
+    .withArgs(toChangeHoldingTimesArray);   
+    await getContractsHoldingTimesArrayAndConfirmIt(toChangeHoldingTimesArray);
+
+    
+    const expectedDiscountsArray_BeforeChange = [0, 10, 25,  50];     
+    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray_BeforeChange);
+    const toChangeDiscountsArray = [78, 0, 257, 11,0,0,17];   
+     // only the owner can update
+     await expect( benjaminsContract.updateDiscounts(toChangeDiscountsArray) ).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );    
+    // confirming event was emitted as expected
+    await expect(benjaminsContract.connect(deployerSigner).updateDiscounts(toChangeDiscountsArray))
+    .to.emit(benjaminsContract, 'DiscountsUpdate')
+    .withArgs(toChangeDiscountsArray);         
+    await getContractsDiscountArrayAndConfirmIt(toChangeDiscountsArray);
+    
+    // that benjaminsContract is still paused
+    expect(await benjaminsContract.paused()).to.equal(true);
+        
+    // owner deactivates pause()
+    await benjaminsContract.connect(deployerSigner).unpause();
+    expect(await benjaminsContract.paused()).to.equal(false);
+      
+    await countAllCents();
+
   });
 
   it("Test last1. Activating pause() should lock public access to chosen functions, but allow owner", async function () { 
@@ -2732,22 +2860,24 @@ describe("Testing Benjamins", function () {
   
 
   // TODO: not sure how to test, values shift all the time
-  it.skip("Test last4. Owner can add additional funds to contract's amUSDC balance", async function () { 
+  it("Test last4. Owner can add additional funds to contract's amUSDC balance", async function () { 
     
-    // Note: Not using countAllCents here, as $10 of USDC will be converted into amUSDC, which are not tracked the same way.
+    // Note: Not using countAllCents here, as some USDC will be converted into amUSDC, which can't be tracked the same way.
 
     // getting contracts amUSDC balance
     const contractAMUSDCbalBeforeInCents = dividefrom6decToUSDCcents (bigNumberToNumber (await polygonAMUSDC.balanceOf(benjaminsContract.address)));
-    // since it constantly changes in tiny amounts, due to accruing interest, rounding it down to whole cents
-    const beforeRoundedToCents = contractAMUSDCbalBeforeInCents - (contractAMUSDCbalBeforeInCents%1); 
-    expect(beforeRoundedToCents).to.equal(9879012);
+    // since it constantly changes in tiny amounts, due to accruing interest, rounding it down to whole cents, easier to handle
+    const roundedToCentsBefore = contractAMUSDCbalBeforeInCents - (contractAMUSDCbalBeforeInCents%1); 
+    
     // owner deposits an extra $100 USDC into the lending pool on contracts behalf
     await depositAdditionalUSDC(100*scale6dec);
-    // rounding down new amUSDC balance, same reasoning and comparing
+
+    // rounding down new amUSDC balance, same reasoning 
     const contractAMUSDCbalAfterInCents = dividefrom6decToUSDCcents (bigNumberToNumber (await polygonAMUSDC.balanceOf(benjaminsContract.address)));
-    const afterRoundedToCents = contractAMUSDCbalAfterInCents - (contractAMUSDCbalAfterInCents%1); 
-    // expecting that the new balance is $100 bigger than the old one (calculated in cents)
-    expect(afterRoundedToCents).to.equal(beforeRoundedToCents+10000);  
+    const roundedToCentsAfter = contractAMUSDCbalAfterInCents - (contractAMUSDCbalAfterInCents%1); 
+
+    // expecting that the new balance is increased by more than $100 in the very next block (calculated in cents)
+    expect(roundedToCentsAfter).to.equal(roundedToCentsBefore+10000);  
 
   });
 
