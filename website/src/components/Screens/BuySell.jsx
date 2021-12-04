@@ -15,7 +15,10 @@ const BuySell = () => {
 
   useEffect(() => {
     const transak = new transakSDK({
-      apiKey: process.env.REACT_APP_TRANSAK_API_KEY,
+      apiKey:
+        process.env.NODE_ENV === 'production'
+          ? process.env.REACT_APP_TRANSAK_PRODUCTION_API_KEY
+          : process.env.REACT_APP_TRANSAK_STAGING_API_KEY,
       environment:
         process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'STAGING',
       defaultCryptoCurrency: 'USDC',
