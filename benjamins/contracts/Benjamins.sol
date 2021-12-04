@@ -484,14 +484,13 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
 
     // calculating with $100 extra as a redundant mathmatical buffer
-    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value        
-
+    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value      
+    
     if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
-      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;      
+      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;          
 
       if (amUSDCbalBufferedIn6dec > reserveInUSDCin6dec) {
-        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;        
-
+        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;    
         return availableIn6dec;
       } 
       else {
