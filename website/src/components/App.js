@@ -8,6 +8,7 @@ import { useNetwork } from '../contexts/networkContext';
 import { useExperts } from '../contexts/expertsContext';
 import { usePolygonNetwork } from '../hooks/usePolygonNetwork';
 
+import Landing from './Screens/Landing';
 import { TopNavBar } from './Screens/TopNavBar';
 import { ExpertStage } from './Screens/ExpertStage';
 import { NavBar } from './Screens/NavBar';
@@ -31,7 +32,7 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
   );
 };
 
-function App() {
+const Main = () => {
   const { isAuthenticated, isWeb3Enabled } = useMoralis();
   const { user } = useMoralis();
   const { positions } = usePositions();
@@ -103,6 +104,19 @@ function App() {
       )}
     </Stack>
   );
-}
+};
+
+const App = () => {
+  return (
+    <Switch>
+      <Route path="/landing">
+        <Landing />
+      </Route>
+      <Route path="/">
+        <Main />
+      </Route>
+    </Switch>
+  );
+};
 
 export default App;
