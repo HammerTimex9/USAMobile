@@ -151,8 +151,9 @@ const TokenCard = ({ symbol, onClose }, ref) => {
           </Box>
           <Box className="trading-view">
             <TradingViewWidget
-              symbol={data.symbol}
-              // theme={}
+              symbol={`${data.symbol}USD`}
+              interval="60"
+              allow_symbol_change={false}
               autosize
             />
           </Box>
