@@ -12,8 +12,8 @@ import ExpertStage from '../ExpertStage';
 
 import styles from './styles';
 
-// Interfaces
-interface IProps { }
+/* eslint-disable-next-line */
+interface IProps { } // Interfaces
 
 const SendReceive: React.FC<IProps> = () => {
   const { setActionMode, setDialog } = useExperts();

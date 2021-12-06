@@ -1,10 +1,8 @@
 import React from "react";
 import { View, Text } from "react-native";
 
-
-// Interfaces
-interface IProps {}
-
+/* eslint-disable-next-line */
+interface IProps { } // Interfaces
 
 const Home: React.FC<IProps> = ()=>{
   return(

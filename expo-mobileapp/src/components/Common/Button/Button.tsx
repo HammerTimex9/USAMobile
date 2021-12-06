@@ -7,14 +7,13 @@ interface IProps extends TouchableHighlightProperties {
   disabled?: boolean;
   touchableStyle?:StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
-  onPress: () =>void;
 }
 
 
 
-const Button = ({ label, disabled, onPress, touchableStyle, textStyle, ...props }:IProps) => (
+const Button = ({ label, disabled, touchableStyle, textStyle, ...props }:IProps) => (
     <TouchableHighlight
-      onPress={onPress} 
+      
       disabled={disabled}
       style={[styles.container, touchableStyle]}
       {...props}

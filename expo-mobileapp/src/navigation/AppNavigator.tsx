@@ -3,7 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useMoralis } from "react-moralis";
 
-import { AuthNavigator, DrawerNavigator, TabsNavigator } from './';
+import  AuthNavigator from './AuthNavigator';
+import DrawerNavigator from './DrawerNavigator';
+import  TabsNavigator from './TabsNavigator';
+
 const Stack = createNativeStackNavigator();
 
 // const AppNavigator = () => {
