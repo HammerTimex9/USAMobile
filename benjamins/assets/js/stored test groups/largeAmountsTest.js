@@ -75,7 +75,7 @@ function findUsernameForAddress(addressToLookup){
 
 async function getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray) {
   let holdingTimesInDaysWithBNs = [];
-  holdingTimesInDaysWithBNs = await benjaminsContract.getHoldingTimes();
+  holdingTimesInDaysWithBNs = await benjaminsContract.connect(deployerSigner).getHoldingTimes();
   holdingTimesInDays = [];
 
   for (let index = 0; index < holdingTimesInDaysWithBNs.length; index++) {     
@@ -86,7 +86,7 @@ async function getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArr
 
 async function getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray) {
   let contractsDiscountArrayWithBNs = [];
-  contractsDiscountArrayWithBNs = await benjaminsContract.getDiscounts();   
+  contractsDiscountArrayWithBNs = await benjaminsContract.connect(deployerSigner).getDiscounts();
   levelDiscountsArray = [];
 
   for (let index = 0; index < contractsDiscountArrayWithBNs.length; index++) {     
@@ -538,17 +538,17 @@ describe("Benjamins, testing large amounts", function () {
     benjaminsContract = await ethers.getContract("Benjamins");      
     
     // Get amount of blocksPerDay into this testing suite
-    blocksPerDay = bigNumberToNumber(await benjaminsContract.getBlocksPerDay());
+    blocksPerDay = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getBlocksPerDay());
 
     // Get baseFeeTimes10k into this testing suite
-    baseFeeTimes10k = bigNumberToNumber(await benjaminsContract.getBaseFeeTimes10k());
-
+    baseFeeTimes10k = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getBaseFeeTimes10k());
+ 
     // Get curveFactor into this testing suite
-    curveFactor = bigNumberToNumber(await benjaminsContract.getCurveFactor());
-
+    curveFactor = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getCurveFactor());
+ 
     // Get neededBNJIperLevel into this testing suite
-    neededBNJIperLevel = bigNumberToNumber(await benjaminsContract.getneededBNJIperLevel());
-  
+    neededBNJIperLevel = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getneededBNJIperLevel());
+ 
     const expectedHoldingTimesArray  =  [0, 30, 90, 300];
     await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray);
 

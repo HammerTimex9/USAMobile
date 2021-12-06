@@ -14,11 +14,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 // importing openzeppelin interface for ERC20 tokens
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "hardhat/console.sol";
-
 // BNJI Utility Token.
 // Price is set via bonding curve vs. USDC.
-// All USDC is deposited in a singular lending pool (nominaly at AAVE).
+// All USDC is deposited in a singular lending pool at AAVE.
 // 100% USDC is maintained against burning. (see variable reserveInUSDCin6dec, in 6 decimals format)
 // Collected fees and interest are withdrawable by the owner to a set recipient address.
 // Fee discounts are calculated based on discount level, attained by locking BNJI.
@@ -45,7 +43,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   // mapping of user to timestamp, relating to when levels can be decreased again
   mapping (address => uint256) minHoldingtimeUntil;
 
-  // user accounts can be levels 0 - 3
+  // user accounts can have a discount level from 0 to 3
   mapping (address => uint256) usersAccountLevel;
 
   // event for withdrawGains function
@@ -114,7 +112,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     _;
   }
 
-  // Redundant reserveInUSDCin6dec protection vs. user withdraws.
+  // redundant reserveInUSDCin6dec protection vs. user withdraws.
   modifier wontBreakTheBank(uint256 amountBNJItoBurn) {        
     // calculating the USDC value of the BNJI tokens to burn, and rounding them to full cents
     uint256 beforeFeesNotRoundedIn6dec = quoteUSDC(amountBNJItoBurn, false);        
@@ -173,7 +171,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     burnTo(_amount, msg.sender);
   }
 
-  // Sell your BNJI and send USDC to another address.
+  // Sell your BNJI and send USDC returns to another address.
   function burnTo(uint256 _amount, address _toWhom)
     public
     whenAvailable
@@ -256,7 +254,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return endAmountUSDCin6dec;                         
   }    
   
-  // Move USDC for a supply change.  Note: sign of amount is the mint/burn direction.
+  // Move USDC for a supply change.
   function moveUSDC(
     address _payer,
     address _payee,
@@ -297,12 +295,15 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     }
   }       
 
+  // users can increase their own discount level by locking up BNJI
   function increaseDiscountLevels (uint256 _amountOfLevelsToIncrease) public whenAvailable hasTheBenjamins(_amountOfLevelsToIncrease * neededBNJIperLevel) {
     
     uint256 endAmountOfLevels = getUsersDiscountLevel(msg.sender) + _amountOfLevelsToIncrease;
 
+    // _amountOfLevelsToIncrease must be larger than 0 and endAmountOfLevels can't be larger than  3
     require(0 < _amountOfLevelsToIncrease && endAmountOfLevels <=3, "You can increase the discount level up to level 3");
     
+    // calculating how many BNJI need to get locked up for the desired increase in discount level
     uint256 amountOfBNJItoLock = (_amountOfLevelsToIncrease * neededBNJIperLevel);
 
     // transferring BNJI from msg.sender to this contract
@@ -311,34 +312,37 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;    
 
+    // calculating for how long the BNJI need to get locked up (depends on new discount level), then storing that
     uint256 amountOfTimeToLock = holdingTimes[endAmountOfLevels] * blocksPerDay;
-
     uint256 unlockTimestamp = blockHeightNow + amountOfTimeToLock;    
-
     minHoldingtimeUntil[msg.sender] = unlockTimestamp;
     
+    // storing new discount level for user
     usersAccountLevel[msg.sender] = endAmountOfLevels;    
 
     // emitting event with all related useful details
     emit DiscountLevelIncreased (msg.sender, blockHeightNow, amountOfBNJItoLock, endAmountOfLevels, unlockTimestamp);  
   }  
 
+  // users can decrease their own discount level by unlocking up BNJI (after the necessary time has passed)
   function decreaseDiscountLevels (uint256 _amountOfLevelsToDecrease) public whenAvailable {
 
     uint256 usersDiscountLevelNow = getUsersDiscountLevel(msg.sender);
-
     uint256 endAmountOfLevels = usersDiscountLevelNow - _amountOfLevelsToDecrease;
 
-    require(_amountOfLevelsToDecrease > 0 &&_amountOfLevelsToDecrease <= usersDiscountLevelNow && endAmountOfLevels >=0, "You can lower the discount level down to level 0");
+    // input must make sense, i.e. can't decrease level by 0, nor below 0
+    require(_amountOfLevelsToDecrease > 0 && _amountOfLevelsToDecrease <= usersDiscountLevelNow && endAmountOfLevels >=0, "You can lower the discount level down to level 0");
 
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;  
 
-    // timestamp must be smaller than now (i.e. enough time has passed)
+    // unlock timestamp must be smaller than blockheight now (i.e. the necessary time must have passed)
     require(getUsersUnlockTimestamp(msg.sender) <= blockHeightNow, "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock");
 
+    // storing new discount level for user
     usersAccountLevel[msg.sender] = endAmountOfLevels;    
 
+    // calculating how many BNJI get unlocked
     uint256 amountOfBNJIunlocked = _amountOfLevelsToDecrease * neededBNJIperLevel;
 
     // this contract approves msg.sender to use transferFrom and pull in amountOfBNJIunlocked BNJI
@@ -347,6 +351,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // this contract pushes msg.sender amountOfBNJIunlocked to msg.sender
     transferFrom(address(this), msg.sender, amountOfBNJIunlocked);    
 
+    // emitting event with all related useful details
     emit DiscountLevelDecreased(msg.sender, blockHeightNow, amountOfBNJIunlocked, endAmountOfLevels);      
   }
 
@@ -382,29 +387,38 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return true;
   }
 
-  // Overriding OpenZeppelin's ERC20 function
+  // Overriding OpenZeppelin's ERC20 function, returns decimals, hardcoded to 0, only full BNJI, no fractions
   function decimals() public view override whenAvailable returns (uint8) {
     return _decimals;
   }
 
+  // Returns users discount level
   function getUsersDiscountLevel(address _userToCheck) public view whenAvailable returns (uint256 discountLevel) {
     return usersAccountLevel[_userToCheck];
   }
 
+  // Returns how many BNJI the user has locked up
   function lockedBalanceOf(address _userToCheck) public view whenAvailable returns (uint256 lockedBNJIofUser) {
     return (getUsersDiscountLevel(_userToCheck)*neededBNJIperLevel);
   }
 
+  // Returns how many percent discount users will get on their (non-BNJI) trades, format is percent multiplied by 10,000 
   function getUsersDiscountPercentageTimes10k(address _userToCheck) public view whenAvailable returns (uint256 discountInPercentTimes10k) {
     uint256 usersDiscountLevel = getUsersDiscountLevel(_userToCheck);
     uint256 usersDiscountInPercentTimes10k = uint256(discounts[usersDiscountLevel]) * 10000;
     return usersDiscountInPercentTimes10k;
   }  
 
+  // Returns timestamp that must be reached before queried user can unlock their locked BNJI
+  // Increasing discount level WILL update this (user going from level 1 to 2 will need to wait full amount of unlock time 
+  // of level 2, starting when getting lvl 2)
+  // Decreasing discount level will NOT update this (user going from level 2 to 1 will not need to wait, can unlock whenever,
+  // if they are not increasing discount level again, in which case timestamp WILL get updated again as described above)
   function getUsersUnlockTimestamp(address _userToCheck) public view whenAvailable returns (uint256 usersUnlockTimestamp) {
     return minHoldingtimeUntil[_userToCheck];
   }
 
+  // Returns amount of time has to pass until user can unlock their locked tokens (format is blocks, check blocks per day)
   function howManyBlocksUntilUnlock (address _userToCheck) public view whenAvailable returns(uint256 timeLeftInBlocks) {
     // this is now, expressed in blockheight
     uint256 blockHeightNow = block.number;
@@ -426,23 +440,28 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   function getReserveIn6dec() public view whenAvailable returns (uint256 reserveInUSDCin6decNow) {
     return reserveInUSDCin6dec;
   }
-    
+
+  // Returns address of contract's fee receiver account 
   function getFeeReceiver() public view whenAvailable returns (address feeReceiverNow) {
     return feeReceiver;           
   } 
 
+  // Returns address of USDC contract on Polygon blockchain
   function getPolygonUSDC() public view whenAvailable returns (address addressNow) {
     return address(polygonUSDC);           
   }
 
+  // Returns address of AMUSDC contract on Polygon blockchain
   function getPolygonAMUSDC() public view whenAvailable returns (address addressNow) {
     return address(polygonAMUSDC);           
   }
 
+  // Returns address of used USDC lending pool by Aave, on Polygon blockchain
   function getPolygonLendingPool() public view whenAvailable returns (address addressNow) {
     return address(polygonLendingPool);           
   }
  
+  // Returns amount of blocks minted per day on Polygon blockchain
   function getBlocksPerDay() public view whenAvailable returns (uint256 amountOfBlocksPerDayNow) {
     return blocksPerDay;           
   }
@@ -452,22 +471,25 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     return curveFactor;
   }
 
+  // Returns amount of BNJI needed to get locked up per discount level
   function getneededBNJIperLevel() public view whenAvailable returns (uint256 neededBNJIperLevelNow) {
     return neededBNJIperLevel;           
   }
 
+  // Returns array of minimum holding times for the discount levels, format is days
   function getHoldingTimes() public view whenAvailable returns (uint16[] memory holdingTimesNow) {
     return holdingTimes;           
   }
 
+  // Returns array of discounts for the discount levels, format is percent
   function getDiscounts() public view whenAvailable returns (uint16[] memory discountsNow) {
     return discounts;           
   }
 
+  // Returns baseFee, format is percent multiplied by 10,000
   function getBaseFeeTimes10k() public view whenAvailable returns (uint256 baseFeeTimes10kNow){
     return baseFeeTimes10k;
   }
-
   
   // pausing funcionality from OpenZeppelin's Pausable
   function pause() public onlyOwner {
@@ -479,19 +501,19 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     _unpause();
   }
   
+  // returns amount of generated lending pool interest that can get withdrawn
   function checkGains() public view onlyOwner returns (uint256 availableNowIn6dec) {
 
     uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
 
     // calculating with $100 extra as a redundant mathmatical buffer
-    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value        
-
+    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value      
+    
     if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
-      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;      
+      uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;          
 
       if (amUSDCbalBufferedIn6dec > reserveInUSDCin6dec) {
-        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;        
-
+        uint256 availableIn6dec = amUSDCbalBufferedIn6dec - reserveInUSDCin6dec;    
         return availableIn6dec;
       } 
       else {
@@ -591,7 +613,8 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     discounts = newDiscounts;
     emit DiscountsUpdate(discounts);
   }     
-    
+
+  // Update baseFee, format is percent multiplied by 10,000
   function updateBaseFee(uint256 _newbaseFeeTimes10k) public onlyOwner {
     baseFeeTimes10k = _newbaseFeeTimes10k;
     emit BaseFeeUpdate(_newbaseFeeTimes10k);
