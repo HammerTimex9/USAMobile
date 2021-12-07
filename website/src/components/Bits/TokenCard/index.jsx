@@ -6,9 +6,10 @@ import TradingViewWidget from 'react-tradingview-widget';
 import useTokenInfo from '../../../actions/useTokenInfo';
 import LoadIcon from '../../../media/load.gif';
 import { useNetwork } from '../../../contexts/networkContext';
+import tokenList from '../../../data/TokenList.json';
 import './styles.scss';
 
-const TokenCard = ({ symbol, onClose }, ref) => {
+const TokenCard = ({ symbol, onClose, description }, ref) => {
   const { data, prices } = useTokenInfo(symbol);
   const { network } = useNetwork();
   console.log('prices => ', prices);
@@ -17,6 +18,14 @@ const TokenCard = ({ symbol, onClose }, ref) => {
   };
 
   const { market_data, links } = data || {};
+  const getDescription = () => {
+    let token = tokenList.find((t) => t.symbol === symbol);
+    if (token) {
+      return token.description;
+    } else {
+      return 'Lorum Ipsum';
+    }
+  };
 
   return (
     <Box ref={ref} className="token-card">
@@ -148,6 +157,14 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                 {market_data.market_cap_change_24h_in_currency.btc} BTC
               </Typography>
             </Box>
+          </Box>
+          <Box sx={{ mt: 1.75 }}>
+            <Typography fontSize="17px" fontWeight="500" color="#000">
+              Simple Description
+            </Typography>
+            <Typography className="description" fontSize="14px">
+              {description ? description : getDescription()}
+            </Typography>
           </Box>
           <Box className="trading-view">
             <TradingViewWidget
