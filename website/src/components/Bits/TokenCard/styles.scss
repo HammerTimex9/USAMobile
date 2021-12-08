@@ -4,6 +4,7 @@
   background-color: #fff;
   border-radius: 1.5rem;
   padding: 16px 32px;
+  overflow-y: auto;
 
   .header-title {
     align-self: center;
@@ -40,8 +41,6 @@
   }
 
   .button-wrap {
-    position: absolute;
-    bottom: 30px;
     width: calc(100% - 96px);
   }
 
