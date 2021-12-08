@@ -136,6 +136,6 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": "eslint --fix --ext '.ts,.tsx,.js,.jsx' -c .eslintrc.json"
   },
-  "name": "USAWallet",
+  "name": "usawallet",
   "version": "1.0.0"
 }
