@@ -135,5 +135,13 @@
     "*.{ts,tsx,js,jsx}": "eslint --fix --ext '.ts,.tsx,.js,.jsx' -c .eslintrc.json"
   },
   "name": "usawallet",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "resolutions": {
+      "underscore": "1.12.1",
+      "merge":"2.1.1",
+      "node-fetch":"2.6.1",
+      "ansi-regex":"5.0.1",
+      "lodash":"4.17.21",
+      "yargs-parser":"5.0.1"
+  }
 }

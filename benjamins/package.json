@@ -49,5 +49,13 @@
     "@openzeppelin/contracts": "4.1.0",
     "@openzeppelin/contracts-upgradeable": "4.3.2",
     "dotenv": "8.2.0"
+  },
+  "resolutions": {
+      "node-fetch":"2.6.1",
+      "yargs-parser":"5.0.1",
+      "json-schema": "0.4.0",
+      "underscore": "1.12.1",
+      "ansi-regex":"5.0.1",
+      "lodash":"4.17.21"
   }
 }
