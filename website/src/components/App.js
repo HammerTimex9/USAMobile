@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import { Switch, Route, Redirect } from 'react-router-dom';
-import { Stack } from '@mui/material';
+import { Stack, CircularProgress } from '@mui/material';
 
 import { usePositions } from '../contexts/portfolioContext';
 import { useNetwork } from '../contexts/networkContext';
@@ -35,7 +35,7 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 const Main = () => {
   const { isAuthenticated, isWeb3Enabled } = useMoralis();
   const { user } = useMoralis();
-  const { positions } = usePositions();
+  const { isLoading, positions } = usePositions();
   const { isPolygon } = useNetwork();
   const { setDialog } = useExperts();
   const address = user?.attributes?.ethAddress;
@@ -60,45 +60,51 @@ const Main = () => {
     }
   }, [hasMetamask, isAuthenticated, isPolygon, switchNetworkToPolygon]);
 
-  const emptyPositions = !address || positions.length === 0;
+  const emptyPositions = !address || positions?.length === 0;
 
   return (
     <Stack alignItems="center" spacing={5} p={3}>
       <TopNavBar />
       <ExpertStage />
       {isAuthenticated ? (
-        <>
-          <NavBar />
-          <Suspense fallback={<div>Loading...</div>}>
-            <Switch>
-              <Route exact path="/">
-                <Home />
-              </Route>
-              <CryptoRoute
-                exact
-                path="/Portfolio"
-                component={Portfolio}
-                emptyPositions={emptyPositions}
-              />
-              <CryptoRoute
-                exact
-                path="/SwapTrade"
-                component={SwapTrade}
-                emptyPositions={emptyPositions}
-              />
-              <Route exact path="/BuySell">
-                <BuySell />
-              </Route>
-              <CryptoRoute
-                exact
-                path="/SendRecieve"
-                component={SendReceive}
-                emptyPositions={emptyPositions}
-              />
-              <Redirect to="/" />
-            </Switch>
-          </Suspense>
-        </>
+        isLoading ? (
+          <CircularProgress style={{ marginHeight: '160px' }} />
+        ) : (
+          <>
+            <NavBar />
+            <Suspense
+              fallback={<CircularProgress style={{ marginHeight: '40px' }} />}
+            >
+              <Switch>
+                <Route exact path="/">
+                  <Home />
+                </Route>
+                <CryptoRoute
+                  exact
+                  path="/Portfolio"
+                  component={Portfolio}
+                  emptyPositions={emptyPositions}
+                />
+                <CryptoRoute
+                  exact
+                  path="/SwapTrade"
+                  component={SwapTrade}
+                  emptyPositions={emptyPositions}
+                />
+                <Route exact path="/BuySell">
+                  <BuySell />
+                </Route>
+                <CryptoRoute
+                  exact
+                  path="/SendRecieve"
+                  component={SendReceive}
+                  emptyPositions={emptyPositions}
+                />
+                <Redirect to="/" />
+              </Switch>
+            </Suspense>
+          </>
+        )
       ) : (
         <BottomFooter />
       )}

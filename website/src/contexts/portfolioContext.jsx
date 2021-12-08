@@ -11,7 +11,7 @@ export const usePositions = () => useContext(PortfolioContext);
 export const PortfolioProvider = (props) => {
   const { isAuthenticated, Moralis } = useMoralis();
   const { network } = useNetwork();
-  const [positions, setPositions] = useState([]);
+  const [positions, setPositions] = useState();
   const [totalValue, setTotalValue] = useState(0);
   const [maticPrice, setMaticPrice] = useState(0);
 
@@ -22,11 +22,19 @@ export const PortfolioProvider = (props) => {
   }, [Moralis, isAuthenticated]);
 
   const getPositions = useCallback(() => {
-    if (!network) return;
+    if (!network) {
+      setPositions([]);
+      setTotalValue(0);
+      return;
+    }
 
     const user = Moralis.User.current();
     const address = user.attributes.ethAddress;
-    if (!address) return;
+    if (!address) {
+      setPositions([]);
+      setTotalValue(0);
+      return;
+    }
 
     const options = { chain: network.name, address };
     Promise.all([
@@ -101,7 +109,7 @@ export const PortfolioProvider = (props) => {
     if (isAuthenticated) {
       getPositions();
     } else {
-      setPositions([]);
+      setPositions();
       setTotalValue(0);
     }
   }, [isAuthenticated, getPositions]);
@@ -113,6 +121,7 @@ export const PortfolioProvider = (props) => {
         totalValue,
         maticPrice,
         getPositions,
+        isLoading: !positions,
       }}
     >
       {props.children}
