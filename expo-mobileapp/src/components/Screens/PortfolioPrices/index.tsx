@@ -7,8 +7,8 @@ import { useExperts } from '../../../contexts/expertsContext';
 import ExpertStage from '../ExpertStage';
 import styles from './styles';
 
-// Interfaces
-interface IProps { }
+/* eslint-disable-next-line */
+interface IProps { } // Interfaces
 
 
 const PortfolioPrices: React.FC<IProps> = () => {

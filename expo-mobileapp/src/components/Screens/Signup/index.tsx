@@ -2,17 +2,15 @@ import React, { useState } from "react";
 import { View, Text, Image } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-// import { useMoralis } from "react-moralis";
-
+import { useMoralis } from "react-moralis";
 
 import { Button, TextButton } from '../../Common/Button'
 import { TextField } from '../../Common/Forms'
 import styles from './styles';
 
 
-// Interfaces
-interface IProps { }
+/* eslint-disable-next-line */
+interface IProps { } // Interfaces
 
 
 const Signup: React.FC<IProps> = () => {
@@ -20,7 +18,10 @@ const Signup: React.FC<IProps> = () => {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [activeSignup, setActiveSignup] =  useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<{route: {} }>>();
+  const { signup } = useMoralis();
+
 
 
   const handleSignupClick = () => {
@@ -29,8 +30,17 @@ const Signup: React.FC<IProps> = () => {
     console.log('Email:', email);
     console.log('Password:', password);
     console.groupEnd();
-    //@ts-ignore
-    navigation.replace('Drawer',{});
+
+     signup(userName ? userName : email, password, email, { usePost: true })
+      .then(result => {
+        console.log('SignupSuccess:', result);
+      }, error => {
+        console.log('SignupError:', error);
+      })
+      .catch(error => {
+        console.log('SignupCatchError:', error);
+      });
+    
   }
 
   const handleLoginButtonClick = (screenName:string) => {
@@ -49,14 +59,14 @@ const Signup: React.FC<IProps> = () => {
             <TextField
               label={'Email'}
               value={email}
-              onChange={(value) => setEmail(value)}
+              onChangeText={(value) => setEmail(value)}
             />
           </View>
           <View style={styles.inputWrapper}>
             <TextField
               label={'User Name'}
               value={userName}
-              onChange={(value) => setUserName(value)}
+              onChangeText={(value) => setUserName(value)}
             />
           </View>
           <View style={styles.inputWrapper}>
@@ -64,7 +74,7 @@ const Signup: React.FC<IProps> = () => {
               label={'Password'}
               value={password}
               secureTextEntry
-              onChange={(value) => setPassword(value)}
+              onChangeText={(value) => setPassword(value)}
             />
           </View>
         </View>

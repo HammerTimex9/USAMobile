@@ -6,8 +6,8 @@ import { Button } from '../../Common/Button'
 import styles from './styles';
 
 
-// Interfaces
-interface IProps { }
+/* eslint-disable-next-line */
+interface IProps { } // Interfaces
 
 
 const Welcome: React.FC<IProps> = () => {

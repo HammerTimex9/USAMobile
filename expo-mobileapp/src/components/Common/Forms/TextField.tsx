@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
-import { Text, TextInput, StyleSheet, View } from 'react-native';
-import { TextInputProps, StyleProp, TextStyle, TextProperties, ViewStyle } from 'react-native';
+import { Text, TextInput, StyleSheet } from 'react-native';
+import { TextInputProps, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 // Custom imports:
 import FieldContainer from './FieldContainer';
 
-interface IProps {
+interface IProps extends TextInputProps {
 	label: string;
 	labelStyle?: StyleProp<TextStyle>;
 	containerStyle?: StyleProp<ViewStyle>;
 	secureTextEntry?: boolean;
 	value?: string;
-	onChange: (value:string) => void;
 }
 
-const TextField: React.FC<IProps> = ({ label, labelStyle, containerStyle, onChange, children, ...props }) => {
+const TextField: React.FC<IProps> = ({ label, labelStyle, containerStyle, ...props }) => {
 	const [isFocused, setFocused] = useState(false);
 
-	const handleFocus = () => setFocused(true);
+	const handleFocus = () => {
+		setFocused(true);
+		 // This is just to remove warning
+		console.log('isFocused:', isFocused);
+	};
+	
 	const handleBlur = () => setFocused(false);
 
 	return (
@@ -29,11 +33,9 @@ const TextField: React.FC<IProps> = ({ label, labelStyle, containerStyle, onChan
 				style={[styles.inputStyle]}
 				onFocus={handleFocus}
 				onBlur={handleBlur}
-				onChangeText={onChange}
 				{...props}
 			/>
 		</FieldContainer>
-
 	);
 }
 
@@ -41,9 +43,9 @@ export default TextField;
 
 const styles = StyleSheet.create({
 	inputStyle: {
-		padding: 8,
+		borderColor: 'gray',
 		borderRadius:2,
 		borderWidth: 1,
-		borderColor:'gray'
+		padding: 8,
 	}
 });

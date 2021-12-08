@@ -36,6 +36,10 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 8,
 		marginTop: 16,
 		alignItems: 'center' 
+	},
+	textStyle:{
+		fontWeight: '800',
+		textDecorationLine:'underline'
 	}
 });
 

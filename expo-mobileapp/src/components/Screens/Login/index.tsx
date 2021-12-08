@@ -3,47 +3,33 @@ import { View, Text, Image } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import {
-  useMoralis,
-  useMoralisWeb3Api,
-  useMoralisWeb3ApiCall,
-} from "react-moralis";
+import { useMoralis } from "react-moralis";
 import { useWalletConnect } from "../../../WalletConnect";
-
-
 import { Button, TextButton } from '../../Common/Button'
 import { TextField } from '../../Common/Forms'
 import styles from './styles';
 
-
-
-// Interfaces
-interface IProps { }
+/* eslint-disable-next-line */
+interface IProps { } // Interfaces
 
 
 const Login: React.FC<IProps> = () => {
 
   const [email, setEmail] =  useState('');
   const [password, setPassword] =  useState('');
+  const [activeLogin, setActiveLogin] =  useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<{route: {} }>>();
 
   const connector = useWalletConnect();
-  const {
-    authenticate,
-    authError,
-    isAuthenticating,
-    isAuthenticated,
-    logout,
-    Moralis,
-  } = useMoralis();
+  const { authenticate, isAuthenticated, login } = useMoralis();
 
 
   const handleCryptoLogin = () => {
    console.log('Crypto Login');
    //@ts-ignore
    authenticate({ connector })
-   .then(() => {})
-   .catch(() => {});
+   .then((res) => { console.log(res)})
+   .catch((error) => {console.log(error)});
   };
 
   const handleLoginClick = () =>{
@@ -52,8 +38,18 @@ const Login: React.FC<IProps> = () => {
     console.log('Password:', password);
     console.groupEnd();
 
-    //@ts-ignore
-    navigation.replace('Drawer',{});
+    login(email, password === '' ? undefined : password, {
+      usePost: true,
+    })
+    .then(result=>{
+      console.log('LoginSuccess:', result);
+    },error=>{
+       console.log('LoginError:', error);
+    })
+    .catch(error=>{
+      console.log('LoginCatchError:', error);
+    });
+    
   }
 
   const handleSignupButtonClick = (screenName:string) => {
@@ -61,6 +57,11 @@ const Login: React.FC<IProps> = () => {
     navigation.navigate(screenName);
   }
 
+  const handleResetButtonClick = (screenName:string) => {
+    //@ts-ignore
+    navigation.navigate(screenName);
+  }
+  
   return (
     <View style={styles.container}>
       <View style={styles.logoWrapper}>
@@ -72,7 +73,7 @@ const Login: React.FC<IProps> = () => {
             <TextField
               label={'Email'}
               value={email}
-              onChange={(value) => setEmail(value)}
+              onChangeText={(value) => setEmail(value)}
             />
           </View>
           <View style={styles.inputWrapper}>
@@ -80,8 +81,11 @@ const Login: React.FC<IProps> = () => {
               label={'Password'}
               value={password}
               secureTextEntry
-              onChange={(value) => setPassword(value)}
+              onChangeText={(value) => setPassword(value)}
             />
+          </View>
+          <View style={styles.inputWrapper}>
+            <TextButton label="Reset Password?" onPress={() => handleResetButtonClick('Reset')} />
           </View>
         </View>
          <View style={styles.loginBtnWrapper}>
@@ -90,9 +94,10 @@ const Login: React.FC<IProps> = () => {
         <View style={styles.loginBtnWrapper}>
           <Button label="UseMetaMask" onPress={handleCryptoLogin} />
         </View>
+
         <View style={styles.formBottomTextWrapper}>
           <Text> You don't have an account yet?</Text>
-          <TextButton textStyle={{fontWeight: '800', textDecorationLine:'underline'}} label="Register here" onPress={() => handleSignupButtonClick('Signup')} />
+          <TextButton textStyle={styles.textStyle} label="Register here" onPress={() => handleSignupButtonClick('Signup')} />
         </View>
       </View>
     </View>
