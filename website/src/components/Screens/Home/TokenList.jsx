@@ -15,6 +15,7 @@ import TokenCard from '../../Bits/TokenCard';
 
 const TokenList = () => {
   const [selectedSymbol, setSelectedSymbol] = React.useState(null);
+  const [description, setDescription] = React.useState(null);
 
   const onCloseModal = () => setSelectedSymbol();
 
@@ -41,7 +42,10 @@ const TokenList = () => {
           {tokenList.map((token) => (
             <ListItemButton
               key={token.symbol}
-              onClick={() => setSelectedSymbol(token.symbol)}
+              onClick={() => {
+                setSelectedSymbol(token.symbol);
+                setDescription(token.description);
+              }}
             >
               <ListItemAvatar>
                 <Avatar src={token.image} size="sm" />
@@ -58,7 +62,11 @@ const TokenList = () => {
           sx={{ maxWidth: '56rem', mx: 'auto', my: '3.56rem' }}
           onBackdropClick={onCloseModal}
         >
-          <TokenCard symbol={selectedSymbol} onClose={onCloseModal} />
+          <TokenCard
+            description={description}
+            symbol={selectedSymbol}
+            onClose={onCloseModal}
+          />
         </Modal>
       </Box>
     </>
