@@ -22,16 +22,16 @@ export const PortfolioProvider = (props) => {
   }, [Moralis, isAuthenticated]);
 
   const getPositions = useCallback(() => {
-    if (!network) {
+    const user = Moralis.User.current();
+    const address = user.attributes.ethAddress;
+    if (!address) {
       setPositions([]);
       setTotalValue(0);
       return;
     }
 
-    const user = Moralis.User.current();
-    const address = user.attributes.ethAddress;
-    if (!address) {
-      setPositions([]);
+    if (!network) {
+      setPositions();
       setTotalValue(0);
       return;
     }
