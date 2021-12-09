@@ -11,31 +11,12 @@ export const usePositions = () => useContext(PortfolioContext);
 export const PortfolioProvider = (props) => {
   const { isAuthenticated, Moralis } = useMoralis();
   const { network } = useNetwork();
+  const [address, setAddress] = useState();
   const [positions, setPositions] = useState();
   const [totalValue, setTotalValue] = useState(0);
   const [maticPrice, setMaticPrice] = useState(0);
 
-  useEffect(() => {
-    Moralis.onAccountsChanged((accounts) => {
-      Moralis.link(accounts[0]);
-    });
-  }, [Moralis, isAuthenticated]);
-
   const getPositions = useCallback(() => {
-    const user = Moralis.User.current();
-    const address = user.attributes.ethAddress;
-    if (!address) {
-      setPositions([]);
-      setTotalValue(0);
-      return;
-    }
-
-    if (!network) {
-      setPositions();
-      setTotalValue(0);
-      return;
-    }
-
     const options = { chain: network.name, address };
     Promise.all([
       Moralis.Web3API.account.getNativeBalance(options),
@@ -103,20 +84,40 @@ export const PortfolioProvider = (props) => {
         setPositions([]);
         setTotalValue(0);
       });
-  }, [Moralis, network]);
+  }, [Moralis, address, network]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      getPositions();
+      const accounts = Moralis.User.current().attributes?.accounts;
+      setAddress(accounts ? accounts[0] : '');
     } else {
-      setPositions();
-      setTotalValue(0);
+      setAddress();
     }
-  }, [isAuthenticated, getPositions]);
+  }, [Moralis, isAuthenticated]);
+
+  useEffect(() => {
+    Moralis.onAccountsChanged((accounts) => {
+      Moralis.link(accounts[0]);
+      setAddress(accounts[0]);
+    });
+  }, [Moralis]);
+
+  useEffect(() => {
+    if (!address) {
+      setPositions(address === '' ? [] : null);
+      setTotalValue(0);
+    } else if (!network) {
+      setPositions([]);
+      setTotalValue(0);
+    } else {
+      getPositions();
+    }
+  }, [address, network, getPositions]);
 
   return (
     <PortfolioContext.Provider
       value={{
+        address,
         positions,
         totalValue,
         maticPrice,
