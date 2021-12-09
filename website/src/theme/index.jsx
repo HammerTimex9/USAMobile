@@ -11,9 +11,60 @@ export const getCustomTheme = (mode = 'light') => ({
     },
   },
   typography: {
-    fontFamily: 'P22-Typewriter',
+    fontFamily: '"Roboto", sans-serif',
+    h1: {
+      fontSize: '60px',
+      lineHeight: '1.172em',
+    },
+    h2: {
+      fontSize: '40px',
+      lineHeight: '1.172em',
+    },
+    h3: {
+      fontSize: '30px',
+      lineHeight: '1.172em',
+    },
   },
   components: {
+    MuiTypography: {
+      variants: [
+        {
+          props: { variant: 'subheading01' },
+          style: {
+            fontSize: '25px',
+            lineHeight: '1.172em',
+          },
+        },
+        {
+          props: { variant: 'paragraph01' },
+          style: {
+            fontSize: '26px',
+            lineHeight: '1.172em',
+          },
+        },
+        {
+          props: { variant: 'paragraph02' },
+          style: {
+            fontSize: '20px',
+            lineHeight: '1.172em',
+          },
+        },
+        {
+          props: { variant: 'paragraph03' },
+          style: {
+            fontSize: '18px',
+            lineHeight: '1.172em',
+          },
+        },
+        {
+          props: { variant: 'paragraph04' },
+          style: {
+            fontSize: '16px',
+            lineHeight: '1.172em',
+          },
+        },
+      ],
+    },
     MuiButton: {
       variants: [
         {
