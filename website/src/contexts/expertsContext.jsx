@@ -6,7 +6,7 @@ export const useExperts = () => useContext(ExpertsContext);
 
 export const ExpertsProvider = (props) => {
   const [expertsOn, toggleExperts] = useState(true);
-  const [actionMode, setActionMode] = useState('idle');
+  const [character, setCharacter] = useState('unclesam');
   const [dialog, setDialog] = useState('');
 
   return (
@@ -14,8 +14,8 @@ export const ExpertsProvider = (props) => {
       value={{
         expertsOn,
         toggleExperts,
-        actionMode,
-        setActionMode,
+        character,
+        setCharacter,
         dialog,
         setDialog,
       }}

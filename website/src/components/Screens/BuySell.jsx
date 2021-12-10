@@ -6,7 +6,7 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useColorMode } from '../../contexts/colorModeContext';
 
 const BuySell = () => {
-  const { setActionMode, setDialog } = useExperts();
+  const { setCharacter, setDialog } = useExperts();
   const { colorMode } = useColorMode();
   const { Moralis } = useMoralis();
   const user = Moralis.User.current();
@@ -64,12 +64,12 @@ const BuySell = () => {
       setDialog('Transak order cancelled');
     });
 
-    setActionMode('buy');
+    setCharacter('ladyliberty');
 
     return () => {
       transak.close();
     };
-  }, [ethAddress, emailAddress, setActionMode, setDialog, colorMode]);
+  }, [ethAddress, emailAddress, setCharacter, setDialog, colorMode]);
 
   return null;
 };

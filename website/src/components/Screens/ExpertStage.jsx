@@ -1,29 +1,38 @@
 import { Box, Stack } from '@mui/material';
 
-import LibertyFox from '../../media/characters/LibertyFox.png';
-import SamEagle from '../../media/characters/SamEagle.png';
-import Benicorn from '../../media/characters/Benicorn.png';
+import FranklinBlue from '../../assets/characters/franklin-blue.svg';
+import FranklinRed from '../../assets/characters/franklin-red.svg';
+import LadylibertyBlue from '../../assets/characters/ladyliberty-blue.svg';
+import LadylibertyRed from '../../assets/characters/ladyliberty-red.svg';
+import MlkingBlue from '../../assets/characters/mlking-blue.svg';
+import MlkingRed from '../../assets/characters/mlking-red.svg';
+import UnclesamBlue from '../../assets/characters/unclesam-blue.svg';
+import UnclesamRed from '../../assets/characters/unclesam-red.svg';
+
 import { useExperts } from '../../contexts/expertsContext';
+import { useColorMode } from '../../contexts/colorModeContext';
 import { useNetwork } from '../../contexts/networkContext';
 
-const Icons = {
-  '': SamEagle,
-  idle: SamEagle,
-  portfolio: SamEagle,
-  chart: SamEagle,
-  trade: Benicorn,
-  swap: Benicorn,
-  buy: LibertyFox,
-  sell: LibertyFox,
-  send: LibertyFox,
-  receive: LibertyFox,
-  gallery: LibertyFox,
+const Characters = {
+  light: {
+    franklin: FranklinRed,
+    ladyliberty: LadylibertyRed,
+    mlking: MlkingRed,
+    unclesam: UnclesamRed,
+  },
+  dark: {
+    franklin: FranklinBlue,
+    ladyliberty: LadylibertyBlue,
+    mlking: MlkingBlue,
+    unclesam: UnclesamBlue,
+  },
 };
 
 export const ExpertStage = () => {
-  const { expertsOn, actionMode, dialog } = useExperts();
+  const { expertsOn, character, dialog } = useExperts();
+  const { colorMode } = useColorMode();
   const { isPolygon } = useNetwork();
-  const icon = Icons[actionMode];
+  const src = Characters[colorMode][character];
 
   if (expertsOn === true || !isPolygon) {
     return (
@@ -42,7 +51,7 @@ export const ExpertStage = () => {
         }}
       >
         <Box>{dialog}</Box>
-        <img src={icon} alt="" width="180" />
+        <img src={src} alt="" width="180" />
       </Stack>
     );
   } else {
