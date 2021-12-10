@@ -12,7 +12,7 @@ import { useNetwork } from '../../contexts/networkContext';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
 const SendReceive = () => {
-  const { setActionMode, setDialog } = useExperts();
+  const { setCharacter, setDialog } = useExperts();
   const [localMode, setLocalMode] = useState('none');
 
   const { isAuthenticated } = useMoralis();
@@ -30,10 +30,9 @@ const SendReceive = () => {
   }, [isAuthenticated, isPolygon]);
 
   useEffect(() => {
-    setActionMode('send');
+    setCharacter('franklin');
     setDialog('Would you like to send or receive cryptocurrency?');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setCharacter, setDialog]);
 
   const handleSendMode = async () => {
     if (!isPolygon) {
@@ -42,13 +41,11 @@ const SendReceive = () => {
     }
 
     setLocalMode('send');
-    setActionMode('send');
     setDialog('Select a currency to send.');
   };
 
   const handleReceiveMode = () => {
     setLocalMode('receive');
-    setActionMode('receive');
     setDialog(
       'Copy your address for pasting or ' +
         'select amount to request to generate a QR code.'
