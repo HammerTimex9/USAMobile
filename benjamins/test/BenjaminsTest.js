@@ -32,7 +32,6 @@ let baseFeeTimes10k;
 let blocksPerDay;
 let curveFactor;
 let neededBNJIperLevel;
-let levelDiscountsArray = [];
 let holdingTimesInDays = [];
 
 let benjaminsContract;
@@ -55,78 +54,53 @@ let polygonLendingPoolAddress;
 let testUser_1_Signer;
 
 let user1LevelDataArray = [];
-let user1DiscountDataArray = [];
 let user2LevelDataArray = [];
-let user2DiscountDataArray = [];
 let user3LevelDataArray = [];
-let user3DiscountDataArray = [];
 let user4LevelDataArray = [];
-let user4DiscountDataArray = [];
 
-// querrying and saving discount level and account discount info for userToCheck, and saving them to an array for later confirmation
+// querrying and saving account levels for userToCheck to an array for later confirmation
 async function addUserAccDataPoints(userToCheck){
  
-  const userLevelNow = await getDiscountLevel(userToCheck);
-  
-  const userDiscountNow = await getDiscountPercentage(userToCheck);
+  const accountLevelNow = await getAccountLevel(userToCheck);
     
   if (userToCheck == testUser_1){
-    user1LevelDataArray.push(userLevelNow);
-    user1DiscountDataArray.push(userDiscountNow);
+    user1LevelDataArray.push(accountLevelNow);    
   } else if (userToCheck == testUser_2) {
-    user2LevelDataArray.push(userLevelNow);
-    user2DiscountDataArray.push(userDiscountNow);
-  } else if (userToCheck == testUser_3) {
-    user3LevelDataArray.push(userLevelNow);
-    user3DiscountDataArray.push(userDiscountNow);
+    user2LevelDataArray.push(accountLevelNow);    
+  } else if (userToCheck == testUser_3){
+    user3LevelDataArray.push(accountLevelNow);    
   } else if (userToCheck == testUser_4) {
-    user4LevelDataArray.push(userLevelNow);
-    user4DiscountDataArray.push(userDiscountNow);
+    user4LevelDataArray.push(accountLevelNow);    
   } 
 }
 
-
-// confirms discount level and discount percentage as recorded via add addUserAccDataPoints function
-function confirmUserDataPoints(userToCheck, expectedUserLevelsArray, expectedUserDiscountArray) {
+// confirms account level as recorded via addUserAccDataPoints function
+function confirmUserDataPoints(userToCheck, expectedAccountLevelsArray) {
   if  (userToCheck == testUser_1){
     for (let index = 0; index < user1LevelDataArray.length; index++) {    
-      expect(user1LevelDataArray[index]).to.equal(expectedUserLevelsArray[index]); 
-      expect(user1DiscountDataArray[index]).to.equal(expectedUserDiscountArray[index]);
+      expect(user1LevelDataArray[index]).to.equal(expectedAccountLevelsArray[index]);       
     }
   } else if (userToCheck == testUser_2) {
-
     for (let index = 0; index < user2LevelDataArray.length; index++) {
-      expect(user2LevelDataArray[index]).to.equal(expectedUserLevelsArray[index]); 
-      expect(user2DiscountDataArray[index]).to.equal(expectedUserDiscountArray[index]);
+      expect(user2LevelDataArray[index]).to.equal(expectedAccountLevelsArray[index]);      
+    }
+  } else if (userToCheck == testUser_3) {
+    for (let index = 0; index < user2LevelDataArray.length; index++) {
+      expect(user3LevelDataArray[index]).to.equal(expectedAccountLevelsArray[index]);      
+    }
+  } else if (userToCheck == testUser_4) {
+    for (let index = 0; index < user2LevelDataArray.length; index++) {
+      expect(user4LevelDataArray[index]).to.equal(expectedAccountLevelsArray[index]);      
     }
   }
   // resetting for next test
-  user1LevelDataArray = [];
-  user1DiscountDataArray = [];
-  user2LevelDataArray = [];
-  user2DiscountDataArray = [];
+  user1LevelDataArray = [];  
+  user2LevelDataArray = [];  
 }
 
-async function getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray) {
-  let holdingTimesInDaysWithBNs = [];
-  holdingTimesInDaysWithBNs = await benjaminsContract.connect(deployerSigner).getHoldingTimes();
-  holdingTimesInDays = [];
-
-  for (let index = 0; index < holdingTimesInDaysWithBNs.length; index++) {     
-    holdingTimesInDays.push(bigNumberToNumber(holdingTimesInDaysWithBNs[index]));
-    expect(holdingTimesInDays[index]).to.equal(expectedHoldingTimesArray[index]); 
-  }
-}
-
-async function getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray) {
-  let contractsDiscountArrayWithBNs = [];
-  contractsDiscountArrayWithBNs = await benjaminsContract.connect(deployerSigner).getDiscounts();   
-  levelDiscountsArray = [];
-
-  for (let index = 0; index < contractsDiscountArrayWithBNs.length; index++) {     
-    levelDiscountsArray.push(bigNumberToNumber(contractsDiscountArrayWithBNs[index]));
-    expect(levelDiscountsArray[index]).to.equal(expectedDiscountsArray[index]); 
-  }
+async function getContractsHoldingTimeAndConfirmIt(daysToConfirm) {  
+  minHoldingTimeInBlocks = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getHoldingTime());  
+  expect(minHoldingTimeInBlocks).to.equal(daysToConfirm * blocksPerDay);   
 }
 
 const waitFor = delay => new Promise(resolve => setTimeout(resolve, delay));
@@ -409,11 +383,8 @@ function resetTrackers(){
   burnFeeInUSDCWasPaidNowGlobalV = 0;
   transferFeeWasPaidNowInUSDCcentsGlobalV = 0;
 
-  user1LevelDataArray = [];
-  user1DiscountDataArray = [];
+  user1LevelDataArray = [];  
   user2LevelDataArray = [];
-  user2DiscountDataArray = [];
-
 } 
 
 function confirmMint(){  
@@ -491,14 +462,12 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   const beforeLevelIncrease_AmountOfBlocksToWait = await howLongUntilUnlock(callingAccAddress);
   const beforeLevelIncrease_UsersUnlockTimestamp = await getUnlockTimestamp(callingAccAddress);  
 
-  const beforeLevelIncrease_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
-  const beforeLevelIncrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress); 
-  const beforeLevelIncrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);  
+  const beforeLevelIncrease_UsersLockedBNJI = await lockedBalanceOf(callingAccAddress);
+  const beforeLevelIncrease_UsersAccountLevel = await getAccountLevel(callingAccAddress);   
 
-  const beforeLevelIncrease_DiscountLevelExpected = beforeLevelIncrease_UsersLockedBNJI / neededBNJIperLevel;
-  const beforeLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[beforeLevelIncrease_UsersDiscountLevel]; 
-
-  await benjaminsContract.connect(callingAccSigner).increaseDiscountLevels(amountOfLevelsToGet);
+  const beforeLevelIncrease_AccountLevelExpected = beforeLevelIncrease_UsersLockedBNJI / neededBNJIperLevel;
+  
+  await benjaminsContract.connect(callingAccSigner).increaseAccountLevels(amountOfLevelsToGet);
   
   const blockheightNow = await getBlockheightNow();
   
@@ -508,24 +477,20 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   const afterLevelIncrease_AmountOfBlocksToWait = await howLongUntilUnlock(callingAccAddress);
   const afterLevelIncrease_UsersUnlockTimestamp = await getUnlockTimestamp(callingAccAddress); 
 
-  const afterLevelIncrease_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
-  const afterLevelIncrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress);  
-  const afterLevelIncrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);
+  const afterLevelIncrease_UsersLockedBNJI = await lockedBalanceOf(callingAccAddress);
+  const afterLevelIncrease_UsersAccountLevel = await getAccountLevel(callingAccAddress);  
   
-  const afterLevelIncrease_DiscountPercentageExpected = levelDiscountsArray[afterLevelIncrease_UsersDiscountLevel];
-  const afterLevelIncrease_LockedBNJIExpected = afterLevelIncrease_UsersDiscountLevel * neededBNJIperLevel;
+  const afterLevelIncrease_LockedBNJIExpected = afterLevelIncrease_UsersAccountLevel * neededBNJIperLevel;
 
-  // updated unlock timestamp and amount of blocks to wait should now be updated, relating to new discount level
-  const afterLevelIncrease_AmountOfBlocksToWaitExpected = holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] * blocksPerDay;
-  const afterLevelIncrease_UnlockTimestampExpected = blockheightNow + (holdingTimesInDays[afterLevelIncrease_UsersDiscountLevel] * blocksPerDay);
+  // updated unlock timestamp and amount of blocks to wait should now be updated, relating to new account level
+  const afterLevelIncrease_AmountOfBlocksToWaitExpected = holdingTimesInDays[afterLevelIncrease_UsersAccountLevel] * blocksPerDay;
+  const afterLevelIncrease_UnlockTimestampExpected = blockheightNow + (holdingTimesInDays[afterLevelIncrease_UsersAccountLevel] * blocksPerDay);
   
-  // user's discountLevel at the start should be equal to expected, sent in value
-  expect(beforeLevelIncrease_UsersDiscountLevel).to.equal(expectedStartingLevel); 
-  // user's discountLevel at the start should be equal to calculated value (using beforeLevelIncrease_UsersLockedBNJI)
-  expect(expectedStartingLevel).to.equal(beforeLevelIncrease_DiscountLevelExpected);  
-  // user's discountPercentage at the start should be equal to calculated value (comparing to queried levelDiscountsArray)
-  expect(beforeLevelIncrease_UsersDiscountPercentage).to.equal(beforeLevelIncrease_DiscountPercentageExpected);
-
+  // user's accountLevel at the start should be equal to expected, sent in value
+  expect(beforeLevelIncrease_UsersAccountLevel).to.equal(expectedStartingLevel); 
+  // user's accountLevel at the start should be equal to calculated value (using beforeLevelIncrease_UsersLockedBNJI)
+  expect(expectedStartingLevel).to.equal(beforeLevelIncrease_AccountLevelExpected);  
+  
   // user's unlocked BNJI balance after level increase should be equal to before, minus the costInBNJI that were locked 
   expect(afterLevelIncrease_BNJIbal_User).to.equal(beforeLevelIncrease_BNJIbal_User - costInBNJI);   
   // the same amount should now be added to the benjaminsContract's balance of unlocked BNJI
@@ -534,7 +499,7 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   // unlock timestamp and amount of blocks to wait should be updated (increased) by when increasing level
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.be.greaterThan(beforeLevelIncrease_UsersUnlockTimestamp);
   expect(afterLevelIncrease_AmountOfBlocksToWait).to.be.greaterThan(beforeLevelIncrease_AmountOfBlocksToWait);  
-  // unlock timestamp and amount of blocks to wait should now be calculated relating to new discount level
+  // unlock timestamp and amount of blocks to wait should now be calculated relating to new account level
   expect(afterLevelIncrease_AmountOfBlocksToWait).to.equal(afterLevelIncrease_AmountOfBlocksToWaitExpected);  
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.equal(afterLevelIncrease_UnlockTimestampExpected);  
   
@@ -543,11 +508,9 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   // user's balance of locked BNJI after level increase should be equal to before, plus the costInBNJI that were locked 
   expect(afterLevelIncrease_UsersLockedBNJI).to.equal(beforeLevelIncrease_UsersLockedBNJI + costInBNJI); 
 
-  // user's discount level after level increase should be equal to before, plus the amountOfLevelsToGet
-  expect(afterLevelIncrease_UsersDiscountLevel).to.equal(beforeLevelIncrease_UsersDiscountLevel + amountOfLevelsToGet);    
+  // user's account level after level increase should be equal to before, plus the amountOfLevelsToGet
+  expect(afterLevelIncrease_UsersAccountLevel).to.equal(beforeLevelIncrease_UsersAccountLevel + amountOfLevelsToGet);    
 
-  // user's discountPercentage after level increase should be equal to calculated value (see above) 
-  expect(afterLevelIncrease_UsersDiscountPercentage).to.equal(afterLevelIncrease_DiscountPercentageExpected);   
 }  
 
 async function howLongUntilUnlock(userToCheck) {
@@ -559,18 +522,13 @@ async function getUnlockTimestamp(userToCheck) {
   return (bigNumberToNumber (await benjaminsContract.getUsersUnlockTimestamp(userToCheck)));
 }
 
-async function getLockedBalanceOf(userToCheck) {
+async function lockedBalanceOf(userToCheck) {
   return (bigNumberToNumber (await benjaminsContract.lockedBalanceOf(userToCheck)));
 }
 
-async function getDiscountLevel(userToCheck){
-  const usersDiscountLevel = bigNumberToNumber (await benjaminsContract.getUsersDiscountLevel(userToCheck));
-  return usersDiscountLevel;
-}
-
-async function getDiscountPercentage(userToCheck){
-  const usersDiscountPercentage = (bigNumberToNumber(await benjaminsContract.getUsersDiscountPercentageTimes10k(userToCheck)))/baseFeeTimes10k;
-  return usersDiscountPercentage;
+async function getAccountLevel(userToCheck){
+  const usersAccountLevel = bigNumberToNumber (await benjaminsContract.getUsersAccountLevel(userToCheck));
+  return usersAccountLevel;
 }
 
 
@@ -587,14 +545,12 @@ async function testDecreaseLevel(callingAccAddress, amountOfLevelsToDecrease, ex
   const beforeLevelDecrease_AmountOfBlocksToWait = await howLongUntilUnlock(callingAccAddress);
   const beforeLevelDecrease_UsersUnlockTimestamp = await getUnlockTimestamp(callingAccAddress);  
 
-  const beforeLevelDecrease_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
-  const beforeLevelDecrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress); 
-  const beforeLevelDecrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);  
+  const beforeLevelDecrease_UsersLockedBNJI = await lockedBalanceOf(callingAccAddress);
+  const beforeLevelDecrease_UsersAccountLevel = await getAccountLevel(callingAccAddress); 
 
-  const beforeLevelDecrease_DiscountLevelExpected = beforeLevelDecrease_UsersLockedBNJI / neededBNJIperLevel;
-  const beforeLevelDecrease_DiscountPercentageExpected = levelDiscountsArray[beforeLevelDecrease_UsersDiscountLevel]; 
+  const beforeLevelDecrease_AccountLevelExpected = beforeLevelDecrease_UsersLockedBNJI / neededBNJIperLevel;
   
-  await benjaminsContract.connect(callingAccSigner).decreaseDiscountLevels(amountOfLevelsToDecrease);
+  await benjaminsContract.connect(callingAccSigner).decreaseAccountLevels(amountOfLevelsToDecrease);
   
 
 
@@ -604,21 +560,17 @@ async function testDecreaseLevel(callingAccAddress, amountOfLevelsToDecrease, ex
   const afterLevelDecrease_AmountOfBlocksToWait = await howLongUntilUnlock(callingAccAddress);
   const afterLevelDecrease_UsersUnlockTimestamp = await getUnlockTimestamp(callingAccAddress); 
 
-  const afterLevelDecrease_UsersLockedBNJI = await getLockedBalanceOf(callingAccAddress);
-  const afterLevelDecrease_UsersDiscountLevel = await getDiscountLevel(callingAccAddress);  
-  const afterLevelDecrease_UsersDiscountPercentage = await getDiscountPercentage(callingAccAddress);
-  
-  const afterLevelDecrease_DiscountPercentageExpected = levelDiscountsArray[afterLevelDecrease_UsersDiscountLevel];
-  const afterLevelDecrease_LockedBNJIExpected = afterLevelDecrease_UsersDiscountLevel * neededBNJIperLevel;
+  const afterLevelDecrease_UsersLockedBNJI = await lockedBalanceOf(callingAccAddress);
+  const afterLevelDecrease_UsersAccountLevel = await getAccountLevel(callingAccAddress);  
+ 
+  const afterLevelDecrease_LockedBNJIExpected = afterLevelDecrease_UsersAccountLevel * neededBNJIperLevel;
   
   
-  // user's discountLevel at the start should be equal to expected, sent in value
-  expect(beforeLevelDecrease_UsersDiscountLevel).to.equal(expectedStartingLevel); 
-  // user's discountLevel at the start should be equal to calculated value (using beforeLevelDecrease_UsersLockedBNJI)
-  expect(expectedStartingLevel).to.equal(beforeLevelDecrease_DiscountLevelExpected);  
-  // user's discountPercentage at the start should be equal to calculated value (comparing to queried levelDiscountsArray)
-  expect(beforeLevelDecrease_UsersDiscountPercentage).to.equal(beforeLevelDecrease_DiscountPercentageExpected);
-
+  // user's accountLevel at the start should be equal to expected, sent in value
+  expect(beforeLevelDecrease_UsersAccountLevel).to.equal(expectedStartingLevel); 
+  // user's accountLevel at the start should be equal to calculated value (using beforeLevelDecrease_UsersLockedBNJI)
+  expect(expectedStartingLevel).to.equal(beforeLevelDecrease_AccountLevelExpected);  
+ 
   // benjaminsContract's unlocked BNJI balance after level decrease should be equal to before, minus the returnInBNJI that were unlocked 
   expect(afterLevelDecrease_BNJIbal_Contract).to.equal(beforeLevelDecrease_BNJIbal_Contract - returnInBNJI);  
 
@@ -638,12 +590,8 @@ async function testDecreaseLevel(callingAccAddress, amountOfLevelsToDecrease, ex
   // user's balance of locked BNJI after level decrease should be equal to before, minus the returnInBNJI that were unlocked 
   expect(afterLevelDecrease_UsersLockedBNJI).to.equal(beforeLevelDecrease_UsersLockedBNJI - returnInBNJI); 
 
-  // user's discount level after level decrease should be equal to before, minus the amountOfLevelsToDecrease
-  expect(afterLevelDecrease_UsersDiscountLevel).to.equal(beforeLevelDecrease_UsersDiscountLevel - amountOfLevelsToDecrease);    
-
-  // user's discountPercentage after level decrease should be equal to calculated value (see above) 
-  expect(afterLevelDecrease_UsersDiscountPercentage).to.equal(afterLevelDecrease_DiscountPercentageExpected);  
-
+  // user's account level after level decrease should be equal to before, minus the amountOfLevelsToDecrease
+  expect(afterLevelDecrease_UsersAccountLevel).to.equal(beforeLevelDecrease_UsersAccountLevel - amountOfLevelsToDecrease);  
 }
 
 
@@ -695,12 +643,9 @@ describe("Testing Benjamins", function () {
 
     // Get polygonLendingPoolAddress into this testing suite
     polygonLendingPoolAddress = await benjaminsContract.connect(deployerSigner).getPolygonLendingPool();
-  
-    const expectedHoldingTimesArray  =  [0, 30, 90, 300];
-    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray);
+      
+    await getContractsHoldingTimeAndConfirmIt(30);
 
-    const expectedDiscountsArray = [0, 10, 25,  50]; 
-    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray);
 
     polygonUSDC = new ethers.Contract(
       polygonUSDCaddress,
@@ -866,10 +811,9 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_1);    
     expect(await balBNJI(testUser_1)).to.equal(80);
     
-    const expectedUser1Levels = [0,0,0];
-    const expectedUser1Discounts = [0,0,0];    
+    const expectedUser1Levels = [0,0,0];   
       
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents(); 
   });
@@ -1059,7 +1003,7 @@ describe("Testing Benjamins", function () {
   
 
   
-  it("Test 09. Discount levels and discounts are not triggered by minting", async function () {   
+  it("Test 09. account levels are not triggered by minting", async function () {   
 
     // Preparation mint
     await testMinting(200000, deployer, deployer);   
@@ -1082,9 +1026,8 @@ describe("Testing Benjamins", function () {
     expect(await balBNJI(testUser_1)).to.equal(2560);
     await addUserAccDataPoints(testUser_1); 
 
-    const expectedUser1Levels = [0,0,0,0,0,0];
-    const expectedUser1Discounts = [0,0,0,0,0,0];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);    
+    const expectedUser1Levels = [0,0,0,0,0,0];            
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);    
     
     await countAllCents(); 
   });  
@@ -1110,13 +1053,11 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_1); 
     await addUserAccDataPoints(testUser_2); 
 
-    const expectedUser1Levels = [0,0];
-    const expectedUser1Discounts = [0,0];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);   
+    const expectedUser1Levels = [0,0];          
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);   
 
-    const expectedUser2Levels = [0,0];
-    const expectedUser2Discounts = [0,0];          
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    const expectedUser2Levels = [0,0];           
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
   });  
@@ -1184,13 +1125,11 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_1); 
     await addUserAccDataPoints(testUser_2); 
     
-    const expectedUser1Levels = [0,0,0];
-    const expectedUser1Discounts = [0,0,0];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);   
+    const expectedUser1Levels = [0,0,0];          
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);   
 
-    const expectedUser2Levels = [0,0];
-    const expectedUser2Discounts = [0,0];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    const expectedUser2Levels = [0,0];       
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
   });  
@@ -1223,13 +1162,11 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_1); 
     await addUserAccDataPoints(testUser_2); 
     
-    const expectedUser1Levels = [0,0,0];
-    const expectedUser1Discounts = [0,0,0];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);   
+    const expectedUser1Levels = [0,0,0];          
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);   
 
-    const expectedUser2Levels = [0,0];
-    const expectedUser2Discounts = [0,0];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    const expectedUser2Levels = [0,0];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
   });  
@@ -1257,13 +1194,11 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_1); 
     await addUserAccDataPoints(testUser_2);
     
-    const expectedUser1Levels = [0,0,0];
-    const expectedUser1Discounts = [0,0,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts); 
+    const expectedUser1Levels = [0,0,0];       
+    confirmUserDataPoints(testUser_1, expectedUser1Levels); 
 
     const expectedUser2Levels = [0];
-    const expectedUser2Discounts = [0];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts); 
+    confirmUserDataPoints(testUser_2, expectedUser2Levels); 
 
     await countAllCents();
   });  
@@ -1284,20 +1219,20 @@ describe("Testing Benjamins", function () {
     //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec);
     
 
-    // upgrading to discount level 1 and confirming event was emitted as expected
+    // upgrading to account level 1 and confirming event was emitted as expected
     const blockBeforeIncrease = await getBlockheightNow();   
     const lockupTimestampExpected = (blockBeforeIncrease+1) + (holdingTimesInDays[1] * blocksPerDay);
-    await expect( benjaminsContract.connect(testUser_1_Signer).increaseDiscountLevels(1))
-    .to.emit(benjaminsContract, 'DiscountLevelIncreased')
+    await expect( benjaminsContract.connect(testUser_1_Signer).increaseAccountLevels(1))
+    .to.emit(benjaminsContract, 'AccountLevelIncreased')
     .withArgs(testUser_1, (blockBeforeIncrease+1), 1000, 1, lockupTimestampExpected);  
 
     // waiting until timeout period for level 1 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[1]);
 
-    // downgrading to discount level 0 and confirming event was emitted as expected
+    // downgrading to account level 0 and confirming event was emitted as expected
     const blockBeforeDecrease = await getBlockheightNow();   
-    await expect( benjaminsContract.connect(testUser_1_Signer).decreaseDiscountLevels(1))
-    .to.emit(benjaminsContract, 'DiscountLevelDecreased')
+    await expect( benjaminsContract.connect(testUser_1_Signer).decreaseAccountLevels(1))
+    .to.emit(benjaminsContract, 'AccountLevelDecreased')
     .withArgs(testUser_1, (blockBeforeDecrease+1), 1000, 0);
         
     await calcBurnVariables(1000, false);
@@ -1321,78 +1256,74 @@ describe("Testing Benjamins", function () {
     
     await countAllCents();
 
-    // testUser_1 upgrades from discount level 0 to 1   
+    // testUser_1 upgrades from account level 0 to 1   
     await addUserAccDataPoints(testUser_1); 
 
     // minting 1000 BNJI to caller
     await testMinting(1000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1);         
     
-    // upgrading to discount level 1     
+    // upgrading to account level 1     
     await testIncreaseLevel(testUser_1, 1, 0); 
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
-    const expectedUser1Levels    = [0,0, 1];
-    const expectedUser1Discounts = [0,0,10];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    const expectedUser1Levels    = [0,0, 1];      
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();    
 
-    // testUser_2 upgrades from discount level 0 to 2
+    // testUser_2 upgrades from account level 0 to 2
     await addUserAccDataPoints(testUser_2); 
 
     // minting 2000 BNJI to caller
     await testMinting(2000, testUser_2, testUser_2);   
     await addUserAccDataPoints(testUser_2); 
     
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_2, 2, 0);  
     
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(0); 
 
-    const expectedUser2Levels    = [0,0, 2];
-    const expectedUser2Discounts = [0,0,25];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    const expectedUser2Levels    = [0,0, 2];       
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
         
-    // testUser_3 upgrades from discount level 0 to 3 
+    // testUser_3 upgrades from account level 0 to 3 
     await addUserAccDataPoints(testUser_3); 
 
     // minting 3000 BNJI to caller
     await testMinting(3000, testUser_3, testUser_3);   
     await addUserAccDataPoints(testUser_3); 
     
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_3, 3, 0);  
     
     await addUserAccDataPoints(testUser_3);   
     expect(await balBNJI(testUser_3)).to.equal(0); 
 
-    const expectedUser3Levels    = [0,0, 3];
-    const expectedUser3Discounts = [0,0,50];    
-    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+    const expectedUser3Levels    = [0,0, 3];    
+    confirmUserDataPoints(testUser_3, expectedUser3Levels);
 
     await countAllCents();
 
-    // testUser_4 cannot upgrade from discount level 0 to above 3, reverts
+    // testUser_4 cannot upgrade from account level 0 to above 3, reverts
     await addUserAccDataPoints(testUser_4); 
 
     // minting 4000 BNJI to caller
     await testMinting(4000, testUser_4, testUser_4);   
     await addUserAccDataPoints(testUser_4); 
     
-    // upgrading above discount level 3 does not work and will be reverted
+    // upgrading above account level 3 does not work and will be reverted
     await expect( testIncreaseLevel(testUser_4, 4, 0) ).to.be.reverted;  
     
     await addUserAccDataPoints(testUser_4);   
     expect(await balBNJI(testUser_4)).to.equal(4000); 
 
-    const expectedUser4Levels    = [0,0,0];
-    const expectedUser4Discounts = [0,0,0];    
-    confirmUserDataPoints(testUser_4, expectedUser4Levels, expectedUser4Discounts);
+    const expectedUser4Levels    = [0,0,0];      
+    confirmUserDataPoints(testUser_4, expectedUser4Levels);
 
     await countAllCents();
 
@@ -1404,32 +1335,31 @@ describe("Testing Benjamins", function () {
     
     await countAllCents();
 
-    // Preparation: testUser_1 gets discount level 1    
+    // Preparation: testUser_1 gets account level 1    
     await addUserAccDataPoints(testUser_1); 
 
     // minting 2000 BNJI to caller
     await testMinting(2000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     
-    // upgrading to discount level 1
+    // upgrading to account level 1
     await testIncreaseLevel(testUser_1, 1, 0);  
     
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(1000); 
 
-    // testUser_1 upgrades from discount level 1 to 2   
+    // testUser_1 upgrades from account level 1 to 2   
     await testIncreaseLevel(testUser_1, 1, 1);  
     
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
-    const expectedUser1Levels    = [0,0, 1, 2];
-    const expectedUser1Discounts = [0,0,10,25];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    const expectedUser1Levels    = [0,0, 1, 2];      
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();    
 
-    // Preparation: testUser_2 gets discount level 1  
+    // Preparation: testUser_2 gets account level 1  
     await addUserAccDataPoints(testUser_2); 
 
     // minting 3000 BNJI to caller
@@ -1437,23 +1367,22 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_2); 
     expect(await balBNJI(testUser_2)).to.equal(3000); 
     
-    // upgrading to discount level 1
+    // upgrading to account level 1
     await testIncreaseLevel(testUser_2, 1, 0); 
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(2000); 
     
-    // testUser_2 upgrades from discount level 1 to 3
+    // testUser_2 upgrades from account level 1 to 3
     await testIncreaseLevel(testUser_2, 2, 1);  
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(0); 
 
     const expectedUser2Levels    = [0,0, 1, 3];
-    const expectedUser2Discounts = [0,0,10,50];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+        confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
 
-    // Preparation: testUser_3 gets discount level 1  
+    // Preparation: testUser_3 gets account level 1  
     await addUserAccDataPoints(testUser_3); 
 
     // minting 4000 BNJI to caller
@@ -1461,20 +1390,19 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_3); 
     expect(await balBNJI(testUser_3)).to.equal(4000); 
     
-    // upgrading to discount level 1
+    // upgrading to account level 1
     await testIncreaseLevel(testUser_3, 1, 0); 
     await addUserAccDataPoints(testUser_3);   
     expect(await balBNJI(testUser_3)).to.equal(3000); 
         
-    // testUser_3 cannot upgrade from discount level 1 to above 3, reverts
+    // testUser_3 cannot upgrade from account level 1 to above 3, reverts
     await expect( testIncreaseLevel(testUser_3, 3, 1) ).to.be.reverted;  
     
     await addUserAccDataPoints(testUser_3);   
     expect(await balBNJI(testUser_3)).to.equal(3000); 
 
-    const expectedUser3Levels    = [0,0, 1, 1];
-    const expectedUser3Discounts = [0,0,10,10];    
-    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+    const expectedUser3Levels    = [0,0, 1, 1];    
+    confirmUserDataPoints(testUser_3, expectedUser3Levels);
 
     await countAllCents();
 
@@ -1486,32 +1414,31 @@ describe("Testing Benjamins", function () {
 
     await countAllCents();
 
-    // Preparation: testUser_1 gets discount level 2 
+    // Preparation: testUser_1 gets account level 2 
     await addUserAccDataPoints(testUser_1); 
 
     // minting 3000 BNJI to caller
     await testMinting(3000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_1, 2, 0);  
     
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(1000); 
 
-    // testUser_1 upgrades from discount level 2 to 3   
+    // testUser_1 upgrades from account level 2 to 3   
     await testIncreaseLevel(testUser_1, 1, 2);  
     
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
-    const expectedUser1Levels    = [0,0, 2, 3];
-    const expectedUser1Discounts = [0,0,25,50];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    const expectedUser1Levels    = [0,0, 2, 3];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();    
 
-    // Preparation: testUser_2 gets discount level 2   
+    // Preparation: testUser_2 gets account level 2   
     await addUserAccDataPoints(testUser_2); 
 
     // minting 4000 BNJI to caller
@@ -1519,20 +1446,19 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_2); 
     expect(await balBNJI(testUser_2)).to.equal(4000); 
     
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_2, 2, 0); 
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(2000); 
         
-    // testUser_2 cannot upgrade from discount level 2 to above 3, reverts
+    // testUser_2 cannot upgrade from account level 2 to above 3, reverts
     await expect( testIncreaseLevel(testUser_2, 2, 2) ).to.be.reverted;  
     
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(2000); 
 
-    const expectedUser2Levels    = [0,0, 2, 2];
-    const expectedUser2Discounts = [0,0,25,25];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    const expectedUser2Levels    = [0,0, 2, 2];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
   });  
@@ -1542,7 +1468,7 @@ describe("Testing Benjamins", function () {
     
     await countAllCents();
 
-    // Preparation: testUser_1 gets discount level 3       
+    // Preparation: testUser_1 gets account level 3       
     await addUserAccDataPoints(testUser_1); 
 
     // minting 4000 BNJI to caller
@@ -1550,26 +1476,25 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(4000); 
     
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_1, 3, 0); 
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(1000); 
         
-    // testUser_1 cannot upgrade from discount level 3 to above 3, reverts
+    // testUser_1 cannot upgrade from account level 3 to above 3, reverts
     await expect( testIncreaseLevel(testUser_1, 1, 3) ).to.be.reverted;  
     
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(1000); 
 
-    const expectedUser1Levels    = [0,0, 3, 3];
-    const expectedUser1Discounts = [0,0,50,50];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    const expectedUser1Levels    = [0,0, 3, 3];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();
   });  
   
   
-  it("Test 19. Discount changes are effective immediately after increasing the discount level", async function () {   
+  it("Test 19. Account level changes are effective immediately after increasing the account level", async function () {   
 
     await countAllCents();
     
@@ -1581,28 +1506,26 @@ describe("Testing Benjamins", function () {
     expect(await balBNJI(testUser_1)).to.equal(3600);   
     await addUserAccDataPoints(testUser_1);  
 
-    // upgrading to discount level 1
+    // upgrading to account level 1
     await testIncreaseLevel(testUser_1, 1, 0);  
     
     expect(await balBNJI(testUser_1)).to.equal(2600);   
     await addUserAccDataPoints(testUser_1);
 
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_1, 1, 1);  
     
     expect(await balBNJI(testUser_1)).to.equal(1600); 
     await addUserAccDataPoints(testUser_1); 
 
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_1, 1, 2);  
 
     expect(await balBNJI(testUser_1)).to.equal(600); 
     await addUserAccDataPoints(testUser_1); 
 
-    const expectedUser1Levels =     [0,0, 1, 2, 3];
-    const expectedUser1Discounts =  [0,0,10,25,50];    
-      
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);       
+    const expectedUser1Levels =     [0,0, 1, 2, 3];   
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);       
 
     await countAllCents();
   });  
@@ -1611,21 +1534,21 @@ describe("Testing Benjamins", function () {
     
     await countAllCents();  
 
-    // Preparation: testUser_3 gets discount level 3 
+    // Preparation: testUser_3 gets account level 3 
     // minting 3000 BNJI to caller
     await addUserAccDataPoints(testUser_3); 
     await testMinting(3000, testUser_3, testUser_3);   
     await addUserAccDataPoints(testUser_3); 
     expect(await balBNJI(testUser_3)).to.equal(3000); 
 
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_3, 3, 0);  
     
     await addUserAccDataPoints(testUser_3);   
     expect(await balBNJI(testUser_3)).to.equal(0); 
 
     await expect( testDecreaseLevel(testUser_3, 1, 3) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+      "Minimum holding time has not passed yet, levels can't be decreased now. You can check howManyBlocksUntilUnlock"
     );  
 
     await addUserAccDataPoints(testUser_3);   
@@ -1634,33 +1557,32 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 3 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
 
-    // downgrading to discount level 2
+    // downgrading to account level 2
     await testDecreaseLevel(testUser_3, 1, 3);  
 
     await addUserAccDataPoints(testUser_3);   
     expect(await balBNJI(testUser_3)).to.equal(1000); 
 
-    const expectedUser3Levels    = [0,0, 3, 3, 2];
-    const expectedUser3Discounts = [0,0,50,50,25];    
-    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+    const expectedUser3Levels    = [0,0, 3, 3, 2];  
+    confirmUserDataPoints(testUser_3, expectedUser3Levels);
 
     await countAllCents();
 
-    // Preparation: testUser_2 gets discount level 3 
+    // Preparation: testUser_2 gets account level 3 
     // minting 3000 BNJI to caller
     await addUserAccDataPoints(testUser_2); 
     await testMinting(3000, testUser_2, testUser_2);   
     await addUserAccDataPoints(testUser_2); 
     expect(await balBNJI(testUser_2)).to.equal(3000); 
 
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_2, 3, 0);  
     
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(0); 
 
     await expect( testDecreaseLevel(testUser_2, 2, 3) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+      "Minimum holding time has not passed yet, levels can't be decreased now. You can check howManyBlocksUntilUnlock"
     );  
 
     await addUserAccDataPoints(testUser_2);   
@@ -1669,33 +1591,32 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 3 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
 
-    // downgrading to discount level 1
+    // downgrading to account level 1
     await testDecreaseLevel(testUser_2, 2, 3);  
 
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(2000); 
 
     const expectedUser2Levels    = [0,0, 3, 3, 1];
-    const expectedUser2Discounts = [0,0,50,50,10];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
 
-    // Preparation: testUser_1 gets discount level 3 
+    // Preparation: testUser_1 gets account level 3 
     // minting 3000 BNJI to caller
     await addUserAccDataPoints(testUser_1); 
     await testMinting(3000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(3000); 
 
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_1, 3, 0);  
     
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
     await expect( testDecreaseLevel(testUser_1, 3, 3) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+      "Minimum holding time has not passed yet, levels can't be decreased now. You can check howManyBlocksUntilUnlock"
     );  
 
     await addUserAccDataPoints(testUser_1);   
@@ -1704,32 +1625,31 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 3 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
 
-    // downgrading to discount level 0
+    // downgrading to account level 0
     await testDecreaseLevel(testUser_1, 3, 3);  
 
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(3000); 
 
-    const expectedUser1Levels    = [0,0, 3, 3,0];
-    const expectedUser1Discounts = [0,0,50,50,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    const expectedUser1Levels    = [0,0, 3, 3,0];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();
 
-    // Preparation: testUser_4 gets discount level 3 
+    // Preparation: testUser_4 gets account level 3 
     // minting 3000 BNJI to caller
     await addUserAccDataPoints(testUser_4); 
     await testMinting(3000, testUser_4, testUser_4);   
     await addUserAccDataPoints(testUser_4); 
     expect(await balBNJI(testUser_4)).to.equal(3000); 
 
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_4, 3, 0);  
     
     await addUserAccDataPoints(testUser_4);   
     expect(await balBNJI(testUser_4)).to.equal(0); 
 
-    // downgrading to discount level below 0 is reverted
+    // downgrading to account level below 0 is reverted
     await expect( testDecreaseLevel(testUser_4, 4, 3) ).to.be.reverted;
 
     await addUserAccDataPoints(testUser_1);   
@@ -1738,15 +1658,14 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 3 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[3]);
 
-    // downgrading to discount level below 0 is reverted, even after waiting time
+    // downgrading to account level below 0 is reverted, even after waiting time
     await expect( testDecreaseLevel(testUser_4, 4, 3) ).to.be.reverted;
 
     await addUserAccDataPoints(testUser_4);   
     expect(await balBNJI(testUser_4)).to.equal(0); 
 
-    const expectedUser4Levels    = [0,0, 3, 3, 3];
-    const expectedUser4Discounts = [0,0,50,50,50];    
-    confirmUserDataPoints(testUser_4, expectedUser4Levels, expectedUser4Discounts);
+    const expectedUser4Levels    = [0,0, 3, 3, 3];    
+    confirmUserDataPoints(testUser_4, expectedUser4Levels);
 
     await countAllCents();
   });
@@ -1757,21 +1676,21 @@ describe("Testing Benjamins", function () {
     
     await countAllCents();  
 
-    // Preparation: testUser_3 gets discount level 2 
+    // Preparation: testUser_3 gets account level 2 
     // minting 2000 BNJI to caller
     await addUserAccDataPoints(testUser_3); 
     await testMinting(2000, testUser_3, testUser_3);   
     await addUserAccDataPoints(testUser_3); 
     expect(await balBNJI(testUser_3)).to.equal(2000); 
 
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_3, 2, 0);  
     
     await addUserAccDataPoints(testUser_3);   
     expect(await balBNJI(testUser_3)).to.equal(0); 
 
     await expect( testDecreaseLevel(testUser_3, 1, 2) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+      "Minimum holding time has not passed yet, levels can't be decreased now. You can check howManyBlocksUntilUnlock"
     );  
 
     await addUserAccDataPoints(testUser_3);   
@@ -1780,33 +1699,32 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 2 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[2]);
 
-    // downgrading to discount level 1
+    // downgrading to account level 1
     await testDecreaseLevel(testUser_3, 1, 2);  
 
     await addUserAccDataPoints(testUser_3);   
     expect(await balBNJI(testUser_3)).to.equal(1000); 
 
-    const expectedUser3Levels    = [0,0, 2, 2, 1];
-    const expectedUser3Discounts = [0,0,25,25,10];    
-    confirmUserDataPoints(testUser_3, expectedUser3Levels, expectedUser3Discounts);
+    const expectedUser3Levels    = [0,0, 2, 2, 1];    
+    confirmUserDataPoints(testUser_3, expectedUser3Levels);
 
     await countAllCents();
 
-    // Preparation: testUser_2 gets discount level 2 
+    // Preparation: testUser_2 gets account level 2 
     // minting 2000 BNJI to caller
     await addUserAccDataPoints(testUser_2); 
     await testMinting(2000, testUser_2, testUser_2);   
     await addUserAccDataPoints(testUser_2); 
     expect(await balBNJI(testUser_2)).to.equal(2000); 
 
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_2, 2, 0);  
     
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(0); 
 
     await expect( testDecreaseLevel(testUser_2, 2, 2) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+      "Minimum holding time has not passed yet, levels can't be decreased now. You can check howManyBlocksUntilUnlock"
     );  
 
     await addUserAccDataPoints(testUser_2);   
@@ -1815,26 +1733,25 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 2 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[2]);
 
-    // downgrading to discount level 0
+    // downgrading to account level 0
     await testDecreaseLevel(testUser_2, 2, 2);  
 
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(2000); 
 
-    const expectedUser2Levels    = [0,0, 2, 2,0];
-    const expectedUser2Discounts = [0,0,25,25,0];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    const expectedUser2Levels    = [0,0, 2, 2,0];    
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
 
-    // Preparation: testUser_1 gets discount level 2 
+    // Preparation: testUser_1 gets account level 2 
     // minting 2000 BNJI to caller
     await addUserAccDataPoints(testUser_1); 
     await testMinting(2000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(2000); 
 
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_1, 2, 0);  
     
     await addUserAccDataPoints(testUser_1);   
@@ -1848,15 +1765,14 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 2 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[2]);
 
-    // downgrading below discount level 0 is reverted, even after waiting time
+    // downgrading below account level 0 is reverted, even after waiting time
     await expect( testDecreaseLevel(testUser_1, 3, 2) ).to.be.reverted;  
 
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
     const expectedUser1Levels    = [0,0, 2, 2, 2];
-    const expectedUser1Discounts = [0,0,25,25,25];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();
 
@@ -1864,21 +1780,21 @@ describe("Testing Benjamins", function () {
 
   
   it("Test 22. Account downgrades starting from level 1 work as expected", async function () {
-    // Preparation: testUser_2 gets discount level 1 
+    // Preparation: testUser_2 gets account level 1 
     // minting 1000 BNJI to caller
     await addUserAccDataPoints(testUser_2); 
     await testMinting(1000, testUser_2, testUser_2);   
     await addUserAccDataPoints(testUser_2); 
     expect(await balBNJI(testUser_2)).to.equal(1000); 
 
-    // upgrading to discount level 1
+    // upgrading to account level 1
     await testIncreaseLevel(testUser_2, 1, 0);  
     
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(0); 
 
     await expect( testDecreaseLevel(testUser_2, 1, 1) ).to.be.revertedWith(
-      "Discounts are still active, levels cannot be decreased. You can check howManyBlocksUntilUnlock"
+      "Minimum holding time has not passed yet, levels can't be decreased now. You can check howManyBlocksUntilUnlock"
     );  
 
     await addUserAccDataPoints(testUser_2);   
@@ -1887,26 +1803,25 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 1 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[1]);
 
-    // downgrading to discount level 0
+    // downgrading to account level 0
     await testDecreaseLevel(testUser_2, 1, 1);  
 
     await addUserAccDataPoints(testUser_2);   
     expect(await balBNJI(testUser_2)).to.equal(1000); 
 
     const expectedUser2Levels    = [0,0, 1, 1,0];
-    const expectedUser2Discounts = [0,0,10,10,0];    
-    confirmUserDataPoints(testUser_2, expectedUser2Levels, expectedUser2Discounts);
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
 
-    // Preparation: testUser_1 gets discount level 1 
+    // Preparation: testUser_1 gets account level 1 
     // minting 1000 BNJI to caller
     await addUserAccDataPoints(testUser_1); 
     await testMinting(1000, testUser_1, testUser_1);   
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(1000); 
 
-    // upgrading to discount level 1
+    // upgrading to account level 1
     await testIncreaseLevel(testUser_1, 1, 0);  
     
     await addUserAccDataPoints(testUser_1);   
@@ -1920,15 +1835,14 @@ describe("Testing Benjamins", function () {
     // waiting until timeout period for level 1 has passed
     await mintBlocks(blocksPerDay*holdingTimesInDays[1]);
 
-    // downgrading below discount level 0 is reverted, even after waiting time
+    // downgrading below account level 0 is reverted, even after waiting time
     await expect( testDecreaseLevel(testUser_1, 2, 1) ).to.be.reverted;  
 
     await addUserAccDataPoints(testUser_1);   
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
-    const expectedUser1Levels    = [0,0, 1, 1, 1];
-    const expectedUser1Discounts = [0,0,10,10,10];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    const expectedUser1Levels    = [0,0, 1, 1, 1];  
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();
   });
@@ -1944,9 +1858,8 @@ describe("Testing Benjamins", function () {
     await addUserAccDataPoints(testUser_1);    
     expect(await balBNJI(testUser_1)).to.equal(0); 
 
-    const expectedUser1Levels    = [0,0];
-    const expectedUser1Discounts = [0,0];    
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);
+    const expectedUser1Levels    = [0,0]; 
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);
 
     await countAllCents();
 
@@ -1954,7 +1867,7 @@ describe("Testing Benjamins", function () {
 
 
   
-  it("Test 24. Discount changes are effective immediately after decreasing the discount level", async function () {   
+  it("Test 24. Account level changes are effective immediately after decreasing the account level", async function () {   
 
     await countAllCents();
     
@@ -1966,28 +1879,27 @@ describe("Testing Benjamins", function () {
     expect(await balBNJI(testUser_1)).to.equal(3600);   
     await addUserAccDataPoints(testUser_1);  
 
-    // upgrading to discount level 1
+    // upgrading to account level 1
     await testIncreaseLevel(testUser_1, 1, 0);  
     
     expect(await balBNJI(testUser_1)).to.equal(2600);   
     await addUserAccDataPoints(testUser_1);
 
-    // upgrading to discount level 2
+    // upgrading to account level 2
     await testIncreaseLevel(testUser_1, 1, 1);  
     
     expect(await balBNJI(testUser_1)).to.equal(1600); 
     await addUserAccDataPoints(testUser_1); 
 
-    // upgrading to discount level 3
+    // upgrading to account level 3
     await testIncreaseLevel(testUser_1, 1, 2);  
 
     expect(await balBNJI(testUser_1)).to.equal(600); 
     await addUserAccDataPoints(testUser_1); 
 
-    const expectedUser1Levels =     [0,0, 1, 2, 3];
-    const expectedUser1Discounts =  [0,0,10,25,50];    
+    const expectedUser1Levels =     [0,0, 1, 2, 3];    
       
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);       
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);       
 
     await countAllCents();
   });  
@@ -2007,7 +1919,7 @@ describe("Testing Benjamins", function () {
     const lockedBNJI_afterMint = bigNumberToNumber( await benjaminsContract.lockedBalanceOf(testUser_1) ); 
     expect(lockedBNJI_afterMint).to.equal(0);    
 
-    // increasing discount level to 3
+    // increasing account level to 3
     await testIncreaseLevel(testUser_1, 3, 0);
     await addUserAccDataPoints(testUser_1); 
     expect(await balBNJI(testUser_1)).to.equal(2000); 
@@ -2022,8 +1934,7 @@ describe("Testing Benjamins", function () {
     expect(lockedBNJI_afterBurnUnlocked).to.equal(3000);      
 
     const expectedUser1Levels    = [0,0, 3, 3];
-    const expectedUser1Discounts = [0,0,50,50];          
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);   
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);   
 
     await countAllCents();
     
@@ -2049,22 +1960,21 @@ describe("Testing Benjamins", function () {
     expect(await balBNJI(testUser_1)).to.equal(0);
 
     await expect( testIncreaseLevel(testUser_1, 0, 0) ).to.be.revertedWith(
-      "You can increase the discount level up to level 3"
+      "You can increase the account level up to level 3"
     );
       
     await addUserAccDataPoints(testUser_1);
     expect(await balBNJI(testUser_1)).to.equal(0);
 
     await expect( testDecreaseLevel(testUser_1, 0, 0) ).to.be.revertedWith(
-      "You can lower the discount level down to level 0"
+      "You can lower the account level down to level 0"
     );
 
     await addUserAccDataPoints(testUser_1);
     expect(await balBNJI(testUser_1)).to.equal(0);
 
-    const expectedUser1Levels    = [0,0,0,0,0];
-    const expectedUser1Discounts = [0,0,0,0,0];      
-    confirmUserDataPoints(testUser_1, expectedUser1Levels, expectedUser1Discounts);     
+    const expectedUser1Levels    = [0,0,0,0,0];    
+    confirmUserDataPoints(testUser_1, expectedUser1Levels);     
     await countAllCents();
   });
   
@@ -2177,11 +2087,11 @@ describe("Testing Benjamins", function () {
     for (let index = 0; index < testUserAddressesArray.length; index++) {
       const callingAcc = testUserAddressesArray[index];
 
-      const accountLevel = await getDiscountLevel(callingAcc);
+      const accountLevel = await getAccountLevel(callingAcc);
   
       if (accountLevel>0){        
         await testDecreaseLevel(callingAcc, accountLevel, accountLevel);
-        expect(await getDiscountLevel(callingAcc)).to.equal(0);
+        expect(await getAccountLevel(callingAcc)).to.equal(0);
 
         const balanceBNJI = await balBNJI(callingAcc);
         await testBurning(balanceBNJI, callingAcc, callingAcc, false);
@@ -2335,32 +2245,19 @@ describe("Testing Benjamins", function () {
     expect(polygonAMUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
 
     
-    const expectedHoldingTimesArray_BeforeChange  =  [0, 30, 90, 300];
-    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray_BeforeChange);
-    const toChangeHoldingTimesArray = [11, 26, 1,  9900, 77, 123]; 
+    
+    await getContractsHoldingTimeAndConfirmIt(30);
+    const toChangeHoldingTime = 20 * blocksPerDay; 
     // only the owner can update
-    await expect( benjaminsContract.updateHoldingTimes(toChangeHoldingTimesArray) ).to.be.revertedWith(
+    await expect( benjaminsContract.updateHoldingTimes(toChangeHoldingTime) ).to.be.revertedWith(
       "Ownable: caller is not the owner"
     );       
     // confirming event was emitted as expected
-    await expect(benjaminsContract.connect(deployerSigner).updateHoldingTimes(toChangeHoldingTimesArray))
+    await expect(benjaminsContract.connect(deployerSigner).updateHoldingTime(toChangeHoldingTime))
     .to.emit(benjaminsContract, 'HoldingTimesUpdate')
-    .withArgs(toChangeHoldingTimesArray);   
-    await getContractsHoldingTimesArrayAndConfirmIt(toChangeHoldingTimesArray);
-
+    .withArgs(toChangeHoldingTime);   
+    await getContractsHoldingTimeAndConfirmIt(20);  
     
-    const expectedDiscountsArray_BeforeChange = [0, 10, 25,  50];     
-    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray_BeforeChange);
-    const toChangeDiscountsArray = [78, 0, 257, 11,0,0,17];   
-     // only the owner can update
-     await expect( benjaminsContract.updateDiscounts(toChangeDiscountsArray) ).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );    
-    // confirming event was emitted as expected
-    await expect(benjaminsContract.connect(deployerSigner).updateDiscounts(toChangeDiscountsArray))
-    .to.emit(benjaminsContract, 'DiscountsUpdate')
-    .withArgs(toChangeDiscountsArray);         
-    await getContractsDiscountArrayAndConfirmIt(toChangeDiscountsArray);
     
   });
 
@@ -2496,34 +2393,20 @@ describe("Testing Benjamins", function () {
     .withArgs(benjaminsContract.address,'polygonAMUSDC'); 
     const polygonAMUSDCAddress_AfterChange = await benjaminsContract.connect(deployerSigner).getPolygonAMUSDC();
     expect(polygonAMUSDCAddress_AfterChange).to.equal(benjaminsContract.address);
-
-    
-    const expectedHoldingTimesArray_BeforeChange  =  [0, 30, 90, 300];
-    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray_BeforeChange);
-    const toChangeHoldingTimesArray = [11, 26, 1,  9900, 77, 123]; 
+  
+   
+    await getContractsHoldingTimeAndConfirmIt(30);
+    const toChangeHoldingTime = 20 * blocksPerDay; 
     // only the owner can update
-    await expect( benjaminsContract.updateHoldingTimes(toChangeHoldingTimesArray) ).to.be.revertedWith(
+    await expect( benjaminsContract.updateHoldingTimes(toChangeHoldingTime) ).to.be.revertedWith(
       "Ownable: caller is not the owner"
     );       
     // confirming event was emitted as expected
-    await expect(benjaminsContract.connect(deployerSigner).updateHoldingTimes(toChangeHoldingTimesArray))
+    await expect(benjaminsContract.connect(deployerSigner).updateHoldingTime(toChangeHoldingTime))
     .to.emit(benjaminsContract, 'HoldingTimesUpdate')
-    .withArgs(toChangeHoldingTimesArray);   
-    await getContractsHoldingTimesArrayAndConfirmIt(toChangeHoldingTimesArray);
-
-    
-    const expectedDiscountsArray_BeforeChange = [0, 10, 25,  50];     
-    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray_BeforeChange);
-    const toChangeDiscountsArray = [78, 0, 257, 11,0,0,17];   
-     // only the owner can update
-     await expect( benjaminsContract.updateDiscounts(toChangeDiscountsArray) ).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );    
-    // confirming event was emitted as expected
-    await expect(benjaminsContract.connect(deployerSigner).updateDiscounts(toChangeDiscountsArray))
-    .to.emit(benjaminsContract, 'DiscountsUpdate')
-    .withArgs(toChangeDiscountsArray);         
-    await getContractsDiscountArrayAndConfirmIt(toChangeDiscountsArray);
+    .withArgs(toChangeHoldingTime);   
+    await getContractsHoldingTimeAndConfirmIt(20);  
+      
     
     // that benjaminsContract is still paused
     expect(await benjaminsContract.paused()).to.equal(true);
@@ -2613,12 +2496,7 @@ describe("Testing Benjamins", function () {
     );
 
     // when pause has been activated, normal users cannot use getHoldingTimes
-    await expect( benjaminsContract.connect(testUser_1_Signer).getHoldingTimes()).to.be.revertedWith(
-      "Benjamins is paused."
-    );
-
-    // when pause has been activated, normal users cannot use getDiscounts
-    await expect( benjaminsContract.connect(testUser_1_Signer).getDiscounts()).to.be.revertedWith(
+    await expect( benjaminsContract.connect(testUser_1_Signer).getHoldingTime()).to.be.revertedWith(
       "Benjamins is paused."
     );
 
@@ -2627,8 +2505,8 @@ describe("Testing Benjamins", function () {
       "Benjamins is paused."
     );
 
-    // when pause has been activated, normal users cannot use getUsersDiscountLevel
-    await expect( benjaminsContract.connect(testUser_1_Signer).getUsersDiscountLevel(testUser_2)).to.be.revertedWith(
+    // when pause has been activated, normal users cannot use getUsersAccountLevel
+    await expect( benjaminsContract.connect(testUser_1_Signer).getUsersAccountLevel(testUser_2)).to.be.revertedWith(
       "Benjamins is paused."
     );
 
@@ -2637,27 +2515,22 @@ describe("Testing Benjamins", function () {
       "Benjamins is paused."
     );
 
-    // when pause has been activated, normal users cannot use getUsersDiscountPercentageTimes10k
-    await expect( benjaminsContract.connect(testUser_1_Signer).getUsersDiscountPercentageTimes10k(testUser_2)).to.be.revertedWith(
-      "Benjamins is paused."
-    );
-
     // when pause has been activated, normal users cannot use howManyBlocksUntilUnlock
     await expect( benjaminsContract.connect(testUser_1_Signer).howManyBlocksUntilUnlock(testUser_2)).to.be.revertedWith(
       "Benjamins is paused."
     );
 
-    // when pause has been activated, normal users cannot use increaseDiscountLevels
-    await expect( benjaminsContract.connect(testUser_1_Signer).increaseDiscountLevels(1)).to.be.revertedWith(
+    // when pause has been activated, normal users cannot use increaseAccountLevels
+    await expect( benjaminsContract.connect(testUser_1_Signer).increaseAccountLevels(1)).to.be.revertedWith(
       "Benjamins is paused."
     );
     
-    // when pause has been activated, normal users cannot use decreaseDiscountLevels
-    await expect( benjaminsContract.connect(testUser_1_Signer).decreaseDiscountLevels(1)).to.be.revertedWith(
+    // when pause has been activated, normal users cannot use decreaseAccountLevels
+    await expect( benjaminsContract.connect(testUser_1_Signer).decreaseAccountLevels(1)).to.be.revertedWith(
       "Benjamins is paused."
     );
 
-    // when pause has been activated, normal users cannot use decreaseDiscountLevels
+    // when pause has been activated, normal users cannot use decreaseAccountLevels
     await expect( benjaminsContract.connect(testUser_1_Signer).getPolygonLendingPool()).to.be.revertedWith(
       "Benjamins is paused."
     );
@@ -2736,34 +2609,25 @@ describe("Testing Benjamins", function () {
     const usersUnlockTimestamp = await benjaminsContract.connect(deployerSigner).getUsersUnlockTimestamp(testUser_2);
     expect(usersUnlockTimestamp).to.equal(0);
 
-    // when pause has been activated, contract owner can use getUsersDiscountLevel
-    const usersDiscountLevel = await benjaminsContract.connect(deployerSigner).getUsersDiscountLevel(testUser_2);
-    expect(usersDiscountLevel).to.equal(0);
+    // when pause has been activated, contract owner can use getUsersAccountLevel
+    const usersAccountLevel = await benjaminsContract.connect(deployerSigner).getUsersAccountLevel(testUser_2);
+    expect(usersAccountLevel).to.equal(0);
 
     // when pause has been activated, contract owner can use lockedBalanceOf
     const lockedBalanceOf = await benjaminsContract.connect(deployerSigner).lockedBalanceOf(testUser_2);
-    expect(lockedBalanceOf).to.equal(0);
-
-    // when pause has been activated, contract owner can use getUsersDiscountPercentageTimes10k
-    const usersDiscountPercentageTimes10k = await benjaminsContract.connect(deployerSigner).getUsersDiscountPercentageTimes10k(testUser_2);
-    expect(usersDiscountPercentageTimes10k).to.equal(0);
+    expect(lockedBalanceOf).to.equal(0);    
 
     // when pause has been activated, contract owner can use howManyBlocksUntilUnlock
     const howManyBlocksUntilUnlock = await benjaminsContract.connect(deployerSigner).howManyBlocksUntilUnlock(testUser_2);
     expect(howManyBlocksUntilUnlock).to.equal(0);
 
     // when pause has been activated, contract owner can use getHoldingTimes
-    const expectedHoldingTimesArray = [0, 30, 90, 300];
-    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray);    
-
-    // when pause has been activated, contract owner can use getDiscounts
-    const expectedDiscountsArray = [0, 10, 25,  50]; 
-    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray);
+    await getContractsHoldingTimeAndConfirmIt(30);     
    
     const balBNJI_depl_beforeInc = await balBNJI(deployer);
     const lockedBNJI_depl_beforeInc = await benjaminsContract.connect(deployerSigner).lockedBalanceOf(deployer);
-    // when pause has been activated, contract owner can use increaseDiscountLevels
-    await benjaminsContract.connect(deployerSigner).increaseDiscountLevels(1);
+    // when pause has been activated, contract owner can use increaseAccountLevels
+    await benjaminsContract.connect(deployerSigner).increaseAccountLevels(1);
     expect(balBNJI_depl_beforeInc).to.equal(1089840);
     expect(lockedBNJI_depl_beforeInc).to.equal(0);
 
@@ -2772,11 +2636,11 @@ describe("Testing Benjamins", function () {
     expect(balBNJI_depl_afterInc).to.equal(balBNJI_depl_beforeInc-1000);
     expect(lockedBNJI_depl_afterInc).to.equal(lockedBNJI_depl_beforeInc+1000);
 
-    const deployerDiscountLevel = await benjaminsContract.connect(deployerSigner).getUsersDiscountLevel(deployer);
-    await mintBlocks(blocksPerDay*holdingTimesInDays[deployerDiscountLevel]);
+    const deployerAccountLevel = await benjaminsContract.connect(deployerSigner).getUsersAccountLevel(deployer);
+    await mintBlocks(blocksPerDay*holdingTimesInDays[deployerAccountLevel]);
 
-    // when pause has been activated, contract owner can use decreaseDiscountLevels
-    await benjaminsContract.connect(deployerSigner).decreaseDiscountLevels(1);    
+    // when pause has been activated, contract owner can use decreaseAccountLevels
+    await benjaminsContract.connect(deployerSigner).decreaseAccountLevels(1);    
     const balBNJI_depl_afterDec = await balBNJI(deployer);
     const lockedBNJI_depl_afterDec = await benjaminsContract.connect(deployerSigner).lockedBalanceOf(deployer);
     expect(balBNJI_depl_afterDec).to.equal(balBNJI_depl_beforeInc);
