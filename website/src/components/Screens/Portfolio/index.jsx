@@ -9,7 +9,7 @@ import { Heading } from '../../UW/Heading';
 import { TokenTable } from './TokenTable';
 
 const Portfolio = () => {
-  const { setActionMode, setDialog } = useExperts();
+  const { setCharacter, setDialog } = useExperts();
 
   const { isAuthenticated, enableWeb3, isWeb3Enabled } = useMoralis();
   const { isPolygon } = useNetwork();
@@ -30,10 +30,9 @@ const Portfolio = () => {
   }, [isAuthenticated, isPolygon, isWeb3Enabled, enableWeb3]);
 
   useEffect(() => {
-    setActionMode('portfolio');
+    setCharacter('unclesam');
     setDialog('Select a currency to view transaction histories.');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setCharacter, setDialog]);
 
   return (
     <Box>

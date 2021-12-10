@@ -11,10 +11,11 @@ import { useNetwork } from '../../contexts/networkContext';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
 const SwapTrade = () => {
-  const { setActionMode, setDialog } = useExperts();
+  const { setCharacter, setDialog } = useExperts();
   const { isAuthenticated } = useMoralis();
   const { switchNetworkToPolygon } = usePolygonNetwork();
   const { isPolygon } = useNetwork();
+
   useEffect(() => {
     if (isAuthenticated) {
       if (!isPolygon) {
@@ -26,10 +27,9 @@ const SwapTrade = () => {
   }, [isAuthenticated, isPolygon]);
 
   useEffect(() => {
-    setActionMode('swap');
+    setCharacter('mlking');
     setDialog('Select a token to convert.');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setCharacter, setDialog]);
 
   return (
     <Box sx={{ textAlign: 'center', mt: 1 }}>
