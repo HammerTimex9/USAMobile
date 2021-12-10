@@ -42,12 +42,16 @@ export const ExpertStage = () => {
         justifyContent="space-between"
         spacing={1}
         sx={{
-          borderRadius: 5,
-          p: 4,
+          px: 4,
+          py: 3,
           width: 400,
-          boxShadow: 'var(--boxShadow)',
-          backgroundImage: 'var(--bg)',
           lineHeight: 1.5,
+          background:
+            colorMode === 'light'
+              ? 'rgba(255, 255, 255, 0.1)'
+              : 'linear-gradient(261.33deg, rgba(255, 255, 255, 0.4) 1.9%, rgba(255, 255, 255, 0) 97.43%)',
+          boxShadow: '5px 5px 10px 3px rgba(0, 0, 0, 0.2)',
+          borderRadius: 10,
         }}
       >
         <Box>{dialog}</Box>
