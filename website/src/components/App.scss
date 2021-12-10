@@ -31,7 +31,14 @@ body {
     --color: rgba(255, 255, 255, 0.92);
     --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
   }
-  --boxShadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
+
+   --boxShadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25);  //Middle M Shadow
+   
+  // --boxShadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);  Old Shadeo
+  // --boxShadow: 0px 4px 10px rgba(0, 0, 0, 0.25); // XS Shadow
+  // --boxShadow: 6px 6px 10px rgba(0, 0, 0, 0.25);  //Last M Shadow
+
+
 
   margin: 0;
   min-height: 100vh;
