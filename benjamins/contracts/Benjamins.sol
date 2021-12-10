@@ -37,14 +37,14 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
   uint256 public neededBNJIperLevel;            // amount of BNJI needed per discount level
 
-  uint16[] public holdingTimes;                 // holding times in days
-  uint16[] public discounts;                    // discounts in percent
+  uint16[] public holdingTimes;                 // holding times in days (see constructor)
+  uint16[] public discounts;                    // discounts in percent (see constructor)
   
   // mapping of user to timestamp, relating to when levels can be decreased again
-  mapping (address => uint256) minHoldingtimeUntil;
+  mapping (address => uint256) minHoldingtimeUntil; //  todo: make explicitly public
 
   // user accounts can have a discount level from 0 to 3
-  mapping (address => uint256) usersAccountLevel;
+  mapping (address => uint256) usersAccountLevel; //  todo: make explicitly public
 
   // event for withdrawGains function
   // availableIn6dec shows how many USDC were available to withdraw, in 6 decimals format
@@ -112,7 +112,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     _;
   }
 
-  // redundant reserveInUSDCin6dec protection vs. user withdraws.
+  // redundant reserveInUSDCin6dec protection vs. withdraws.
   modifier wontBreakTheBank(uint256 amountBNJItoBurn) {        
     // calculating the USDC value of the BNJI tokens to burn, and rounding them to full cents
     uint256 beforeFeesNotRoundedIn6dec = quoteUSDC(amountBNJItoBurn, false);        
@@ -120,7 +120,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     // if the USDC reserve counter shows less than what is needed, check the existing amUSDC balance of the contract
     if(reserveInUSDCin6dec < beforeFeesRoundedDownIn6dec) {
       uint256 fundsOnTabIn6dec = polygonAMUSDC.balanceOf(address(this));
-      // if there are enough amUSDC available, set the tracker to allow the transfer 
+      // if there are enough amUSDC available, the tracker is set to allow the transfer 
       if (fundsOnTabIn6dec >= beforeFeesRoundedDownIn6dec ) {
         reserveInUSDCin6dec = beforeFeesRoundedDownIn6dec;                
       }
