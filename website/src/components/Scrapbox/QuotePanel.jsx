@@ -40,6 +40,7 @@ export const QuotePanel = () => {
         px: 10,
         py: 2,
       }}
+      style={{ paddingRight: 0, paddingLeft: 0 }}
       spacing={2}
     >
       <Typography variant="h5">Swap Estimate:</Typography>

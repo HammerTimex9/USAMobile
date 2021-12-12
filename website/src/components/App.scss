@@ -6,12 +6,14 @@ html {
 
 body {
   &.light {
-    --bg: linear-gradient(to bottom right,
-        // #4299e1,
-        // #fc8181,
-        // #ffffff,
-        // #fc8181,
-        #ffffff);
+    --bg: linear-gradient(
+      to bottom right,
+      // #4299e1,
+      // #fc8181,
+      // #ffffff,
+      // #fc8181,
+      #ffffff
+    );
     --borderColor: #e2e8f0;
     --color: #1a202c;
     --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
@@ -28,17 +30,25 @@ body {
     --color: rgba(255, 255, 255, 0.92);
     --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
     background-image: url('../assets/bg.svg');
-    background-image: linear-gradient(222.27deg, #00079A -0.93%, #0D182C 139.51%), url('../assets/bg.svg'), ;
+    background-image: linear-gradient(
+        222.27deg,
+        #00079a -0.93%,
+        #0d182c 139.51%
+      ),
+      url('../assets/bg.svg');
     background-repeat: no-repeat;
     background-size: contain;
   }
 
-  --boxShadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
+  --boxShadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25); //Middle M Shadow
+
+  // --boxShadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);  Old Shadeo
+  // --boxShadow: 0px 4px 10px rgba(0, 0, 0, 0.25); // XS Shadow
+  // --boxShadow: 6px 6px 10px rgba(0, 0, 0, 0.25);  //Last M Shadow
 
   margin: 0;
   min-height: 100vh;
-  font-family: 'Roboto',
-  sans-serif;
+  font-family: 'Roboto', sans-serif;
   background-attachment: fixed;
   background: var(--bg);
   color: var(--color);
@@ -94,3 +104,112 @@ body {
     }
   }
 }
+
+.my-custom-input {
+  border-radius: 10px !important;
+  height: 52px !important;
+  --styled-select-placeholder__padding: 9px 10px 0 10px;
+  --styled-select-placeholder__color: var(--color);
+  --styled-select-placeholder__font-size: 15px;
+  --styled-select-value__color: var(--color) !important;
+  color: var(--color) !important;
+  --styled-select__color: var(--color) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25);
+  width: 400px !important;
+  border: none !important;
+  font-size: 15px !important;
+  line-height: 18px !important;
+}
+
+.my-custom-menu {
+  border-radius: 12px !important;
+  --styled-select-menu__border-radius: 12px !important;
+  border: none !important;
+  --styled-select-option__background-color: rgba(255, 255, 255, 0.1) !important;
+  --styled-select-option__background-color--focused: rgba(255, 255, 255, 0.1) !important;
+  --styled-select-option__color: #000;
+  --styled-select-option__color--focused: #000;
+  --styled-select-option__color--selected: #000;
+  box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.08);
+  height: fit-content !important;
+  // background-color: rgba(255, 255, 255, 0.1) !important;
+  &::-webkit-scrollbar {
+    width: 5px;
+    background-color: #9D9D9F;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #fff;
+  }
+}
+.custom-option {
+  border-bottom: 1px solid #e5e9ef;
+  --styled-select-option__font-family: "SF Pro Text" !important;
+  --styled-select-option__background-color--selected: #f6f6f6;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+.eMbsGR {
+  font-family: "SF Pro Text" !important;
+}
+.korfBa {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+.my-custom-arrow {
+  background-image: url('../assets/arrow.svg');
+  width: 18px !important;
+  height: 18px !important;
+  background-repeat: no-repeat;
+  transform: none !important;
+  border: none !important;
+  margin-top: 3px !important;
+  color: var(--color);
+}
+
+.iEjkRj {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25);
+  width: 400px !important;
+}
+.my-custom-menu1 {
+  border-radius: 12px !important;
+  --styled-select-menu__border-radius: 12px !important;
+  border: none !important;
+  --styled-select-option__background-color: rgba(255, 255, 255, 0.1) !important;
+  --styled-select-option__background-color--focused: rgba(255, 255, 255, 0.1) !important;
+  --styled-select-option__color: #000;
+  --styled-select-option__color--focused: #000;
+  --styled-select-option__color--selected: #000;
+  box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.08);
+  height: fit-content !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  &::-webkit-scrollbar {
+    width: 5px;
+    background-color: #9D9D9F;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #fff;
+  }
+}
+.select-custom-option {
+  display: flex;
+  align-items: center;
+  padding: 12px 25px;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  cursor: pointer;
+  span {
+    color: var(--color);
+  }
+}
+
+
+@media (max-width: 711px) {
+  .my-custom-input {
+      --styled-select-placeholder__font-size: 12px;
+  }
+  .custom-option {
+      font-size: 12px;
+  }
+} 
+

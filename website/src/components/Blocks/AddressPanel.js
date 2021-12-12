@@ -76,6 +76,7 @@ export const AddressPanel = () => {
                 border: 1,
                 borderRadius: '.3rem',
                 alignSelf: 'center',
+                fontSize: '2rem',
                 boxShadow: 'var(--boxShadow)',
                 color: colorMode === 'light' ? '#000000de' : '#ffffffeb',
                 p: 1,
