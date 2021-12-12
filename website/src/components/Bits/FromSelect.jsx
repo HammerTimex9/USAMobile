@@ -60,18 +60,20 @@ export const FromSelect = () => {
         id="swapfrom"
         fullWidth
       >
-        <InputLabel id="form-select-label">
+        {/* <InputLabel id="form-select-label">
           Select a token to act with.
-        </InputLabel>
+        </InputLabel> */}
         <Select
           id="fromToken"
-          label="Select a token to act with."
+          // label="Select a token to act with."
           sx={{
             minWidth: 340,
             //boxShadow: "var(--boxShadow)"
           }}
           onChange={handleChange}
           value={value}
+          displayEmpty
+          inputProps={{ 'aria-label': 'Without label' }}
         >
           {!waiting &&
             positions.map((position) => {

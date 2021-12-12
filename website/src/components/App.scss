@@ -6,38 +6,41 @@ html {
 
 body {
   &.light {
-    --bg: linear-gradient(
-      to bottom right,
-      #4299e1,
-      #fc8181,
-      #ffffff,
-      #fc8181,
-      #ffffff
-    );
+    --bg: linear-gradient(to bottom right,
+        // #4299e1,
+        // #fc8181,
+        // #ffffff,
+        // #fc8181,
+        #ffffff);
     --borderColor: #e2e8f0;
     --color: #1a202c;
     --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
   }
+
   &.dark {
-    --bg: linear-gradient(
-      to bottom right,
-      #1a365d,
-      grey,
-      #1a365d,
-      #808080,
-      #1a365d
-    );
+    // --bg: linear-gradient(to bottom right,
+    //     #1a365d,
+    //     grey,
+    //     #1a365d,
+    //     #808080,
+    //     #1a365d);
     --borderColor: rgba(255, 255, 255, 0.16);
     --color: rgba(255, 255, 255, 0.92);
     --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
+    background-image: url('../assets/bg.svg');
+    background-image: linear-gradient(222.27deg, #00079A -0.93%, #0D182C 139.51%), url('../assets/bg.svg'), ;
+    background-repeat: no-repeat;
+    background-size: contain;
   }
+
   --boxShadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
 
   margin: 0;
   min-height: 100vh;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto',
+  sans-serif;
   background-attachment: fixed;
-  background-image: var(--bg);
+  background: var(--bg);
   color: var(--color);
 }
 
