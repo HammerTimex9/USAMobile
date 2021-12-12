@@ -15,8 +15,12 @@ body {
       #ffffff
     );
     --borderColor: #e2e8f0;
-    --color: #1a202c;
+    --color: #2A359B;
     --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
+    --selection-bg: rgba(255, 255, 255, 1);
+    --selection-color: #2A359B;
+    --arrow: url('../assets/arrow1.svg');
+
   }
 
   &.dark {
@@ -38,6 +42,9 @@ body {
       url('../assets/bg.svg');
     background-repeat: no-repeat;
     background-size: contain;
+    --selection-bg: #1E277D;
+    --selection-color: #fff;
+    --arrow: url('../assets/arrow.svg');
   }
 
   --boxShadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25); //Middle M Shadow
@@ -109,11 +116,11 @@ body {
   border-radius: 10px !important;
   height: 52px !important;
   --styled-select-placeholder__padding: 9px 10px 0 10px;
-  --styled-select-placeholder__color: var(--color);
+  --styled-select-placeholder__color: var(--selection-color);
   --styled-select-placeholder__font-size: 15px;
-  --styled-select-value__color: var(--color) !important;
-  color: var(--color) !important;
-  --styled-select__color: var(--color) !important;
+  --styled-select-value__color: var(--selection-color) !important;
+  color: var(--selection-color) !important;
+  --styled-select__color: var(--selection-color) !important;
   background-color: rgba(255, 255, 255, 0.1) !important;
   box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25);
   width: 400px !important;
@@ -126,14 +133,13 @@ body {
   border-radius: 12px !important;
   --styled-select-menu__border-radius: 12px !important;
   border: none !important;
-  --styled-select-option__background-color: rgba(255, 255, 255, 0.1) !important;
-  --styled-select-option__background-color--focused: rgba(255, 255, 255, 0.1) !important;
-  --styled-select-option__color: #000;
-  --styled-select-option__color--focused: #000;
-  --styled-select-option__color--selected: #000;
+  --styled-select-option__background-color: var(--selection-bg) !important;
+  --styled-select-option__background-color--focused: var(--selection-bg) !important;
+  --styled-select-option__color: var(--selection-color);
+  --styled-select-option__color--focused: var(--selection-color);
+  --styled-select-option__color--selected: var(--selection-color);
   box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.08);
-  height: fit-content !important;
-  // background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color:  var(--selection-bg) !important;
   &::-webkit-scrollbar {
     width: 5px;
     background-color: #9D9D9F;
@@ -143,21 +149,19 @@ body {
   }
 }
 .custom-option {
-  border-bottom: 1px solid #e5e9ef;
-  --styled-select-option__font-family: "SF Pro Text" !important;
-  --styled-select-option__background-color--selected: #f6f6f6;
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
-}
-.eMbsGR {
-  font-family: "SF Pro Text" !important;
+  border-bottom: none;
+  --styled-select-option__font-family: "Roboto" !important;
+  padding: 15px 10px !important;
+  background-color:  var(--selection-bg) !important;
+  white-space: nowrap;
+  text-align: left;
+  overflow-x: hidden;
 }
 .korfBa {
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
+  padding: 15px 10px !important;
 }
 .my-custom-arrow {
-  background-image: url('../assets/arrow.svg');
+  background-image: var(--arrow);
   width: 18px !important;
   height: 18px !important;
   background-repeat: no-repeat;
@@ -168,7 +172,7 @@ body {
 }
 
 .iEjkRj {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: var(--selection-bg) !important;
   box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25);
   width: 400px !important;
 }
@@ -176,14 +180,9 @@ body {
   border-radius: 12px !important;
   --styled-select-menu__border-radius: 12px !important;
   border: none !important;
-  --styled-select-option__background-color: rgba(255, 255, 255, 0.1) !important;
-  --styled-select-option__background-color--focused: rgba(255, 255, 255, 0.1) !important;
-  --styled-select-option__color: #000;
-  --styled-select-option__color--focused: #000;
-  --styled-select-option__color--selected: #000;
   box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.08);
   height: fit-content !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: var(--selection-bg) !important;
   &::-webkit-scrollbar {
     width: 5px;
     background-color: #9D9D9F;
@@ -199,7 +198,7 @@ body {
   background-color: rgba(255, 255, 255, 0.1) !important;
   cursor: pointer;
   span {
-    color: var(--color);
+    color: var(--selection-color);
   }
 }
 

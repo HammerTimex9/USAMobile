@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, FormControl, InputLabel, MenuItem } from '@mui/material';
+import { Box } from '@mui/material';
 
 import Select from 'react-styled-select';
 

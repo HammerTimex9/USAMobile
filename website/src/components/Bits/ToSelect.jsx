@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Autocomplete, TextField, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import Select from 'react-styled-select';
 
 import { useActions } from '../../contexts/actionsContext';
@@ -14,17 +14,7 @@ export const ToSelect = () => {
   const { setQuote } = useQuote();
   const { network } = useNetwork();
   const [value, setValue] = useState('');
-  const tokens = useMemo(
-    () =>
-      tokenList.filter(
-        (item) =>
-          // eslint-disable-next-line eqeqeq
-          item.networkId == network.id &&
-          item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()
-      ),
-    [network, fromTokenSymbol]
-  );
-  const tokens1 = useMemo(() => {
+  const tokens = useMemo(() => {
     let options = [];
     tokenList.forEach((item) => {
       let obj = {};
@@ -48,7 +38,6 @@ export const ToSelect = () => {
 
   const handleChange = async (e) => {
     let result = JSON.parse(e);
-    console.log(result);
     if (result) {
       setToToken(result);
       setValue(e);
@@ -77,33 +66,8 @@ export const ToSelect = () => {
   };
   return (
     <Box sx={{ width: '100%', marginTop: '20px' }}>
-      {/* <Autocomplete
-        options={tokens}
-        getOptionLabel={(option) =>
-          `${option.symbol.toUpperCase()} (${option.name})`
-        }
-        filterOptions={filterOptions}
-        renderOption={(props, option) => (
-          <Box component="li" {...props}>
-            <img
-              width="30"
-              src={option.image}
-              alt=""
-              style={{ borderRadius: '50%' }}
-            />
-            <span style={{ flex: 1, margin: '0 8px' }}>
-              {option.symbol.toUpperCase()}
-            </span>
-            <span style={{ opacity: 0.5 }}>{option.name}</span>
-          </Box>
-        )}
-        renderInput={(params) => (
-          <TextField {...params} label="Select a token to receive." />
-        )}
-        onChange={handleChange}
-      /> */}
       <Select
-        options={tokens1}
+        options={tokens}
         onChange={handleChange}
         placeholder="Select a token to receive."
         classes={{
