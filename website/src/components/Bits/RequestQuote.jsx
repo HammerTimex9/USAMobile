@@ -52,7 +52,7 @@ export const RequestQuote = () => {
   }, [error, setDialog]);
 
   return (
-    <Box>
+    <Box style={{ marginTop: 20 }}>
       <FormControl id="sendstart" fullWidth>
         <Tooltip title="Preview token transmission.">
           <span>

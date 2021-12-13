@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react';
-import { Autocomplete, TextField, Box } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import { Box } from '@mui/material';
+import Select from 'react-styled-select';
 
 import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
@@ -12,16 +13,22 @@ export const ToSelect = () => {
   const { setDialog } = useExperts();
   const { setQuote } = useQuote();
   const { network } = useNetwork();
-  const tokens = useMemo(
-    () =>
-      tokenList.filter(
-        (item) =>
-          // eslint-disable-next-line eqeqeq
-          item.networkId == network.id &&
-          item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()
-      ),
-    [network, fromTokenSymbol]
-  );
+  const [value, setValue] = useState('');
+  const tokens = useMemo(() => {
+    let options = [];
+    tokenList.forEach((item) => {
+      let obj = {};
+      if (
+        item.networkId == network.id &&
+        item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()
+      ) {
+        obj.label = `${item.symbol.toUpperCase()} (${item.name})`;
+        obj.value = JSON.stringify(item);
+        options.push(obj);
+      }
+    });
+    return options;
+  }, [network, fromTokenSymbol]);
 
   useEffect(() => {
     return () => {
@@ -29,15 +36,17 @@ export const ToSelect = () => {
     };
   }, [setToToken]);
 
-  const handleChange = async (e, value) => {
-    if (value) {
-      setToToken(value);
+  const handleChange = async (e) => {
+    let result = JSON.parse(e);
+    if (result) {
+      setToToken(result);
+      setValue(e);
       setDialog(
         "Press the 'Get Swap Quote' " +
           'to get a quote to swap ' +
           fromTokenSymbol +
           ' to ' +
-          value.symbol +
+          result.symbol +
           '.'
       );
     } else {
@@ -55,33 +64,37 @@ export const ToSelect = () => {
         o.name.toLowerCase().includes(str)
     );
   };
-
   return (
-    <Box sx={{ width: '100%' }}>
-      <Autocomplete
+    <Box sx={{ width: '100%', marginTop: '20px' }}>
+      <Select
         options={tokens}
-        getOptionLabel={(option) =>
-          `${option.symbol.toUpperCase()} (${option.name})`
-        }
-        filterOptions={filterOptions}
-        renderOption={(props, option) => (
-          <Box component="li" {...props}>
-            <img
-              width="30"
-              src={option.image}
-              alt=""
-              style={{ borderRadius: '50%' }}
-            />
-            <span style={{ flex: 1, margin: '0 8px' }}>
-              {option.symbol.toUpperCase()}
-            </span>
-            <span style={{ opacity: 0.5 }}>{option.name}</span>
-          </Box>
-        )}
-        renderInput={(params) => (
-          <TextField {...params} label="Select a token to receive." />
-        )}
         onChange={handleChange}
+        placeholder="Select a token to receive."
+        classes={{
+          selectValue: 'my-custom-value',
+          selectArrow: 'my-custom-arrow',
+          selectControl: 'my-custom-input',
+          selectMenu: 'my-custom-menu1',
+          selectOption: 'custom-option',
+          selectMenuOuter: 'my-custom-menu1',
+        }}
+        value={value}
+        optionRenderer={(e) => {
+          let option = JSON.parse(e.value);
+          return (
+            <Box className="select-custom-option" onClick={e.onMouseDown}>
+              <img
+                width="30"
+                src={option.image}
+                alt=""
+                style={{ borderRadius: '50%' }}
+              />
+              <span style={{ marginLeft: 15 }}>
+                {option.symbol.toUpperCase()}
+              </span>
+            </Box>
+          );
+        }}
       />
     </Box>
   );

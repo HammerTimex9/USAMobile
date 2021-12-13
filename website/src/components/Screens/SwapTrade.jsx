@@ -33,7 +33,7 @@ const SwapTrade = () => {
 
   return (
     <Box sx={{ textAlign: 'center', mt: 1 }}>
-      <Heading variant="h4">Swap/Trade</Heading>
+      <Heading variant="h4">Trade Crypto</Heading>
       <br />
       <SwapPanel />
     </Box>

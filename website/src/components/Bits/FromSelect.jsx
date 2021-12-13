@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box } from '@mui/material';
+
+import Select from 'react-styled-select';
 
 import { usePositions } from '../../contexts/portfolioContext';
 import { useActions } from '../../contexts/actionsContext';
@@ -22,8 +24,8 @@ export const FromSelect = () => {
   }, [setFromToken]);
 
   const handleChange = async (e) => {
-    const position = e.target.value;
-    setValue(position);
+    let position = JSON.parse(e);
+    setValue(e);
 
     if (!isPolygon) {
       setFromToken();
@@ -49,44 +51,38 @@ export const FromSelect = () => {
     }
   };
 
+  let options = [];
+  if (!waiting) {
+    positions.forEach((position) => {
+      let obj = {};
+      obj.label = `From ${
+        position.tokens && position.tokens.toPrecision(3)
+      }${' '}
+        ${position.name} @ $
+        ${position.price && position.price.toFixed(2)}/
+        ${position.symbol && position.symbol.toUpperCase()} = $
+        ${position?.value.toFixed(2)}`;
+      obj.value = JSON.stringify(position);
+      options.push(obj);
+    });
+  }
   return (
-    <Box sx={{ width: '100%' }}>
-      <FormControl
-        sx={
-          {
-            // boxShadow: "var(--boxShadow)"
-          }
-        }
-        id="swapfrom"
-        fullWidth
-      >
-        <InputLabel id="form-select-label">
-          Select a token to act with.
-        </InputLabel>
-        <Select
-          id="fromToken"
-          label="Select a token to act with."
-          sx={{
-            minWidth: 340,
-            //boxShadow: "var(--boxShadow)"
-          }}
-          onChange={handleChange}
-          value={value}
-        >
-          {!waiting &&
-            positions.map((position) => {
-              return (
-                <MenuItem key={position.symbol} value={position}>
-                  From {position.tokens && position.tokens.toPrecision(3)}{' '}
-                  {position.name} @ $
-                  {position.price && position.price.toFixed(2)}/
-                  {position.symbol && position.symbol.toUpperCase()} = $
-                  {position?.value.toFixed(2)}
-                </MenuItem>
-              );
-            })}
-        </Select>
-      </FormControl>
+    <Box>
+      <Select
+        options={options}
+        onChange={handleChange}
+        searchable={false}
+        placeholder="Select a token to act with."
+        classes={{
+          selectValue: 'my-custom-value',
+          selectArrow: 'my-custom-arrow',
+          selectControl: 'my-custom-input',
+          selectMenu: 'my-custom-menu',
+          selectOption: 'custom-option',
+          selectMenuOuter: 'my-custom-menu',
+        }}
+        value={value}
+      />
     </Box>
   );
 };

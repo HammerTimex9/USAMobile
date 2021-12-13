@@ -20,31 +20,21 @@ export const SwapPanel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
   return (
-    <Box
-      sx={{
-        display: 'inline-flex',
-        m: 'auto',
-        mb: 3,
-        backgroundImage: 'var(--bg)',
-        border: 4,
-        borderRadius: '1.5rem',
-        borderColor: 'var(--borderColor)',
-      }}
-    >
-      <Stack
+    <Box>
+      {/* <Stack
         sx={{ alignItems: 'center', justifyContent: 'center', px: 5, py: 2.5 }}
         spacing={3}
-      >
-        <FromSelect />
-        {!!fromToken && (
-          <>
-            <AmountSelect />
-            <ToSelect />
-            <RequestQuote />
-          </>
-        )}
-        {quoteValid && <QuotePanel />}
-      </Stack>
+      > */}
+      <FromSelect />
+      {!!fromToken && (
+        <>
+          <AmountSelect />
+          <ToSelect />
+          <RequestQuote />
+        </>
+      )}
+      {quoteValid && <QuotePanel />}
+      {/* </Stack> */}
     </Box>
   );
 };
