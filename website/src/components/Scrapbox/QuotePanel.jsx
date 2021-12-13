@@ -72,7 +72,7 @@ export const QuotePanel = () => {
         <DoItButton />
         <Button
           onClick={handleCancel}
-          variant="contained"
+          variant="darkblue"
           sx={{ boxShadow: 'var(--boxShadow)' }}
         >
           Cancel

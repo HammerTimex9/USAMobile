@@ -39,7 +39,7 @@ export const StartSend = () => {
       <Tooltip title="Preview token transmission.">
         <span>
           <LoadingButton
-            variant="contained"
+            variant="darkblue"
             disabled={!txAmount || !toTokenAddress}
             loading={isFetching}
             onClick={fetch}

@@ -19,7 +19,7 @@ export const ErrorPopup = (props) => {
 
   return (
     <div>
-      <Button variant="contained" onClick={handleClickOpen}>
+      <Button variant="darkblue" onClick={handleClickOpen}>
         Discard
       </Button>
       <Dialog

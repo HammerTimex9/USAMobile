@@ -32,7 +32,7 @@ export const ProfileAvatar = () => {
         <AuthDrawer closeDrawer={onCloseDrawer} />
         <Tooltip title="Cancel identity action.">
           <Button
-            variant="outline"
+            variant="outlined"
             sx={{ mr: 3 }}
             onClick={() => toggleDrawer(false)}
           >
