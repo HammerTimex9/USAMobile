@@ -19,7 +19,7 @@ export const ToSelect = () => {
     tokenList.forEach((item) => {
       let obj = {};
       if (
-        item.networkId == network.id &&
+        item.networkId === network.id &&
         item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()
       ) {
         obj.label = `${item.symbol.toUpperCase()} (${item.name})`;
@@ -56,14 +56,6 @@ export const ToSelect = () => {
     setQuote();
   };
 
-  const filterOptions = (options, { inputValue }) => {
-    const str = inputValue.toLowerCase();
-    return options.filter(
-      (o) =>
-        o.symbol.toLowerCase().includes(str) ||
-        o.name.toLowerCase().includes(str)
-    );
-  };
   return (
     <Box sx={{ width: '100%', marginTop: '20px' }}>
       <Select
