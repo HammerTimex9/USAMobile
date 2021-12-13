@@ -72,7 +72,7 @@ export const DoItButton = () => {
       <LoadingButton
         className="ExpertButton"
         variant="darkblue"
-        sx={{ boxShadow: 'var(--boxShadow)', mr: 2 }}
+        sx={{ mr: 2 }}
         onClick={fetch}
         loading={isFetching}
       >

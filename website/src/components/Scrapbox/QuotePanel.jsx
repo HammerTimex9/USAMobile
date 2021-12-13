@@ -70,11 +70,7 @@ export const QuotePanel = () => {
       </Typography>
       <Stack direction="row">
         <DoItButton />
-        <Button
-          onClick={handleCancel}
-          variant="darkblue"
-          sx={{ boxShadow: 'var(--boxShadow)' }}
-        >
+        <Button onClick={handleCancel} variant="darkblue">
           Cancel
         </Button>
       </Stack>
