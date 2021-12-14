@@ -193,7 +193,7 @@ const TokenCard = ({ symbol, onClose, description }, ref) => {
                 <Button
                   onClick={() => handleClick(b)}
                   key={index}
-                  variant="contained"
+                  variant="darkblue"
                   size={links.blockchain_site.length > 5 ? 'small' : 'medium'}
                   className="link-button"
                 >

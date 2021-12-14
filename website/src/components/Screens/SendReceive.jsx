@@ -58,18 +58,10 @@ const SendReceive = () => {
       <br />
       <Stack sx={{ alignItems: 'center' }}>
         <Stack direction="row">
-          <Button
-            onClick={handleSendMode}
-            sx={{ mr: 1, boxShadow: 'var(--boxShadow)' }}
-          >
+          <Button onClick={handleSendMode} sx={{ mr: 1 }}>
             Send
           </Button>
-          <Button
-            onClick={handleReceiveMode}
-            sx={{ boxShadow: 'var(--boxShadow)' }}
-          >
-            Receive
-          </Button>
+          <Button onClick={handleReceiveMode}>Receive</Button>
         </Stack>
       </Stack>
       <br />

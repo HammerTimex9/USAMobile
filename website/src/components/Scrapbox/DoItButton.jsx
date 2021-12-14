@@ -71,8 +71,8 @@ export const DoItButton = () => {
     <Tooltip title="Submit swap order.">
       <LoadingButton
         className="ExpertButton"
-        variant="contained"
-        sx={{ boxShadow: 'var(--boxShadow)', mr: 2 }}
+        variant="darkblue"
+        sx={{ mr: 2 }}
         onClick={fetch}
         loading={isFetching}
       >

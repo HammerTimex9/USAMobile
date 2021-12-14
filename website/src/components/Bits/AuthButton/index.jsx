@@ -42,7 +42,7 @@ export const AuthButton = () => {
       {isAuthenticated ? (
         <Tooltip title="Log out of USA Wallet.">
           <Button
-            variant="uw"
+            variant="white"
             startIcon={<LockOpenIcon className="nav-bar-icon" />}
             onClick={() => logout()}
           >
@@ -53,7 +53,7 @@ export const AuthButton = () => {
         <>
           <Tooltip title="Log into USA Wallet.">
             <Button
-              variant="uw"
+              variant="white"
               startIcon={<LockIcon className="nav-bar-icon" />}
               onClick={() => toggleDrawer(true)}
             >
@@ -67,8 +67,8 @@ export const AuthButton = () => {
             <AuthDrawer closeDrawer={onCloseDrawer} />
             <Tooltip title="Cancel identity action.">
               <Button
-                variant="outline"
-                sx={{ mr: 3 }}
+                variant="outlined"
+                sx={{ mx: 5 }}
                 onClick={() => toggleDrawer(false)}
               >
                 Cancel

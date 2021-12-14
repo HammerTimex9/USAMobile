@@ -31,7 +31,7 @@ export const FiatBridgeButton = () => {
   return (
     <>
       <Button
-        sx={{ mr: 2, mt: -2, boxShadow: 'var(--boxShadow)' }}
+        sx={{ mr: 2, mt: -2 }}
         className="BuyButton"
         onClick={handlePress}
       >
