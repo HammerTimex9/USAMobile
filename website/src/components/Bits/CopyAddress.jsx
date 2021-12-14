@@ -50,7 +50,7 @@ export const CopyAddress = (props) => {
         ) : (
           <Button
             disabled={!isAuthenticated}
-            variant="contained"
+            variant="darkblue"
             endIcon={<DownloadIcon />}
           >
             Receive

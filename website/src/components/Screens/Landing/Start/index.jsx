@@ -21,7 +21,7 @@ const Start = ({ onNext }) => {
         occaecat cupidatat non proident, sunt in culpa qui officia deserunt
         mollit anim id est laborum.
       </Typography>
-      <Button variant="contained" onClick={onClick}>
+      <Button variant="darkblue" onClick={onClick}>
         Get Started
       </Button>
     </Box>

@@ -164,7 +164,6 @@ export const AuthDrawer = (props) => {
                   variant="outlined"
                   onClick={handlePasswordReset}
                   disabled
-                  sx={{ boxShadow: 'var(--boxShadow)' }}
                 >
                   Password Reset
                 </Button>
@@ -175,7 +174,6 @@ export const AuthDrawer = (props) => {
                 variant="outlined"
                 loading={isAuthenticating}
                 onClick={handleAuthenticate}
-                sx={{ boxShadow: 'var(--boxShadow)' }}
               >
                 Use MetaMask
               </LoadingButton>
@@ -183,11 +181,7 @@ export const AuthDrawer = (props) => {
           </>
         ) : (
           <Tooltip title="Update your USA Wallet account to the currently entered user name, e-mail, and password.">
-            <Button
-              variant="outlined"
-              onClick={handleSave}
-              sx={{ boxShadow: 'var(--boxShadow)' }}
-            >
+            <Button variant="outlined" onClick={handleSave}>
               Update signature.
             </Button>
           </Tooltip>

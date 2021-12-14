@@ -7,7 +7,7 @@ import './styles.scss';
 
 export const AmountSelect = ({ type }) => {
   const inputRef = useRef();
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState('');
   const [amount, setAmount] = useState(0);
   const [usdAmount, setUSDAmount] = useState(0);
   const [isUSDMode, setIsUSDMode] = useState(false);
