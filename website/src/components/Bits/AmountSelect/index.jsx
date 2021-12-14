@@ -7,7 +7,7 @@ import './styles.scss';
 
 export const AmountSelect = ({ type }) => {
   const inputRef = useRef();
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(null);
   const [amount, setAmount] = useState(0);
   const [usdAmount, setUSDAmount] = useState(0);
   const [isUSDMode, setIsUSDMode] = useState(false);
@@ -111,11 +111,12 @@ export const AmountSelect = ({ type }) => {
               }
               max={isUSDMode ? price * tokens : tokens}
               min="0"
+              placeholder="Enter Amount"
             />
           </div>
-          <label htmlFor="amount-input">{isUSDMode ? 'USD' : symbol}</label>
+          {/* <label htmlFor="amount-input">{isUSDMode ? 'USD' : symbol}</label> */}
         </div>
-        <label
+        {/* <label
           htmlFor="amount-input"
           className="amount-select-converted-amount"
         >
@@ -129,10 +130,10 @@ export const AmountSelect = ({ type }) => {
                   })} USD`
               : 'No Conversion Rate Available'}
           </span>
-        </label>
-        <div className="amount-select-swap-btn" onClick={toggleMode}>
+        </label> */}
+        {/* <div className="amount-select-swap-btn" onClick={toggleMode}>
           <SortSvg />
-        </div>
+        </div> */}
       </div>
       {amount > tokens && (
         <div className="amount-select-error">Insufficient funds.</div>

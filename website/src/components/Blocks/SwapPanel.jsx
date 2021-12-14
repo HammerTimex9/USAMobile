@@ -28,8 +28,10 @@ export const SwapPanel = () => {
       <FromSelect />
       {!!fromToken && (
         <>
-          <AmountSelect />
-          <ToSelect />
+          <Box className="select-amount">
+            <AmountSelect />
+            <ToSelect />
+          </Box>
           <RequestQuote />
         </>
       )}
