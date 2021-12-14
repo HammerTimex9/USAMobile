@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
 
-import { ReactComponent as SortSvg } from '../../../media/icons/sort.svg';
 import { useActions } from '../../../contexts/actionsContext';
 import { useExperts } from '../../../contexts/expertsContext';
 import './styles.scss';
@@ -9,7 +8,7 @@ export const AmountSelect = ({ type }) => {
   const inputRef = useRef();
   const [value, setValue] = useState('');
   const [amount, setAmount] = useState(0);
-  const [usdAmount, setUSDAmount] = useState(0);
+  // const [usdAmount, setUSDAmount] = useState(0);
   const [isUSDMode, setIsUSDMode] = useState(false);
   const { fromToken, setTxAmount } = useActions();
   const { setDialog } = useExperts();
@@ -24,11 +23,11 @@ export const AmountSelect = ({ type }) => {
   useEffect(() => {
     let v = Number(value) || 0;
     if (isUSDMode) {
-      setUSDAmount(v);
+      // setUSDAmount(v);
       setAmount(v / price);
     } else {
       setAmount(v);
-      setUSDAmount(v * price);
+      // setUSDAmount(v * price);
     }
   }, [isUSDMode, price, value]);
 
@@ -78,18 +77,6 @@ export const AmountSelect = ({ type }) => {
     }
   };
 
-  const toggleMode = () => {
-    if (price) {
-      if (isUSDMode) {
-        setValue((value / price).toPrecision(3));
-      } else {
-        setValue((value * price).toFixed(2));
-      }
-      setIsUSDMode(!isUSDMode);
-    }
-    inputRef.current.focus();
-  };
-
   return (
     <div className="amount-select">
       <div className="amount-select-field">
@@ -114,26 +101,7 @@ export const AmountSelect = ({ type }) => {
               placeholder="Enter Amount"
             />
           </div>
-          {/* <label htmlFor="amount-input">{isUSDMode ? 'USD' : symbol}</label> */}
         </div>
-        {/* <label
-          htmlFor="amount-input"
-          className="amount-select-converted-amount"
-        >
-          <span>
-            {price
-              ? isUSDMode
-                ? `≈ ${amount.toPrecision(3)} ${symbol}`
-                : `≈ $ ${usdAmount.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })} USD`
-              : 'No Conversion Rate Available'}
-          </span>
-        </label> */}
-        {/* <div className="amount-select-swap-btn" onClick={toggleMode}>
-          <SortSvg />
-        </div> */}
       </div>
       {amount > tokens && (
         <div className="amount-select-error">Insufficient funds.</div>
