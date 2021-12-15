@@ -37,10 +37,11 @@ export const AuthButton = () => {
     };
   });
 
-  const loginClicked = () => {
-    let path = `/login`;
-    history.push(path);
-  };
+  // Commented for build, first need to test this
+  // const loginClicked = () => {
+  //   let path = `/login`;
+  //   history.push(path);
+  // };
 
   return (
     <>
