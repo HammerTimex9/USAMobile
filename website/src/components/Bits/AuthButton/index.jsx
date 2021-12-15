@@ -60,7 +60,7 @@ export const AuthButton = () => {
             <Button
               variant="white"
               startIcon={<LockIcon className="nav-bar-icon" />}
-              onClick={() => loginClicked()} ////toggleDrawer(true)
+              onClick={() => toggleDrawer(true)} //loginClicked()
             >
               Log In
             </Button>
