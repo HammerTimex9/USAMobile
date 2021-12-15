@@ -41,7 +41,7 @@ export const TokenTable = () => {
         >
           <TableCell component="th" scope="row">
             <Avatar
-              sx={{ background: '#790d01' }}
+              sx={{ background: 'var(--token-icon-bg)' }}
               name={position.symbol}
               src={position.image}
               size="sm"
