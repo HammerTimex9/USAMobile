@@ -26,15 +26,15 @@ export const SwapPanel = () => {
         spacing={3}
       > */}
       <FromSelect />
-      {!!fromToken && (
-        <>
-          <Box className="select-amount">
-            <AmountSelect />
-            <ToSelect />
-          </Box>
-          <RequestQuote />
-        </>
-      )}
+      {/* {!!fromToken && (
+        <> */}
+      <Box className="select-amount">
+        <AmountSelect />
+        <ToSelect />
+      </Box>
+      <RequestQuote />
+      {/* </>
+      )} */}
       {quoteValid && <QuotePanel />}
       {/* </Stack> */}
     </Box>
