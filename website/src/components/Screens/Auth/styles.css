@@ -22,3 +22,7 @@
   color: white;
   font-size: 18px;
 }
+
+.MuiLoadingButton-loadingIndicator{
+  color: #213DB0 !important;
+}
