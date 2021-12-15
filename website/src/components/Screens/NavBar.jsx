@@ -2,11 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 import { Button, Stack } from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import LoopIcon from '@mui/icons-material/Loop';
-import LinkIcon from '@mui/icons-material/Link';
-import MailIcon from '@mui/icons-material/Mail';
 
 import { usePositions } from '../../contexts/portfolioContext';
 
