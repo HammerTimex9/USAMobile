@@ -9,6 +9,9 @@ import { useExperts } from '../contexts/expertsContext';
 import { usePolygonNetwork } from '../hooks/usePolygonNetwork';
 
 import Landing from './Screens/Landing';
+import Login from './Screens/Auth/Login';
+import Register from './Screens/Auth/Register';
+
 import { TopNavBar } from './Screens/TopNavBar';
 import { ExpertStage } from './Screens/ExpertStage';
 import { NavBar } from './Screens/NavBar';
@@ -117,6 +120,12 @@ const App = () => {
     <Switch>
       <Route path="/landing">
         <Landing />
+      </Route>
+      <Route path="/login">
+        <Login />
+      </Route>
+      <Route path="/register">
+        <Register />
       </Route>
       <Route path="/">
         <Main />
