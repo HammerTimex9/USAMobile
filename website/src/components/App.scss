@@ -23,6 +23,7 @@ body {
     --selection-color: #2a359b;
     --arrow: url('../assets/arrow1.svg');
     --footerIconColor: black;
+    --token-icon-bg: rgba(255, 255, 255, 1);
   }
 
   &.dark {
@@ -47,6 +48,7 @@ body {
     --selection-color: #fff;
     --arrow: url('../assets/arrow.svg');
     --footerIconColor: white;
+    --token-icon-bg: #1e277d;
   }
 
   --boxShadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25); //Middle M Shadow

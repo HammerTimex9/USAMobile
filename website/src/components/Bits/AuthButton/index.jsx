@@ -37,6 +37,12 @@ export const AuthButton = () => {
     };
   });
 
+  // Commented for build, first need to test this
+  // const loginClicked = () => {
+  //   let path = `/login`;
+  //   history.push(path);
+  // };
+
   return (
     <>
       {isAuthenticated ? (
@@ -55,7 +61,7 @@ export const AuthButton = () => {
             <Button
               variant="white"
               startIcon={<LockIcon className="nav-bar-icon" />}
-              onClick={() => toggleDrawer(true)}
+              onClick={() => toggleDrawer(true)} //loginClicked()
             >
               Log In
             </Button>
