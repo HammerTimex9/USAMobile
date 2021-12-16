@@ -9,7 +9,7 @@ export const AmountSelect = ({ type }) => {
   const [value, setValue] = useState('');
   const [amount, setAmount] = useState(0);
   // const [usdAmount, setUSDAmount] = useState(0);
-  const [isUSDMode, setIsUSDMode] = useState(false);
+  // const [isUSDMode, setIsUSDMode] = useState(false);
   const { fromToken, setTxAmount } = useActions();
   const { setDialog } = useExperts();
   const { price, tokens = 0, decimals = 18, symbol } = fromToken || {};
@@ -22,14 +22,8 @@ export const AmountSelect = ({ type }) => {
 
   useEffect(() => {
     let v = Number(value) || 0;
-    if (isUSDMode) {
-      // setUSDAmount(v);
-      setAmount(v / price);
-    } else {
-      setAmount(v);
-      // setUSDAmount(v * price);
-    }
-  }, [isUSDMode, price, value]);
+    setAmount(v);
+  }, [price, value]);
 
   useEffect(() => {
     if (amount <= tokens) {
@@ -91,12 +85,8 @@ export const AmountSelect = ({ type }) => {
               onChange={onChange}
               onBlur={onBlur}
               type="number"
-              step={
-                isUSDMode
-                  ? ((price * tokens) / 10).toFixed(2)
-                  : (tokens / 10).toPrecision(3)
-              }
-              max={isUSDMode ? price * tokens : tokens}
+              step={(tokens / 10).toPrecision(3)}
+              max={tokens}
               min="0"
               placeholder="Enter Amount"
             />
