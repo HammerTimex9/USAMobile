@@ -26,26 +26,6 @@ export const usePolygonNetwork = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isWeb3Enabled, enableWeb3]);
 
-  const getSelectedNetwork = async () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      Moralis.getChainId()
-        .then(
-          (chainId) => {
-            setNetworkId(chainId);
-          },
-          (error) => {
-            console.log('ChainIdError:', error);
-            setDialog(error.message);
-          }
-        )
-        .catch((error) => {
-          console.log('ChainIdCatch:', error);
-          setDialog(error.message);
-        });
-    } else {
-      // setDialog('Install MetaMask First.');
-    }
-  };
   const switchNetworkToPolygon = () => {
     if (MetaMaskOnboarding.isMetaMaskInstalled() && isAuthenticated) {
       Moralis.switchNetwork(CHAIN_ID)
@@ -111,5 +91,5 @@ export const usePolygonNetwork = () => {
     }
   };
 
-  return { getSelectedNetwork, switchNetworkToPolygon, addPolygonNetwork };
+  return { switchNetworkToPolygon, addPolygonNetwork };
 };
