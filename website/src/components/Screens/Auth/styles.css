@@ -1,21 +1,21 @@
 .auth-dark-bg {
   background-image: linear-gradient(222.27deg, #00079a -0.93%, #0d182c 139.51%);
 }
-.authHomeButton{
+.authHomeButton {
   position: absolute !important;
   top: 20px;
   right: 30px;
   color: white !important;
 }
-.authInputLabel{
+.authInputLabel {
   color: white !important;
 }
 
-.authInput{
-  color:  white !important;
+.authInput {
+  color: white !important;
 }
-.authInput::before{
-    border-color: white !important;
+.authInput::before {
+  border-color: white !important;
 }
 
 .auth-link {
@@ -23,6 +23,6 @@
   font-size: 18px;
 }
 
-.MuiLoadingButton-loadingIndicator{
-  color: #213DB0 !important;
+.MuiLoadingButton-loadingIndicator {
+  color: #213db0 !important;
 }
