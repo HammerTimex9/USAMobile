@@ -8,14 +8,12 @@ body {
   position: relative;
 
   &.light {
-    --bg: linear-gradient(
-      to bottom right,
-      // #4299e1,
-      // #fc8181,
-      // #ffffff,
-      // #fc8181,
-      #ffffff
-    );
+    --bg: linear-gradient(to bottom right,
+        // #4299e1,
+        // #fc8181,
+        // #ffffff,
+        // #fc8181,
+        #ffffff);
     --borderColor: #e2e8f0;
     --color: #2a359b;
     --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
@@ -37,11 +35,9 @@ body {
     --color: rgba(255, 255, 255, 0.92);
     --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
     // background-image: url('../assets/bg.svg');
-    background-image: linear-gradient(
-      222.27deg,
-      #00079a -0.93%,
-      #0d182c 139.51%
-    );
+    background-image: linear-gradient(222.27deg,
+        #00079a -0.93%,
+        #0d182c 139.51%);
     background-repeat: no-repeat;
     background-size: contain;
     --selection-bg: #1e277d;
@@ -59,7 +55,7 @@ body {
 
   margin: 0;
   min-height: 100vh;
-  font-family: 'Roboto', sans-serif;
+  font-family: Roboto !important;
   background-attachment: fixed;
   background: var(--bg);
   color: var(--color);
@@ -128,6 +124,7 @@ body {
       opacity: 0.5;
     }
   }
+
   svg {
     color: var(--footerIconColor);
   }
@@ -142,13 +139,14 @@ body {
 }
 
 .react-select {
+
   &-container,
   &__control--is-focused,
   &__control--menu-is-open {
     border-radius: 10px !important;
     height: 52px !important;
     color: var(--selection-color) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background: transparent;
     box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25);
     width: 100% !important;
     border: none !important;
@@ -161,7 +159,7 @@ body {
     border-radius: 10px !important;
     height: 52px !important;
     color: var(--selection-color) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(45, 50, 148, 0.1) !important;
     border: none !important;
   }
 
@@ -169,6 +167,7 @@ body {
     font-size: 15px !important;
     line-height: 18px !important;
     color: var(--selection-color) !important;
+    font-family: Roboto !important;
   }
 
   &__input-container {
@@ -181,6 +180,7 @@ body {
     color: var(--selection-color) !important;
     font-size: 15px !important;
     line-height: 18px !important;
+    font-family: Roboto !important;
   }
 
   &__indicator-separator {
@@ -225,6 +225,7 @@ body {
     text-align: left;
     overflow-x: hidden;
     cursor: pointer;
+    font-family: Roboto !important;
 
     &--is-selected {
       background-color: transparent !important;
@@ -235,24 +236,39 @@ body {
 
 .select-amount {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   width: 400px;
   justify-content: space-between;
   margin-top: 20px;
 }
 
 .quote-button {
-  background: linear-gradient(
-    183.26deg,
-    #484ba0 7.91%,
-    #030943 97.93%
-  ) !important;
+  background: linear-gradient(183.26deg,
+      #484ba0 7.91%,
+      #030943 97.93%) !important;
   box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25) !important;
   border-radius: 25px !important;
   color: #fff !important;
+  font-family: Roboto !important;
+  font-style: normal !important;
+  font-weight: 500 !important;
+  font-size: 18px !important;
+  line-height: 21px !important;
+  min-width: 168px !important;
+  margin-top: 52px !important;
+
   &.disable {
     opacity: 0.5;
   }
+}
+
+.trade-result {
+  font-family: Roboto !important;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px !important;
+  line-height: 14px !important;
+  margin-top: 24px !important;
 }
 
 @media (max-width: 711px) {

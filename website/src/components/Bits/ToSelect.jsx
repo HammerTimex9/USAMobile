@@ -24,7 +24,7 @@ export const ToSelect = () => {
           item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()) ||
         (!fromTokenSymbol && item.networkId === String(network.id))
       ) {
-        obj.label = `${item.symbol.toUpperCase()} (${item.name})`;
+        obj.label = `${item.symbol.toUpperCase()}`;
         obj.value = JSON.stringify(item);
         options.push(obj);
       }
