@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import { useActions } from '../../contexts/actionsContext';
 import { useQuote } from '../../contexts/quoteContext';
@@ -11,32 +11,40 @@ import { AmountSelect } from '../Bits/AmountSelect';
 import { ToSelect } from '../Bits/ToSelect';
 import { RequestQuote } from '../Bits/RequestQuote';
 import { QuotePanel } from '../Scrapbox/QuotePanel';
+import YouWillGet from '../Bits/Youwillget';
 
 export const SwapPanel = () => {
-  const { fromToken, txAmount } = useActions();
+  const { fromToken, txAmount, toToken } = useActions();
   const { quoteValid, setQuote } = useQuote();
   useEffect(() => {
     setQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
+  const getAmount = () => {
+    let decimals = 18;
+    if (fromToken && fromToken.decimals) {
+      return (txAmount / 10 ** fromToken.decimals).toFixed(3);
+    } else {
+      return (txAmount / 10 ** decimals).toFixed(3);
+    }
+  };
   return (
     <Box>
-      {/* <Stack
-        sx={{ alignItems: 'center', justifyContent: 'center', px: 5, py: 2.5 }}
-        spacing={3}
-      > */}
-      <FromSelect />
-      {/* {!!fromToken && (
-        <> */}
       <Box className="select-amount">
         <AmountSelect />
+        <FromSelect />
+      </Box>
+      <Box className="select-amount">
+        <YouWillGet />
         <ToSelect />
       </Box>
+      {fromToken && toToken && (
+        <Typography className="trade-result">
+          {getAmount()} {fromToken.symbol} = {toToken.symbol}
+        </Typography>
+      )}
       <RequestQuote />
-      {/* </>
-      )} */}
       {quoteValid && <QuotePanel />}
-      {/* </Stack> */}
     </Box>
   );
 };

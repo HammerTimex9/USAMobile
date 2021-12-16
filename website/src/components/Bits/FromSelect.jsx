@@ -55,19 +55,13 @@ export const FromSelect = () => {
   if (!waiting) {
     positions.forEach((position) => {
       let obj = {};
-      obj.label = `From ${
-        position.tokens && position.tokens.toPrecision(3)
-      }${' '}
-        ${position.name} @ $
-        ${position.price && position.price.toFixed(2)}/
-        ${position.symbol && position.symbol.toUpperCase()} = $
-        ${position?.value.toFixed(2)}`;
+      obj.label = position.symbol.toUpperCase();
       obj.value = JSON.stringify(position);
       options.push(obj);
     });
   }
   return (
-    <Box style={{ width: '400px' }}>
+    <Box style={{ width: '195px' }}>
       <Select
         options={options}
         onChange={handleChange}
