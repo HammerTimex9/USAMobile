@@ -28,7 +28,7 @@ export const NavBar = () => {
               <path
                 d="M36.25 14.5C36.25 14.5 36.25 7.25002 29 7.25002C21.75 7.25002 21.75 14.5 21.75 14.5M52.5625 30.8125V50.75H5.4375V30.8125H52.5625ZM3.625 14.5H54.375V29C54.375 29 43.5 36.25 29 36.25C14.5 36.25 3.625 29 3.625 29V14.5ZM29 39.875V32.625V39.875Z"
                 stroke="currentColor"
-                stroke-width="2"
+                stroke-width="3"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />

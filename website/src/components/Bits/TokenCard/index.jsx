@@ -26,6 +26,10 @@ const TokenCard = ({ symbol, onClose, description }, ref) => {
       return 'Lorum Ipsum';
     }
   };
+  const getImage = () => {
+    let token = tokenList.find((t) => t.symbol === symbol);
+    return token.image;
+  };
 
   return (
     <Box ref={ref} className="token-card">
@@ -43,7 +47,7 @@ const TokenCard = ({ symbol, onClose, description }, ref) => {
               <Box
                 component="img"
                 sx={{ height: 70, width: 70 }}
-                src={data.image.large}
+                src={symbol === 'MANA' ? getImage() : data.image.large}
               />
               <Box className="header-title">
                 <Typography>{data.name}</Typography>
