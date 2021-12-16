@@ -19,10 +19,9 @@ export const ToSelect = () => {
     tokenList.forEach((item) => {
       let obj = {};
       if (
-        (fromTokenSymbol &&
-          item.networkId === String(network.id) &&
-          item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()) ||
-        (!fromTokenSymbol && item.networkId === String(network.id))
+        fromTokenSymbol &&
+        item.networkId === network.id &&
+        item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()
       ) {
         obj.label = `${item.symbol.toUpperCase()}`;
         obj.value = JSON.stringify(item);
