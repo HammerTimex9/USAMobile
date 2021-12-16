@@ -33,7 +33,7 @@ export const ProfileAvatar = () => {
         <Tooltip title="Cancel identity action.">
           <Button
             variant="outlined"
-            sx={{ mr: 3 }}
+            sx={{ mx: 5 }}
             onClick={() => toggleDrawer(false)}
           >
             Cancel
