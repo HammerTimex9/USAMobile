@@ -8,12 +8,14 @@ body {
   position: relative;
 
   &.light {
-    --bg: linear-gradient(to bottom right,
-        // #4299e1,
-        // #fc8181,
-        // #ffffff,
-        // #fc8181,
-        #ffffff);
+    --bg: linear-gradient(
+      to bottom right,
+      // #4299e1,
+      // #fc8181,
+      // #ffffff,
+      // #fc8181,
+      #ffffff
+    );
     --borderColor: #e2e8f0;
     --color: #2a359b;
     --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
@@ -35,9 +37,11 @@ body {
     --color: rgba(255, 255, 255, 0.92);
     --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
     // background-image: url('../assets/bg.svg');
-    background-image: linear-gradient(222.27deg,
-        #00079a -0.93%,
-        #0d182c 139.51%);
+    background-image: linear-gradient(
+      222.27deg,
+      #00079a -0.93%,
+      #0d182c 139.51%
+    );
     background-repeat: no-repeat;
     background-size: contain;
     --selection-bg: #1e277d;
@@ -139,7 +143,6 @@ body {
 }
 
 .react-select {
-
   &-container,
   &__control--is-focused,
   &__control--menu-is-open {
@@ -243,9 +246,11 @@ body {
 }
 
 .quote-button {
-  background: linear-gradient(183.26deg,
-      #484ba0 7.91%,
-      #030943 97.93%) !important;
+  background: linear-gradient(
+    183.26deg,
+    #484ba0 7.91%,
+    #030943 97.93%
+  ) !important;
   box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25) !important;
   border-radius: 25px !important;
   color: #fff !important;
