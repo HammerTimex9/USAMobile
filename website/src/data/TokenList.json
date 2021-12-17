@@ -164,7 +164,7 @@
     "symbol": "UBT",
     "decimals": 8,
     "address": "0x7fbc10850cae055b27039af31bd258430e714c62",
-    "description": "Blockchain integration for enterprises",
+    "description": "A service designed to integrate existing enterprise business processes with blockchain-powered features.  Allows confidential business transactions across open, public blockchains.  Enables confidential and complex collaboration between enterprises on a regulatory-friendly blockchain platform.  Runs over multiple blockchains such as Ethereum and Cardano.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/2707/thumb/UnibrightLogo_colorful_500x500_preview.png?1547036916"
   },
