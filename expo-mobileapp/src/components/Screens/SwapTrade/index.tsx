@@ -18,7 +18,7 @@ const SwapTrade: React.FC<IProps> = () => {
   useFocusEffect(
     React.useCallback(() => {
       setActionMode('swap');
-      setDialog('Select a token to convert.');
+      setDialog('Select a from token first, then enter an amount to start a trade.');
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );

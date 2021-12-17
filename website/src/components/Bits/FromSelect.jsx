@@ -30,22 +30,22 @@ export const FromSelect = () => {
     if (!isPolygon) {
       setFromToken();
       setToToken();
-      setDialog('Switch network to Polygon');
+      setDialog('Please Switch network to Polygon to use discount network fees.');
       return;
     }
 
     if (position) {
       setFromToken(position);
       setDialog(
-        "Use the 'Select amount' to set how much " +
+        "Next set how much " +
           position.symbol +
-          ' to use in this action. '
+          ' to use in this trade. '
       );
     } else {
       setFromToken();
       setToToken();
       setDialog(
-        "Use the 'Select a token to act with' menu " +
+        "Use the 'Select a token to trade' menu " +
           'to start creating an action plan.'
       );
     }

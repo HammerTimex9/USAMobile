@@ -43,10 +43,10 @@ export const ToSelect = () => {
       setToToken(result);
       setValue(e);
       setDialog(
-        "Press the 'Get Swap Quote' " +
-          'to get a quote to swap ' +
+        "Press the 'Get Trade Quote' " +
+          'to get a quote to trade ' +
           fromTokenSymbol +
-          ' to ' +
+          ' for ' +
           result.symbol +
           '.'
       );

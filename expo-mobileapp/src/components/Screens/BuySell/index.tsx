@@ -17,7 +17,7 @@ const BuySell: React.FC<IProps> = () => {
   useFocusEffect(
     React.useCallback(() => {
       setActionMode('buy');
-      setDialog('Place an order to buy cryptocurrency.');
+      setDialog('Ready to purchase cryptocurrency!');
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
