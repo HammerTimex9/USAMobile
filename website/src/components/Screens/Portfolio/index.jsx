@@ -1,19 +1,35 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
-import { Box } from '@mui/material';
+import { Box, Modal } from '@mui/material';
+import { styled } from '@mui/system';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+// import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
 import { useExperts } from '../../../contexts/expertsContext';
 import { useNetwork } from '../../../contexts/networkContext';
+import { usePositions } from '../../../contexts/portfolioContext';
 import { usePolygonNetwork } from '../../../hooks/usePolygonNetwork';
 import { Heading } from '../../UW/Heading';
-import { TokenTable } from './TokenTable';
+import Position from './Position';
+import TokenCard from '../../Bits/TokenCard';
+
+const HeaderCell = styled('div')({
+  display: 'flex',
+  span: {
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+  },
+});
 
 const Portfolio = () => {
-  const { setCharacter, setDialog } = useExperts();
-
   const { isAuthenticated, enableWeb3, isWeb3Enabled } = useMoralis();
+  const { setCharacter, setDialog } = useExperts();
   const { isPolygon } = useNetwork();
+  const { positions } = usePositions();
   const { switchNetworkToPolygon } = usePolygonNetwork();
+  const [selectedSymbol, setSelectedSymbol] = React.useState(null);
+  const onModalClose = React.useCallback(() => setSelectedSymbol(), []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -35,10 +51,51 @@ const Portfolio = () => {
   }, [setCharacter, setDialog]);
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', maxWidth: '450px' }}>
       <Heading variant="h4">Portfolio and Prices</Heading>
-      <br />
-      <TokenTable />
+
+      <Box
+        sx={{
+          mt: 3,
+          pl: 2,
+          pr: 1,
+          display: 'flex',
+          fontSize: '14px',
+          fontWeight: 'bold',
+        }}
+      >
+        <HeaderCell sx={{ width: '50%' }}>
+          <span>COIN</span>
+        </HeaderCell>
+        <HeaderCell sx={{ width: '25%' }}>
+          <span>
+            PRICE
+            <ArrowDropDownIcon />
+          </span>
+        </HeaderCell>
+        <HeaderCell sx={{ width: '25%', justifyContent: 'flex-end' }}>
+          <span>
+            HOLDINGS
+            <ArrowDropDownIcon />
+          </span>
+        </HeaderCell>
+      </Box>
+
+      {positions.map((position) => (
+        <Position
+          key={position.name}
+          position={position}
+          onSelect={setSelectedSymbol}
+        />
+      ))}
+
+      <Modal
+        open={!!selectedSymbol}
+        sx={{ maxWidth: '56rem', mx: 'auto', my: '3.56rem' }}
+        onBackdropClick={onModalClose}
+      >
+        <TokenCard symbol={selectedSymbol} onClose={onModalClose} />
+      </Modal>
     </Box>
   );
 };
