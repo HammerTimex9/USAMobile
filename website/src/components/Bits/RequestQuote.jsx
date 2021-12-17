@@ -62,8 +62,13 @@ export const RequestQuote = () => {
               sx={{ boxShadow: 'var(--boxShadow)' }}
               loading={isFetching}
               onClick={fetch}
+              className={
+                !txAmount || !toTokenSymbol
+                  ? 'quote-button disable'
+                  : 'quote-button'
+              }
             >
-              {quoteValid ? 'Refresh Swap Quote' : 'Get Swap Quote'}
+              {quoteValid ? 'Refresh Swap Quote' : 'TRADE'}
             </LoadingButton>
           </span>
         </Tooltip>

@@ -5,10 +5,12 @@ import { Stack, CircularProgress } from '@mui/material';
 
 import { usePositions } from '../contexts/portfolioContext';
 import { useNetwork } from '../contexts/networkContext';
-import { useExperts } from '../contexts/expertsContext';
 import { usePolygonNetwork } from '../hooks/usePolygonNetwork';
 
 import Landing from './Screens/Landing';
+import Login from './Screens/Auth/Login';
+import Register from './Screens/Auth/Register';
+
 import { TopNavBar } from './Screens/TopNavBar';
 import { ExpertStage } from './Screens/ExpertStage';
 import { NavBar } from './Screens/NavBar';
@@ -33,26 +35,14 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 };
 
 const Main = () => {
-  const { isAuthenticated, isWeb3Enabled } = useMoralis();
+  const { isAuthenticated } = useMoralis();
   const { user } = useMoralis();
   const { isLoading, positions } = usePositions();
   const { isPolygon } = useNetwork();
-  const { setDialog } = useExperts();
   const address = user?.attributes?.ethAddress;
   const hasMetamask = window.ethereum?.isMetaMask;
 
-  const { getSelectedNetwork, switchNetworkToPolygon } = usePolygonNetwork();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (isWeb3Enabled) {
-        getSelectedNetwork();
-      }
-    } else {
-      setDialog('Welcome to USA Wallet.  Simple, Safe, Secure.');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isWeb3Enabled]);
+  const { switchNetworkToPolygon } = usePolygonNetwork();
 
   useEffect(() => {
     if (isAuthenticated && !isPolygon && hasMetamask) {
@@ -117,6 +107,12 @@ const App = () => {
     <Switch>
       <Route path="/landing">
         <Landing />
+      </Route>
+      <Route path="/login">
+        <Login />
+      </Route>
+      <Route path="/register">
+        <Register />
       </Route>
       <Route path="/">
         <Main />

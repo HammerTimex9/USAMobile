@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 
-import Select from 'react-styled-select';
+import Select from 'react-select';
 
 import { usePositions } from '../../contexts/portfolioContext';
 import { useActions } from '../../contexts/actionsContext';
@@ -24,7 +24,7 @@ export const FromSelect = () => {
   }, [setFromToken]);
 
   const handleChange = async (e) => {
-    let position = JSON.parse(e);
+    let position = JSON.parse(e.value);
     setValue(e);
 
     if (!isPolygon) {
@@ -55,32 +55,20 @@ export const FromSelect = () => {
   if (!waiting) {
     positions.forEach((position) => {
       let obj = {};
-      obj.label = `From ${
-        position.tokens && position.tokens.toPrecision(3)
-      }${' '}
-        ${position.name} @ $
-        ${position.price && position.price.toFixed(2)}/
-        ${position.symbol && position.symbol.toUpperCase()} = $
-        ${position?.value.toFixed(2)}`;
+      obj.label = position.symbol.toUpperCase();
       obj.value = JSON.stringify(position);
       options.push(obj);
     });
   }
   return (
-    <Box>
+    <Box style={{ width: '195px' }}>
       <Select
         options={options}
         onChange={handleChange}
-        searchable={false}
+        isSearchable={false}
         placeholder="Select a token to act with."
-        classes={{
-          selectValue: 'my-custom-value',
-          selectArrow: 'my-custom-arrow',
-          selectControl: 'my-custom-input',
-          selectMenu: 'my-custom-menu',
-          selectOption: 'custom-option',
-          selectMenuOuter: 'my-custom-menu',
-        }}
+        className="react-select-container"
+        classNamePrefix="react-select"
         value={value}
       />
     </Box>

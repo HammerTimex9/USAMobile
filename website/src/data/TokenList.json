@@ -1,6 +1,6 @@
 [
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Polygon (Matic)",
     "symbol": "MATIC",
     "decimals": 18,
@@ -9,7 +9,7 @@
     "image": "https://assets.coingecko.com/coins/images/4713/thumb/matic-token-icon.png?1624446912"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "USDC",
     "symbol": "USDC",
     "decimals": 6,
@@ -19,7 +19,7 @@
     "image": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Wrapped ETH",
     "symbol": "ETH",
     "decimals": 18,
@@ -29,7 +29,7 @@
     "image": "https://assets.coingecko.com/coins/images/279/thumb/ethereum.png?1595348880"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Chainlink",
     "symbol": "LINK",
     "decimals": 18,
@@ -39,7 +39,7 @@
     "image": "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1547034700"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "AAVE",
     "symbol": "AAVE",
     "decimals": 18,
@@ -49,7 +49,7 @@
     "image": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1601374110"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Uniswap",
     "symbol": "UNI",
     "decimals": 18,
@@ -59,7 +59,7 @@
     "image": "https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "renBTC",
     "symbol": "RENBTC",
     "decimals": 8,
@@ -69,7 +69,7 @@
     "image": "https://assets.coingecko.com/coins/images/11370/thumb/Bitcoin.jpg?1628072791"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "TrustSwap",
     "symbol": "SWAP",
     "decimals": 18,
@@ -79,7 +79,7 @@
     "image": "https://assets.coingecko.com/coins/images/11795/thumb/Untitled_design-removebg-preview.png?1626926355"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "SushiSwap",
     "symbol": "SUSHI",
     "decimals": 18,
@@ -89,7 +89,7 @@
     "image": "https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1606986688"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "QuickSwap",
     "symbol": "QUICK",
     "decimals": 18,
@@ -99,7 +99,7 @@
     "image": "https://assets.coingecko.com/coins/images/13970/thumb/1_pOU6pBMEmiL-ZJVb0CYRjQ.png?1613386659"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Balancer",
     "symbol": "BAL",
     "decimals": 18,
@@ -109,7 +109,7 @@
     "image": "https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "1inch",
     "symbol": "1INCH",
     "decimals": 18,
@@ -119,17 +119,17 @@
     "image": "https://assets.coingecko.com/coins/images/13469/thumb/1inch-token.png?1608803028"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "DecentraLand",
     "symbol": "MANA",
     "decimals": 18,
     "address": "0xa1c57f48f0deb89f569dfbe6e2b7f46d33606fd4",
     "description": "DecentraLand is a network running on Ethereum that allows users to operate within a shared virtual world. Users on the DecentraLand platform can buy and sell virtual land / real estate, as well as explore, interact and play games within this digital world. DecentraLand utilizes smart contracts that are layered upon one another to coincide with each part of the virtual world.",
     "type": "erc20",
-    "image": "https://assets.coingecko.com/coins/images/878/thumb/decentraland-mana.png?1550108745"
+    "image": "https://s2.coinmarketcap.com/static/img/coins/64x64/1966.png"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "SuperFarm",
     "symbol": "SUPER",
     "decimals": 18,
@@ -139,7 +139,7 @@
     "image": "https://assets.coingecko.com/coins/images/14040/thumb/6YPdWn6.png?1613975899"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Aavegotchi",
     "symbol": "GHST",
     "decimals": 18,
@@ -149,7 +149,7 @@
     "image": "https://assets.coingecko.com/coins/images/12467/thumb/ghst_200.png?1600750321"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "The Graph",
     "symbol": "GRT",
     "decimals": 18,
@@ -159,7 +159,7 @@
     "image": "https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1608145566"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Unibright",
     "symbol": "UBT",
     "decimals": 8,
@@ -169,7 +169,7 @@
     "image": "https://assets.coingecko.com/coins/images/2707/thumb/UnibrightLogo_colorful_500x500_preview.png?1547036916"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Curve",
     "symbol": "CRV",
     "decimals": 18,
@@ -179,7 +179,7 @@
     "image": "https://assets.coingecko.com/coins/images/12124/thumb/Curve.png?1597369484"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Ramp",
     "symbol": "RAMP",
     "decimals": 18,
@@ -189,7 +189,7 @@
     "image": "https://assets.coingecko.com/coins/images/12837/thumb/RAMP-Logo-v2-1000pxsq.png?1617952606"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "ExceedMe",
     "symbol": "XED",
     "decimals": 18,
@@ -199,7 +199,7 @@
     "image": "https://assets.coingecko.com/coins/images/13518/thumb/exeedme.png?1610669597"
   },
   {
-    "networkId": "137",
+    "networkId": 137,
     "name": "Telcoin",
     "symbol": "TEL",
     "decimals": 2,

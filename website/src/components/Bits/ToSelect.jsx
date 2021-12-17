@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
-import Select from 'react-styled-select';
+import Select from 'react-select';
 
 import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
@@ -19,10 +19,11 @@ export const ToSelect = () => {
     tokenList.forEach((item) => {
       let obj = {};
       if (
+        fromTokenSymbol &&
         item.networkId === network.id &&
         item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()
       ) {
-        obj.label = `${item.symbol.toUpperCase()} (${item.name})`;
+        obj.label = `${item.symbol.toUpperCase()}`;
         obj.value = JSON.stringify(item);
         options.push(obj);
       }
@@ -37,7 +38,7 @@ export const ToSelect = () => {
   }, [setToToken]);
 
   const handleChange = async (e) => {
-    let result = JSON.parse(e);
+    let result = JSON.parse(e.value);
     if (result) {
       setToToken(result);
       setValue(e);
@@ -56,21 +57,21 @@ export const ToSelect = () => {
     setQuote();
   };
 
+  const customStyles = {
+    control: () => ({
+      width: 195,
+    }),
+  };
   return (
-    <Box sx={{ width: '100%', marginTop: '20px' }}>
+    <Box sx={{ width: '195px' }}>
       <Select
         options={tokens}
         onChange={handleChange}
         placeholder="Select a token to receive."
-        classes={{
-          selectValue: 'my-custom-value',
-          selectArrow: 'my-custom-arrow',
-          selectControl: 'my-custom-input',
-          selectMenu: 'my-custom-menu1',
-          selectOption: 'custom-option',
-          selectMenuOuter: 'my-custom-menu1',
-        }}
+        className="react-select-container"
+        classNamePrefix="react-select"
         value={value}
+        styles={customStyles}
         optionRenderer={(e) => {
           let option = JSON.parse(e.value);
           return (

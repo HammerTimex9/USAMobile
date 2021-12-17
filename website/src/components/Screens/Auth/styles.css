@@ -1,0 +1,28 @@
+.auth-dark-bg {
+  background-image: linear-gradient(222.27deg, #00079a -0.93%, #0d182c 139.51%);
+}
+.authHomeButton {
+  position: absolute !important;
+  top: 20px;
+  right: 30px;
+  color: white !important;
+}
+.authInputLabel {
+  color: white !important;
+}
+
+.authInput {
+  color: white !important;
+}
+.authInput::before {
+  border-color: white !important;
+}
+
+.auth-link {
+  color: white;
+  font-size: 18px;
+}
+
+.MuiLoadingButton-loadingIndicator {
+  color: #213db0 !important;
+}
