@@ -29,7 +29,6 @@ export const SwapPanel = () => {
     }
   };
   const getToTokenAmount = () => {
-    let decimals = 18;
     if (toTokenAmount) {
       return (toTokenAmount / 10 ** toToken.decimals).toFixed(3);
     } else {
