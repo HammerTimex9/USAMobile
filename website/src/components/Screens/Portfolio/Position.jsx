@@ -41,7 +41,11 @@ const Position = ({ position, onSelect }) => {
             cursor: 'pointer',
           }}
           name={position.symbol}
-          src={position.image}
+          src={
+            position.symbol === 'MANA'
+              ? 'https://s2.coinmarketcap.com/static/img/coins/64x64/1966.png'
+              : position.image
+          }
           onClick={() => onSelect(position.symbol)}
         />
         <Cell sx={{ flex: 1 }} onClick={() => onSelect(position.symbol)}>
