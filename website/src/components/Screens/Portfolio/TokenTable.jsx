@@ -43,7 +43,11 @@ export const TokenTable = () => {
             <Avatar
               sx={{ backgroundColor: '#fff' }}
               name={position.symbol}
-              src={position.image}
+              src={
+                position.symbol !== 'MANA'
+                  ? position.image
+                  : 'https://s2.coinmarketcap.com/static/img/coins/64x64/1966.png'
+              }
               size="sm"
             />
           </TableCell>
