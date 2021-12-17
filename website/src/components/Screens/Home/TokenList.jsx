@@ -48,7 +48,11 @@ const TokenList = () => {
               }}
             >
               <ListItemAvatar>
-                <Avatar src={token.image} size="sm" />
+                <Avatar
+                  src={token.image}
+                  size="sm"
+                  sx={{ backgroundColor: '#fff' }}
+                />
               </ListItemAvatar>
               <ListItemText
                 primary={token.name}
