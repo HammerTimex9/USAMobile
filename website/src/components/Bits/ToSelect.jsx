@@ -20,9 +20,9 @@ export const ToSelect = () => {
       let obj = {};
       if (
         (fromTokenSymbol &&
-          item.networkId === String(network.id) &&
+          item.networkId === network.id &&
           item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()) ||
-        (!fromTokenSymbol && item.networkId === String(network.id))
+        (!fromTokenSymbol && item.networkId === network.id)
       ) {
         obj.label = `${item.symbol.toUpperCase()}`;
         obj.value = JSON.stringify(item);
@@ -31,7 +31,6 @@ export const ToSelect = () => {
     });
     return options;
   }, [network, fromTokenSymbol]);
-
   useEffect(() => {
     return () => {
       setToToken();
