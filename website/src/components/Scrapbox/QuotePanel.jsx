@@ -51,7 +51,7 @@ export const QuotePanel = () => {
         <Avatar
           name={fromToken.name}
           src={fromToken.logoURI}
-          sx={{ width: 30, height: 30, mx: 0.5 }}
+          sx={{ width: 30, height: 30, mx: 0.5, backgroundColor: '#fff' }}
         />
         <Typography>
           {fromToken.symbol} For{' '}
@@ -61,7 +61,7 @@ export const QuotePanel = () => {
           name={toToken.name}
           src={toToken.logoURI}
           size="sm"
-          sx={{ width: 30, height: 30, mx: 0.5 }}
+          sx={{ width: 30, height: 30, mx: 0.5, backgroundColor: '#fff' }}
         />
         <Typography>{toToken.symbol}</Typography>
       </Stack>
