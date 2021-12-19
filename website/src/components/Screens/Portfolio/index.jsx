@@ -24,7 +24,7 @@ const HeaderCell = styled('div')({
 
 const Portfolio = () => {
   const { isAuthenticated, enableWeb3, isWeb3Enabled } = useMoralis();
-  const { setCharacter, setDialog } = useExperts();
+  const { setExpert, setDialog } = useExperts();
   const { isPolygon } = useNetwork();
   const { positions } = usePositions();
   const { switchNetworkToPolygon } = usePolygonNetwork();
@@ -46,9 +46,11 @@ const Portfolio = () => {
   }, [isAuthenticated, isPolygon, isWeb3Enabled, enableWeb3]);
 
   useEffect(() => {
-    setCharacter('unclesam');
-    setDialog('Select a currency to view transaction histories.');
-  }, [setCharacter, setDialog]);
+    setExpert({
+      character: 'unclesam',
+      dialog: 'Select a currency to view transaction histories.',
+    });
+  }, [setExpert, setDialog]);
 
   return (
     <Box sx={{ width: '100%', maxWidth: '450px' }}>

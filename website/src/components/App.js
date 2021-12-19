@@ -37,7 +37,7 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 
 const Main = () => {
   const { user, isAuthenticated } = useMoralis();
-  const { setDialog, setCharacter } = useExperts();
+  const { setExpert } = useExperts();
   const { isLoading, positions } = usePositions();
   const { isPolygon } = useNetwork();
   const address = user?.attributes?.ethAddress;
@@ -47,10 +47,12 @@ const Main = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setCharacter('unclesam');
-      setDialog('Welcome to money by, of, and for the people.');
+      setExpert({
+        character: 'unclesam',
+        dialog: 'Welcome to money by, of, and for the people.',
+      });
     }
-  }, [isAuthenticated, setCharacter, setDialog]);
+  }, [isAuthenticated, setExpert]);
 
   useEffect(() => {
     if (isAuthenticated && !isPolygon && hasMetamask) {

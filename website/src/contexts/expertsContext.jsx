@@ -5,18 +5,22 @@ const ExpertsContext = React.createContext();
 export const useExperts = () => useContext(ExpertsContext);
 
 export const ExpertsProvider = (props) => {
-  const [expertsOn, toggleExperts] = useState(true);
-  const [character, setCharacter] = useState('unclesam');
-  const [dialog, setDialog] = useState('');
+  const [isEnableExpert, enableExpert] = useState(true);
+  const [data, setExpert] = useState();
+
+  const setDialog = React.useCallback((dialog) => {
+    setExpert((data) => ({ ...data, dialog }));
+  }, []);
 
   return (
     <ExpertsContext.Provider
       value={{
-        expertsOn,
-        toggleExperts,
-        character,
-        setCharacter,
-        dialog,
+        isEnableExpert,
+        enableExpert,
+        character: data?.character || 'unclesam',
+        pose: data?.pose || 'default',
+        dialog: data?.dialog || '',
+        setExpert,
         setDialog,
       }}
     >

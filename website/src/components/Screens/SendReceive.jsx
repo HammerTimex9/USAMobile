@@ -12,7 +12,7 @@ import { useNetwork } from '../../contexts/networkContext';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
 const SendReceive = () => {
-  const { setCharacter, setDialog } = useExperts();
+  const { setExpert, setDialog } = useExperts();
   const [localMode, setLocalMode] = useState('none');
 
   const { isAuthenticated } = useMoralis();
@@ -30,9 +30,11 @@ const SendReceive = () => {
   }, [isAuthenticated, isPolygon]);
 
   useEffect(() => {
-    setCharacter('franklin');
-    setDialog('Would you like to send or receive cryptocurrency?');
-  }, [setCharacter, setDialog]);
+    setExpert({
+      character: 'benfranklin',
+      dialog: 'Would you like to send or receive cryptocurrency?',
+    });
+  }, [setExpert]);
 
   const handleSendMode = async () => {
     if (!isPolygon) {

@@ -6,14 +6,14 @@ import NFTList from './NFTList';
 import TokenList from './TokenList';
 
 const Home = () => {
-  const { setCharacter, setDialog } = useExperts();
+  const { setExpert } = useExperts();
 
   useEffect(() => {
-    setCharacter('unclesam');
-    setDialog(
-      "Welcome to cryptocurrency, Citizen! Here are today's offerings."
-    );
-  }, [setCharacter, setDialog]);
+    setExpert({
+      character: 'unclesam',
+      dialog: "Welcome to cryptocurrency, Citizen! Here are today's offerings.",
+    });
+  }, [setExpert]);
 
   return (
     <Box>
