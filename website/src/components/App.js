@@ -3,6 +3,7 @@ import { useMoralis } from 'react-moralis';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import { Stack, CircularProgress } from '@mui/material';
 
+import { useExperts } from '../contexts/expertsContext';
 import { usePositions } from '../contexts/portfolioContext';
 import { useNetwork } from '../contexts/networkContext';
 import { usePolygonNetwork } from '../hooks/usePolygonNetwork';
@@ -35,14 +36,21 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 };
 
 const Main = () => {
-  const { isAuthenticated } = useMoralis();
-  const { user } = useMoralis();
+  const { user, isAuthenticated } = useMoralis();
+  const { setDialog, setCharacter } = useExperts();
   const { isLoading, positions } = usePositions();
   const { isPolygon } = useNetwork();
   const address = user?.attributes?.ethAddress;
   const hasMetamask = window.ethereum?.isMetaMask;
 
   const { switchNetworkToPolygon } = usePolygonNetwork();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setCharacter('unclesam');
+      setDialog('Welcome to money by, of, and for the people.');
+    }
+  }, [isAuthenticated, setCharacter, setDialog]);
 
   useEffect(() => {
     if (isAuthenticated && !isPolygon && hasMetamask) {
