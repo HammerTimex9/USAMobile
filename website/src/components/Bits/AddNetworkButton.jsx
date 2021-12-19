@@ -10,7 +10,9 @@ export const AddNetworkButton = () => {
   const { setDialog } = useExperts();
 
   React.useEffect(() => {
-    setDialog('Add Polygon Network to Metamask to use discount transaction fees');
+    setDialog(
+      'Add Polygon Network to Metamask to use discount transaction fees'
+    );
   }, [setDialog]);
 
   return (
