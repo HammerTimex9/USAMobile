@@ -65,13 +65,13 @@ const Main = () => {
   return (
     <Stack alignItems="center" spacing={5} p={3}>
       <TopNavBar />
+      {isAuthenticated && !isLoading ? <NavBar /> : null}
       <ExpertStage />
       {isAuthenticated ? (
         isLoading ? (
           <CircularProgress style={{ marginHeight: '160px' }} />
         ) : (
           <>
-            <NavBar />
             <Suspense
               fallback={<CircularProgress style={{ marginHeight: '40px' }} />}
             >

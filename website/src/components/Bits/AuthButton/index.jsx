@@ -26,6 +26,7 @@ export const AuthButton = () => {
     }
   }, [history, isAuthenticated]);
 
+  // Commented to test on Local Dev
   useEffect(() => {
     return () => {
       window.addEventListener('beforeunload', function (e) {

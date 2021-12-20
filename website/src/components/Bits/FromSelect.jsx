@@ -10,7 +10,7 @@ import { useNetwork } from '../../contexts/networkContext';
 
 // import { useMoralis } from "react-moralis";
 
-export const FromSelect = () => {
+export const FromSelect = ({ sx = {} }) => {
   const [value, setValue] = useState('');
   const { positions, waiting } = usePositions();
   const { setFromToken, setToToken } = useActions();
@@ -61,7 +61,7 @@ export const FromSelect = () => {
     });
   }
   return (
-    <Box style={{ width: '195px' }}>
+    <Box sx={[{ width: 195 }, sx]}>
       <Select
         options={options}
         onChange={handleChange}

@@ -1,6 +1,5 @@
 import { Box, Stack } from '@mui/material';
 
-import { useActions } from '../../contexts/actionsContext';
 import { FromSelect } from '../Bits/FromSelect';
 import { AmountSelect } from '../Bits/AmountSelect';
 import { StartSend } from '../Bits/StartSend';
@@ -8,8 +7,6 @@ import { StartSend } from '../Bits/StartSend';
 import { ToAddress } from '../Bits/ToAddress';
 
 export const SendPanel = () => {
-  const { fromToken } = useActions();
-
   return (
     <Box
       sx={{
@@ -32,16 +29,14 @@ export const SendPanel = () => {
         }}
         spacing={3}
       >
-        <FromSelect />
-        {!!fromToken && (
-          <>
-            <AmountSelect type="send" />
-            <ToAddress />
-            <Stack sx={{ alignSelf: 'center' }} direction="row" spacing={1}>
-              <StartSend />
-            </Stack>
-          </>
-        )}
+        <FromSelect sx={{ width: '100%' }} />
+        <>
+          <AmountSelect type="send" style={{ width: '100%' }} />
+          <ToAddress />
+          <Stack sx={{ alignSelf: 'center' }} direction="row" spacing={1}>
+            <StartSend />
+          </Stack>
+        </>
       </Stack>
     </Box>
   );
