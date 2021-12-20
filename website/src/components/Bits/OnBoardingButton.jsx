@@ -27,7 +27,9 @@ export function OnBoardingButton() {
       }
       setDisabled(true);
     } else {
-      setDialog('Click above to install MetaMask in your browser and unlock the world of cryptocurrency.');
+      setDialog(
+        'Click above to install MetaMask in your browser and unlock the world of cryptocurrency.'
+      );
     }
   }, [user, setDialog]);
 
