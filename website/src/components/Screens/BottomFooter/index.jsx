@@ -1,5 +1,4 @@
 import { Stack, Box, Typography } from '@mui/material';
-import { useMoralis } from 'react-moralis';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fab } from '@fortawesome/free-brands-svg-icons';
@@ -7,32 +6,11 @@ import { faCheckSquare, faCoffee } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ByMoralis } from 'react-moralis';
 
-import { useNetwork } from '../../../contexts/networkContext';
-
 import './styles.css';
-import ladyLib from '../../../media/Padding/LadyLiberty.jpg';
-import installMetamask from '../../../media/Padding/InstallMetamask.png';
-import addPolygon from '../../../media/Padding/AddPolygon.png';
-import congratulations from '../../../media/Padding/Congratulations.png';
 
 library.add(fab, faCheckSquare, faCoffee);
 
 export const BottomFooter = () => {
-  const { isAuthenticated } = useMoralis();
-  const { hasPolygon } = useNetwork();
-
-  const hasMetamask = window.ethereum?.isMetaMask;
-  let image = ladyLib;
-  if (isAuthenticated) {
-    if (!hasMetamask) {
-      image = installMetamask;
-    } else if (!hasPolygon) {
-      image = addPolygon;
-    } else {
-      image = congratulations;
-    }
-  }
-
   return (
     <Stack
       sx={{
@@ -42,7 +20,7 @@ export const BottomFooter = () => {
         p: 2.5,
       }}
     >
-      <Box component="img" sx={{ width: 400, borderRadius: 2.5 }} src={image} />
+      <Box className="default-mode-bg" />
       <br />
       <br />
       <Stack direction="row">
