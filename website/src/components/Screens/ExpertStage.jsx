@@ -1,62 +1,48 @@
-import { Box, Stack } from '@mui/material';
-
-import FranklinBlue from '../../assets/characters/franklin-blue.svg';
-import FranklinRed from '../../assets/characters/franklin-red.svg';
-import LadylibertyBlue from '../../assets/characters/ladyliberty-blue.svg';
-import LadylibertyRed from '../../assets/characters/ladyliberty-red.svg';
-import MlkingBlue from '../../assets/characters/mlking-blue.svg';
-import MlkingRed from '../../assets/characters/mlking-red.svg';
-import UnclesamBlue from '../../assets/characters/unclesam-blue.svg';
-import UnclesamRed from '../../assets/characters/unclesam-red.svg';
+import { Box } from '@mui/material';
 
 import { useExperts } from '../../contexts/expertsContext';
 import { useColorMode } from '../../contexts/colorModeContext';
 import { useNetwork } from '../../contexts/networkContext';
 
-const Characters = {
-  light: {
-    franklin: FranklinRed,
-    ladyliberty: LadylibertyRed,
-    mlking: MlkingRed,
-    unclesam: UnclesamRed,
-  },
-  dark: {
-    franklin: FranklinBlue,
-    ladyliberty: LadylibertyBlue,
-    mlking: MlkingBlue,
-    unclesam: UnclesamBlue,
-  },
-};
-
 export const ExpertStage = () => {
-  const { expertsOn, character, dialog } = useExperts();
+  const { isEnableExpert, character, pose, dialog } = useExperts();
   const { colorMode } = useColorMode();
   const { isPolygon } = useNetwork();
-  const src = Characters[colorMode][character];
 
-  if (expertsOn === true || !isPolygon) {
+  if (isEnableExpert || !isPolygon) {
     return (
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        spacing={1}
+      <Box
         sx={{
-          px: 4,
-          py: 3,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
           width: 400,
-          lineHeight: 1.5,
+          minHeight: 200,
+          padding: '20px',
           background:
             colorMode === 'light'
               ? 'rgba(255, 255, 255, 0.1)'
               : 'linear-gradient(261.33deg, rgba(255, 255, 255, 0.4) 1.9%, rgba(255, 255, 255, 0) 97.43%)',
           boxShadow: '5px 5px 10px 3px rgba(0, 0, 0, 0.2)',
           borderRadius: 10,
+          overflow: 'hidden',
         }}
       >
-        <Box>{dialog}</Box>
-        <img src={src} alt="" width="180" />
-      </Stack>
+        <Box sx={{ width: '50%', lineHeight: 1.5 }}>{dialog}</Box>
+        <img
+          src={`${process.env.PUBLIC_URL}/images/characters/${character}/${pose}.png`}
+          alt=""
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '50%',
+            height: '200%',
+            padding: '10px',
+            objectFit: 'contain',
+          }}
+        />
+      </Box>
     );
   } else {
     return null;

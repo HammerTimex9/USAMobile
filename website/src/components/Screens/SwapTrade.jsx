@@ -11,7 +11,7 @@ import { useNetwork } from '../../contexts/networkContext';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
 const SwapTrade = () => {
-  const { setCharacter, setDialog } = useExperts();
+  const { setExpert, setDialog } = useExperts();
   const { isAuthenticated } = useMoralis();
   const { switchNetworkToPolygon } = usePolygonNetwork();
   const { isPolygon } = useNetwork();
@@ -27,9 +27,11 @@ const SwapTrade = () => {
   }, [isAuthenticated, isPolygon]);
 
   useEffect(() => {
-    setCharacter('mlking');
-    setDialog('Select a token to convert.');
-  }, [setCharacter, setDialog]);
+    setExpert({
+      character: 'mlk',
+      dialog: 'Select a token to convert.',
+    });
+  }, [setExpert]);
 
   return (
     <Box sx={{ textAlign: 'center', mt: 1 }}>

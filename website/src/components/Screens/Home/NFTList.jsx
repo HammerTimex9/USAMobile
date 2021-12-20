@@ -69,7 +69,8 @@ const NFTList = () => {
             backgroundImage: 'var(--bg)',
             border: '4px solid var(--borderColor)',
             overflow: 'hidden',
-            mb: 2,
+            mx: 'auto',
+            my: 2,
           }}
         >
           <ImageList sx={{ height: 450, m: 0 }} className="uw-scrollbar">
