@@ -36,7 +36,7 @@ export const DoItButton = () => {
     }
     if (isFetching && !isApproved) {
       setDialog(
-        "Press 'Confirm' to approve spending your Matic for this transaction"
+        "Press 'Confirm' to approve spending your crypto for this transaction"
       );
     }
     if (isFetching && isApproved) {

@@ -12,10 +12,4 @@ const Home: React.FC<IProps> = ()=>{
   );
 }
 
-
 export default Home;
-
-
-
-
-

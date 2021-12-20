@@ -7,7 +7,7 @@ export const useExperts = () => useContext(ExpertsContext);
 export const ExpertsProvider = (props) => {
   const [expertsOn, toggleExperts] = useState(true);
   const [character, setCharacter] = useState('unclesam');
-  const [dialog, setDialog] = useState('');
+  const [dialog, setDialog] = useState('Welcome to money by, of, and for the people.');
 
   return (
     <ExpertsContext.Provider

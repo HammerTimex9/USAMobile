@@ -40,7 +40,7 @@ export const RequestQuote = () => {
     if (data && !data.error) {
       setQuote(data);
       setDialog(
-        "Push 'Do it!' to execute swap.  Or adjust inputs to update quote."
+        "Push 'Do it!' to execute trade.  Or adjust inputs to update quote."
       );
     }
   }, [data, setQuote, setDialog]);

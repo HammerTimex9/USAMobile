@@ -18,7 +18,7 @@ const PortfolioPrices: React.FC<IProps> = () => {
   useFocusEffect(
     React.useCallback(() => {
       setActionMode('portfolio');
-      setDialog('Select a currency to view transaction histories.');
+      setDialog('Select icons for token details.  Pull down for your transaction histories.');
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );

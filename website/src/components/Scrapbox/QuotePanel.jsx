@@ -20,7 +20,7 @@ export const QuotePanel = () => {
   const { setDialog } = useExperts();
   const handleCancel = (e) => {
     setQuote();
-    setDialog('Change your swap settings to recieve a new quote.');
+    setDialog('Change your trade settings to recieve a new quote.');
   };
 
   const gas = (estimatedGas * 2) / 10 ** 7;

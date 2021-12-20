@@ -24,9 +24,7 @@ const AddressPanel = () => {
 		if (copied) {
 			setDialog(
 				'Your wallet address has been copied to the clipboard.  ' +
-				'Paste your address as the destination ' +
-				'in the market withdraw or send entry, ' +
-				'then carefully check the address before sending!  ' +
+				'Carefully check the address before sending!  ' +
 				'Malware can change your destination address in the clipboard!'
 			);
 			setCopied(false);
