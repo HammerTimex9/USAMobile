@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 
 import { Box, Button, Stack } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 
 import { SendPanel } from '../Blocks/SendPanel';
 import { AddressPanel } from '../Blocks/AddressPanel';
@@ -50,8 +49,7 @@ const SendReceive = () => {
   };
 
   const handleReceiveMode = () => {
-    // Commented due to UI break
-    // setLocalMode('receive');
+    setLocalMode('receive');
     setDialog(
       'Copy your address for pasting or ' +
         'select amount to request to generate a QR code.'

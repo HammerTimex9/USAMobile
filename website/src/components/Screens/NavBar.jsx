@@ -1,12 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
-import { Box, Button, Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import HomeIcon from '@mui/icons-material/Home';
 
 import { usePositions } from '../../contexts/portfolioContext';
-import { Text } from '../UW/Text';
 import { Tab } from '../UW/Tab';
 
 export const NavBar = () => {
