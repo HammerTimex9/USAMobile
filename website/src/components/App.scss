@@ -7,25 +7,25 @@ html {
 body {
   position: relative;
 
-  --color-blue-50: '#76A6F8';
-  --color-blue-100: '#2B79FF';
-  --color-blue-300: '#005EFF';
-  --color-blue-500: '#213DB0';
-  --color-blue-700: '#111111';
-  --color-blue-900: '#0E176B';
-  --color-blue-A100: '#0A3161';
+  --color-blue-50: #76A6F8;
+  --color-blue-100: #2B79FF;
+  --color-blue-300: #005EFF;
+  --color-blue-500: #213DB0;
+  --color-blue-700: #111111;
+  --color-blue-900: #0E176B;
+  --color-blue-A100: #0A3161;
 
-  --color-grey-50: '#FFFFFF';
-  --color-grey-100: '#EDEDED';
-  --color-grey-300: '#C4C4C4';
-  --color-grey-500: '#ABABAB';
-  --color-grey-700: '#8C8C8C';
-  --color-grey-900: '#000000';
+  --color-grey-50: #FFFFFF;
+  --color-grey-100: #EDEDED;
+  --color-grey-300: #C4C4C4;
+  --color-grey-500: #ABABAB;
+  --color-grey-700: #8C8C8C;
+  --color-grey-900: #000000;
 
-  --color-red-50: '#F54F55';
-  --color-red-100: '#ED1C24';
-  --color-red-300: '#B31942';
-  --color-red-500: '#CB151C';
+  --color-red-50: #F54F55;
+  --color-red-100: #ED1C24;
+  --color-red-300: #B31942;
+  --color-red-500: #CB151C;
 
   &.light {
     --borderColor: #e2e8f0;
@@ -35,6 +35,8 @@ body {
     --selection-color: #2a359b;
     --arrow: url('../assets/arrow1.svg');
     --footerIconColor: black;
+    --tabbar-background: linear-gradient(222.27deg, #00079A 27.32%, #0D182C 139.51%);
+    --tabbar-color: var(--color-grey-50);
 
     background-image: url('../assets/bg-light.svg');
   }
@@ -47,6 +49,8 @@ body {
     --selection-color: #fff;
     --arrow: url('../assets/arrow.svg');
     --footerIconColor: white;
+    --tabbar-background: var(--color-grey-50);
+    --tabbar-color: var(--color-grey-900);
 
     background-image: url('../assets/bg-dark.svg'),
       linear-gradient(222.27deg, #00079a -0.93%, #0d182c 139.51%);

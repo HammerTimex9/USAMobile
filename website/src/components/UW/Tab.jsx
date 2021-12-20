@@ -15,7 +15,7 @@ export const Tab = ({ sx = {}, label = '', ...props }) => {
           height: 68,
           borderWidth: 0,
           backgroundColor: 'transparent',
-          color: 'grey.50',
+          color: 'var(--tabbar-color)',
         },
         sx,
       ]}
@@ -25,7 +25,7 @@ export const Tab = ({ sx = {}, label = '', ...props }) => {
         sx={{
           fontFamily: 'Roboto !important',
           fontSize: '.75rem',
-          color: 'grey.50',
+          color: 'var(--tabbar-color)',
         }}
       >
         {label}

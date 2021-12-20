@@ -28,8 +28,7 @@ export const NavBar = () => {
           display: 'flex',
           width: 450,
           justifyContent: 'space-evenly',
-          background:
-            'linear-gradient(222.27deg, #00079A 27.32%, #0D182C 139.51%)',
+          background: 'var(--tabbar-background)',
           borderRadius: '0 0 30px 30px',
         }}
       >
