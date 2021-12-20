@@ -10,7 +10,7 @@ import { useNetwork } from '../../contexts/networkContext';
 
 // import { useMoralis } from "react-moralis";
 
-export const FromSelect = () => {
+export const FromSelect = ({ sx = {} }) => {
   const [value, setValue] = useState('');
   const { positions, waiting } = usePositions();
   const { setFromToken, setToToken } = useActions();
@@ -30,16 +30,16 @@ export const FromSelect = () => {
     if (!isPolygon) {
       setFromToken();
       setToToken();
-      setDialog('Please Switch network to Polygon to use discount network fees.');
+      setDialog(
+        'Please Switch network to Polygon to use discount network fees.'
+      );
       return;
     }
 
     if (position) {
       setFromToken(position);
       setDialog(
-        "Next set how much " +
-          position.symbol +
-          ' to use in this trade. '
+        'Next set how much ' + position.symbol + ' to use in this trade. '
       );
     } else {
       setFromToken();
@@ -61,7 +61,7 @@ export const FromSelect = () => {
     });
   }
   return (
-    <Box style={{ width: '195px' }}>
+    <Box sx={[{ width: 195 }, sx]}>
       <Select
         options={options}
         onChange={handleChange}

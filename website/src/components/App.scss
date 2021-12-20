@@ -7,6 +7,26 @@ html {
 body {
   position: relative;
 
+  --color-blue-50: '#76A6F8';
+  --color-blue-100: '#2B79FF';
+  --color-blue-300: '#005EFF';
+  --color-blue-500: '#213DB0';
+  --color-blue-700: '#111111';
+  --color-blue-900: '#0E176B';
+  --color-blue-A100: '#0A3161';
+
+  --color-grey-50: '#FFFFFF';
+  --color-grey-100: '#EDEDED';
+  --color-grey-300: '#C4C4C4';
+  --color-grey-500: '#ABABAB';
+  --color-grey-700: '#8C8C8C';
+  --color-grey-900: '#000000';
+
+  --color-red-50: '#F54F55';
+  --color-red-100: '#ED1C24';
+  --color-red-300: '#B31942';
+  --color-red-500: '#CB151C';
+
   &.light {
     --borderColor: #e2e8f0;
     --color: #2a359b;
@@ -95,7 +115,7 @@ body {
   }
 
   svg {
-    color: var(--footerIconColor);
+    // color: var(--footerIconColor);
   }
 }
 

@@ -9,6 +9,40 @@ export const getCustomTheme = (mode = 'light') => ({
     text: {
       primary: COLORS[mode],
     },
+    primary: {
+      light: '005EFF',
+      main: '#213DB0',
+      dark: '111111',
+      contrastText: '#FFFFFF',
+    },
+    secondary: {
+      light: 'B31942',
+      main: '#CB151C',
+      contrastText: '#FFFFFF',
+    },
+    blue: {
+      50: '#76A6F8',
+      100: '#2B79FF',
+      300: '#005EFF',
+      500: '#213DB0',
+      700: '#111111',
+      900: '#0E176B',
+      A100: '#0A3161',
+    },
+    grey: {
+      50: '#FFFFFF',
+      100: '#EDEDED',
+      300: '#C4C4C4',
+      500: '#ABABAB',
+      700: '#8C8C8C',
+      900: '#000000',
+    },
+    red: {
+      50: '#F54F55',
+      100: '#ED1C24',
+      300: '#B31942',
+      500: '#CB151C',
+    },
   },
   typography: {
     fontFamily: '"Roboto", sans-serif',
@@ -165,6 +199,20 @@ export const getCustomTheme = (mode = 'light') => ({
             border: `1px solid var(--borderColor)`,
             color: COLORS[mode],
             boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.25)',
+          },
+        },
+        {
+          props: { variant: 'uw-solid' },
+          style: {
+            minWidth: '7.5rem',
+            color: '#213DB0',
+            background: '#FFFFFF',
+            boxShadow:
+              '0px 4px 20px rgba(0, 0, 0, 0.25), inset 0px 4px 15px rgba(0, 0, 0, 0.25)',
+            fontSize: '1.25rem !important',
+            fontFamily: 'Roboto, sans-serif !important',
+            letterSpacing: '.5px',
+            textTransform: 'UPPERCASE',
           },
         },
       ],
