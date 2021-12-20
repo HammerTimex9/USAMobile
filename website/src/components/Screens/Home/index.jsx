@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Container } from '@mui/material';
 
 import { useExperts } from '../../../contexts/expertsContext';
 import NFTList from './NFTList';
@@ -16,10 +16,10 @@ const Home = () => {
   }, [setExpert]);
 
   return (
-    <Box>
+    <Container maxWidth="lg" px={1}>
       {false && <NFTList />}
       <TokenList />
-    </Box>
+    </Container>
   );
 };
 
