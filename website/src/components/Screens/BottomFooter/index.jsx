@@ -10,7 +10,7 @@ import { ByMoralis } from 'react-moralis';
 import { useNetwork } from '../../../contexts/networkContext';
 
 import './styles.css';
-import ladyLib from '../../../media/Padding/LadyLiberty.jpg';
+import ladyLib from '../../../assets/characters/ladyliberty.svg';
 import installMetamask from '../../../media/Padding/InstallMetamask.png';
 import addPolygon from '../../../media/Padding/AddPolygon.png';
 import congratulations from '../../../media/Padding/Congratulations.png';
@@ -42,7 +42,7 @@ export const BottomFooter = () => {
         p: 2.5,
       }}
     >
-      <Box component="img" sx={{ width: 400, borderRadius: 2.5 }} src={image} />
+      <Box className="default-mode-bg" />
       <br />
       <br />
       <Stack direction="row">

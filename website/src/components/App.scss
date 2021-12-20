@@ -44,6 +44,18 @@ body {
   color: var(--color);
 }
 
+.default-mode-bg {
+  width: 400px;
+  height: 450px;
+  background-image: url('../assets/characters/ladyliberty.svg'),
+                    url('../assets/characters/unclesam.svg'),
+                    url('../assets/characters/franklin.svg'),
+                    url('../assets/characters/mlking.svg');
+  background-repeat: no-repeat;
+  background-size: auto;
+  background-position: center bottom, left center, right center, center top;
+}
+
 *,
 *::before,
 *::after {
