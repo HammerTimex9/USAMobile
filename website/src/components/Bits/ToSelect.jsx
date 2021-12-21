@@ -7,6 +7,7 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useQuote } from '../../contexts/quoteContext';
 import { useNetwork } from '../../contexts/networkContext';
 import tokenList from '../../data/TokenList.json';
+import geckoCoinIds from '../../data/geckoCoinIds.json';
 
 export const ToSelect = () => {
   const { fromTokenSymbol, setToToken } = useActions();
@@ -40,6 +41,14 @@ export const ToSelect = () => {
   const handleChange = async (e) => {
     let result = JSON.parse(e.value);
     if (result) {
+      const id = geckoCoinIds[result.symbol?.toLowerCase()];
+      const priceData = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=USD`
+      );
+      if (priceData.status === 200) {
+        let resultData = await priceData.json();
+        result.price = resultData[`${id}`].usd;
+      }
       setToToken(result);
       setValue(e);
       setDialog(
@@ -63,7 +72,8 @@ export const ToSelect = () => {
     }),
   };
   return (
-    <Box sx={{ width: '195px' }}>
+    <Box sx={{ width: '195px', textAlign: 'start' }}>
+      <label>To</label>
       <Select
         options={tokens}
         onChange={handleChange}

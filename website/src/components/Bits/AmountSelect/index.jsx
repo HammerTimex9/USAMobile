@@ -73,7 +73,6 @@ export const AmountSelect = ({ type }) => {
 
   return (
     <div className="amount-select">
-      <label>From</label>
       <div className="amount-select-field">
         <div className="amount-select-amount">
           <div data-value={value}>

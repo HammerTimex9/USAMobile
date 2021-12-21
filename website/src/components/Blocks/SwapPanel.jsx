@@ -15,7 +15,7 @@ import YouWillGet from '../Bits/Youwillget';
 
 export const SwapPanel = () => {
   const { fromToken, txAmount, toToken } = useActions();
-  const { quoteValid, setQuote, toTokenAmount } = useQuote();
+  const { quoteValid, setQuote } = useQuote();
   useEffect(() => {
     setQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -29,8 +29,11 @@ export const SwapPanel = () => {
     }
   };
   const getToTokenAmount = () => {
-    if (toTokenAmount) {
-      return (toTokenAmount / 10 ** toToken.decimals).toFixed(3);
+    if (toToken && toToken.price) {
+      return (
+        ((txAmount / 10 ** fromToken.decimals) * fromToken.price) /
+        toToken.price
+      ).toFixed(3);
     } else {
       return 0;
     }
@@ -38,12 +41,12 @@ export const SwapPanel = () => {
   return (
     <Box>
       <Box className="select-amount">
-        <AmountSelect />
         <FromSelect />
+        <AmountSelect />
       </Box>
       <Box className="select-amount">
-        <YouWillGet value={getToTokenAmount()} />
         <ToSelect />
+        <YouWillGet value={getToTokenAmount()} />
       </Box>
       {fromToken && toToken && (
         <Typography className="trade-result">
@@ -51,8 +54,8 @@ export const SwapPanel = () => {
           {toToken.symbol}
         </Typography>
       )}
-      <RequestQuote />
       {quoteValid && <QuotePanel />}
+      <RequestQuote />
     </Box>
   );
 };
