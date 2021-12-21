@@ -61,7 +61,8 @@ export const FromSelect = ({ sx = {} }) => {
     });
   }
   return (
-    <Box sx={[{ width: 195 }, sx]}>
+    <Box sx={[{ width: 195, textAlign: 'start' }, sx]}>
+      <label>From</label>
       <Select
         options={options}
         onChange={handleChange}

@@ -4,9 +4,10 @@ import './index.scss';
 
 const YouWillGet = ({ value }) => (
   <Box className="you-will-get">
-    <label>To</label>
     <Box className="content">
-      <Typography className="text">You will get {value}</Typography>
+      <Typography className="text">
+        You will get {value ? value : ''}
+      </Typography>
     </Box>
   </Box>
 );

@@ -68,7 +68,7 @@ export const RequestQuote = () => {
                   : 'quote-button'
               }
             >
-              {quoteValid ? 'Refresh Swap Quote' : 'TRADE'}
+              {quoteValid ? 'Refresh Swap Quote' : 'GET QUOTE'}
             </LoadingButton>
           </span>
         </Tooltip>
