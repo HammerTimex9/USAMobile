@@ -9,7 +9,6 @@ import { ToAddress } from '../Bits/ToAddress';
 // import { useActions } from '../../contexts/actionsContext';
 
 export const SendPanel = ({ changeLocalMode }) => {
-
   return (
     <Box
       sx={{
