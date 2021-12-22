@@ -6,10 +6,9 @@ import { StartSend } from '../Bits/StartSend';
 // Send mode.
 import { ToAddress } from '../Bits/ToAddress';
 
-import { useActions } from '../../contexts/actionsContext';
+// import { useActions } from '../../contexts/actionsContext';
 
 export const SendPanel = ({ changeLocalMode }) => {
-  const { fromToken } = useActions();
 
   return (
     <Box
