@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
-import { Box } from '@mui/system';
+import { Box } from '@mui/material';
 
 import Timeline from './Timeline';
 import Start from './Start';
