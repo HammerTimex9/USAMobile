@@ -20,22 +20,13 @@ export const SwapPanel = () => {
     setQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
-  const getAmount = () => {
-    let decimals = 18;
-    if (fromToken && fromToken.decimals) {
-      return (txAmount / 10 ** fromToken.decimals).toFixed(3);
-    } else {
-      return (txAmount / 10 ** decimals).toFixed(3);
-    }
-  };
   const getToTokenAmount = () => {
     if (toTokenAmount) {
-      return toTokenAmount / 10 ** toToken.decimals + '';
+      return toTokenAmount / 10 ** fromToken.decimals + '';
     } else {
       return 0;
     }
   };
-  console.log(toToken, toTokenAmount, fromToken);
   return (
     <Box>
       <Box className="select-amount">
@@ -46,10 +37,9 @@ export const SwapPanel = () => {
         <ToSelect />
         <YouWillGet value={getToTokenAmount()} />
       </Box>
-      {fromToken && toToken && (
+      {fromToken && toTokenAmount && (
         <Typography className="trade-result">
-          {getAmount()} {fromToken.symbol} = {getToTokenAmount()}{' '}
-          {toToken.symbol}
+          1 {fromToken.symbol} = {txAmount / toTokenAmount} {toToken.symbol}
         </Typography>
       )}
       {quoteValid && <QuotePanel />}

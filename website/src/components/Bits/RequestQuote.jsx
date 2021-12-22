@@ -38,6 +38,7 @@ export const RequestQuote = () => {
 
   useEffect(() => {
     if (data && !data.error) {
+      console.log('++ quote data', data);
       setQuote(data);
       setDialog(
         "Push 'Do it!' to execute trade.  Or adjust inputs to update quote."
