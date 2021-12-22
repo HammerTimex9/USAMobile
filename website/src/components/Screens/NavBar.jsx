@@ -20,7 +20,7 @@ export const NavBar = () => {
     if (user && !address) {
       alert('You should login with Metamask!');
     }
-  }, [user]);
+  }, [user, address]);
   return (
     <Stack
       spacing={1}
