@@ -1,8 +1,7 @@
 import { IconButton, Tooltip } from '@mui/material';
-import ChatIcon from '@mui/icons-material/Chat';
-import BlockIcon from '@mui/icons-material/Block';
 
 import { useExperts } from '../../contexts/expertsContext';
+import { EyeOpenSvg, EyeCloseSvg } from '../../assets/icons';
 
 export const ExpertButton = () => {
   const { isEnableExpert, enableExpert } = useExperts();
@@ -10,11 +9,7 @@ export const ExpertButton = () => {
   return (
     <Tooltip title="Toggle expert advice.">
       <IconButton variant="uw" onClick={() => enableExpert(!isEnableExpert)}>
-        {isEnableExpert ? (
-          <BlockIcon className="nav-bar-icon" />
-        ) : (
-          <ChatIcon className="nav-bar-icon" />
-        )}
+        {isEnableExpert ? <EyeCloseSvg /> : <EyeOpenSvg />}
       </IconButton>
     </Tooltip>
   );
