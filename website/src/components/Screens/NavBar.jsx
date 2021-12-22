@@ -2,10 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 import { Box, Stack } from '@mui/material';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import HomeIcon from '@mui/icons-material/Home';
 
 import { usePositions } from '../../contexts/portfolioContext';
+import { PortfolioSvg, TradeSvg, BuySvg, ArrowsSvg } from '../../assets/icons';
+
 import { Tab } from '../UW/Tab';
 
 export const NavBar = () => {
@@ -29,6 +30,11 @@ export const NavBar = () => {
           justifyContent: 'space-evenly',
           background: 'var(--tabbar-background)',
           borderRadius: '0 0 30px 30px',
+
+          '& svg': {
+            fontSize: 30,
+            marginBottom: '2px',
+          },
         }}
       >
         <Link to="/">
@@ -38,17 +44,17 @@ export const NavBar = () => {
         </Link>
         <Link to="/Portfolio" className={`${emptyPositions ? 'disabled' : ''}`}>
           <Tab label="Portfolio">
-            <PhotoCamera />
+            <PortfolioSvg />
           </Tab>
         </Link>
         <Link to="/SwapTrade" className={`${emptyPositions ? 'disabled' : ''}`}>
           <Tab label="Trade">
-            <PhotoCamera />
+            <TradeSvg />
           </Tab>
         </Link>
         <Link to="/BuySell">
           <Tab label="Buy Crypto">
-            <PhotoCamera />
+            <BuySvg />
           </Tab>
         </Link>
 
@@ -57,7 +63,7 @@ export const NavBar = () => {
           className={`${emptyPositions ? 'disabled' : ''}`}
         >
           <Tab label={isOnlyMatic ? 'Recieve' : 'Send/Recieve'}>
-            <PhotoCamera />
+            <ArrowsSvg />
           </Tab>
         </Link>
       </Box>

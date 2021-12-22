@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { useMoralis } from 'react-moralis';
 import { Button, Drawer, Tooltip } from '@mui/material';
-import LockIcon from '@mui/icons-material/Lock';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
 
+import { LockSvg, LogOutSvg } from '../../../assets/icons';
 import { AuthDrawer } from '../AuthDrawer';
 import { DrawerHeader } from '../DrawerHeader';
 
@@ -50,7 +49,7 @@ export const AuthButton = () => {
         <Tooltip title="Log out of USA Wallet.">
           <Button
             variant="white"
-            startIcon={<LockOpenIcon className="nav-bar-icon" />}
+            startIcon={<LogOutSvg style={{ fontSize: 22 }} />}
             onClick={() => logout()}
           >
             Log Out
@@ -61,7 +60,7 @@ export const AuthButton = () => {
           <Tooltip title="Log into USA Wallet.">
             <Button
               variant="white"
-              startIcon={<LockIcon className="nav-bar-icon" />}
+              startIcon={<LockSvg style={{ fontSize: 22 }} />}
               onClick={() => toggleDrawer(true)} //loginClicked()
             >
               Log In

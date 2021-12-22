@@ -3,7 +3,6 @@ import { useMoralis } from 'react-moralis';
 import { Avatar, Button, Drawer, Tooltip } from '@mui/material';
 
 import PersonIcon from '@mui/icons-material/Person';
-
 import { AuthDrawer } from './AuthDrawer';
 import { DrawerHeader } from './DrawerHeader';
 
