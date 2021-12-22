@@ -46,9 +46,12 @@ body {
     );
     --tabbar-color: var(--color-grey-50);
 
-    background-image: url('../assets/bg-light.svg');
     --solid-button-bg: var(--gradient-300);
     --solid-button-color: var(--color-grey-50);
+
+    --experts-background: rgba(255, 255, 255, 0.1);
+
+    background-image: url('../assets/bg-light.svg');
   }
 
   &.dark {
@@ -62,10 +65,17 @@ body {
     --tabbar-background: var(--color-grey-50);
     --tabbar-color: var(--color-grey-900);
 
-    background-image: url('../assets/bg-dark.svg'),
-      linear-gradient(222.27deg, #00079a -0.93%, #0d182c 139.51%);
     --solid-button-bg: var(--color-grey-50);
     --solid-button-color: var(--color-blue-900);
+
+    --experts-background: linear-gradient(
+      261.33deg,
+      rgba(255, 255, 255, 0.4) 1.9%,
+      rgba(255, 255, 255, 0) 97.43%
+    );
+
+    background-image: url('../assets/bg-dark.svg'),
+      linear-gradient(222.27deg, #00079a -0.93%, #0d182c 139.51%);
   }
 
   --boxShadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25); //Middle M Shadow
