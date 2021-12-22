@@ -78,19 +78,20 @@ export const AmountInput = () => {
           value={value}
           onChange={onChange}
           onBlur={onBlur}
-          autoFocus
           autoComplete="off"
           type="number"
           InputProps={{
-            min: 0,
-            max: tokens,
-            step: (tokens / 10).toPrecision(3),
             disableUnderline: true,
             startAdornment: (
               <InputAdornment position="start">
                 <Text className="amount-input-symbol">{symbol}</Text>
               </InputAdornment>
             ),
+          }}
+          inputProps={{
+            min: 0,
+            max: tokens,
+            step: (tokens / 10).toPrecision(3),
           }}
         />
         {amount > tokens && (
