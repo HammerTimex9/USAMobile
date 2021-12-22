@@ -97,7 +97,9 @@ export const AmountInput = () => {
           <div className="amount-input-bottom-text">Insufficient funds.</div>
         )}
         {amount < tokens && (
-          <div className="amount-input-bottom-text">Value in USD= 300</div>
+          <div className="amount-input-bottom-text">{`Value in USD=${(
+            amount * price
+          ).toFixed(2)}`}</div>
         )}
       </FormControl>
     </Box>
