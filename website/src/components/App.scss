@@ -27,12 +27,16 @@ body {
   --color-red-300: #b31942;
   --color-red-500: #cb151c;
 
+  --gradient-50: linear-gradient(180deg, #005eff 0%, #ffffff 100%);
+  --gradient-100: linear-gradient(240.53deg, #005eff 8.59%, #2e3192 82.27%);
+  --gradient-300: linear-gradient(222.27deg, #00079a 27.32%, #0d182c 139.51%);
+
   &.light {
     --borderColor: #e2e8f0;
-    --color: #2a359b;
+    --color: var(--color-blue-900);
     --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
     --selection-bg: rgba(255, 255, 255, 1);
-    --selection-color: #2a359b;
+    --selection-color: var(--color-blue-900);
     --arrow: url('../assets/arrow1.svg');
     --footerIconColor: black;
     --tabbar-background: linear-gradient(
@@ -43,14 +47,16 @@ body {
     --tabbar-color: var(--color-grey-50);
 
     background-image: url('../assets/bg-light.svg');
+    --solid-button-bg: var(--gradient-300);
+    --solid-button-color: var(--color-grey-50);
   }
 
   &.dark {
     --borderColor: rgba(255, 255, 255, 0.16);
-    --color: rgba(255, 255, 255, 0.92);
+    --color: var(--color-grey-50);
     --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
     --selection-bg: #1e277d;
-    --selection-color: #fff;
+    --selection-color: var(--color-grey-50);
     --arrow: url('../assets/arrow.svg');
     --footerIconColor: white;
     --tabbar-background: var(--color-grey-50);
@@ -58,6 +64,8 @@ body {
 
     background-image: url('../assets/bg-dark.svg'),
       linear-gradient(222.27deg, #00079a -0.93%, #0d182c 139.51%);
+    --solid-button-bg: var(--color-grey-50);
+    --solid-button-color: var(--color-blue-900);
   }
 
   --boxShadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25); //Middle M Shadow

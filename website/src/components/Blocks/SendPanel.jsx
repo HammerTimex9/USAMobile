@@ -1,12 +1,16 @@
 import { Box, Stack } from '@mui/material';
 
 import { FromSelect } from '../Bits/FromSelect';
-import { AmountSelect } from '../Bits/AmountSelect';
+import { AmountInput } from '../Bits/AmountInput';
 import { StartSend } from '../Bits/StartSend';
 // Send mode.
 import { ToAddress } from '../Bits/ToAddress';
 
-export const SendPanel = () => {
+import { useActions } from '../../contexts/actionsContext';
+
+export const SendPanel = ({ changeLocalMode }) => {
+  const { fromToken } = useActions();
+
   return (
     <Box
       sx={{
@@ -29,14 +33,16 @@ export const SendPanel = () => {
         }}
         spacing={3}
       >
-        <FromSelect sx={{ width: '100%' }} />
-        <>
-          <AmountSelect type="send" style={{ width: '100%' }} />
-          <ToAddress />
-          <Stack sx={{ alignSelf: 'center' }} direction="row" spacing={1}>
-            <StartSend />
-          </Stack>
-        </>
+        <FromSelect sx={{ width: '100%', minWidth: 420 }} />
+        {!!fromToken && (
+          <>
+            <AmountInput />
+            <ToAddress />
+            <Stack sx={{ width: '100%' }} direction="row" spacing={1}>
+              <StartSend changeLocalMode={changeLocalMode} />
+            </Stack>
+          </>
+        )}
       </Stack>
     </Box>
   );

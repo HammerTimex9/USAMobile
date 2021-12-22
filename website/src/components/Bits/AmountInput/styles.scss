@@ -1,0 +1,19 @@
+.amount-input {
+  .MuiInputBase-root {
+    padding-left: 16px;
+  }
+  .MuiInputBase-root,
+  &-symbol {
+    font-size: 3.125rem;
+    font-weight: 700;
+    font-family: Roboto !important;
+    text-transform: uppercase;
+    color: var(--color);
+  }
+  &-symbol {
+    margin-right: 10px;
+  }
+  &-bottom-text {
+    color: var(--color);
+  }
+}

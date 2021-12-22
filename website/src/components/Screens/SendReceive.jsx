@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 
-import { Box, Button, Stack } from '@mui/material';
+import { Box, Button, IconButton, Stack } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { SendPanel } from '../Blocks/SendPanel';
 import { AddressPanel } from '../Blocks/AddressPanel';
@@ -45,8 +46,7 @@ const SendReceive = () => {
       return;
     }
 
-    // Commented due to UI break
-    // setLocalMode('send');
+    setLocalMode('send');
     setDialog('Select a currency to send.');
   };
 
@@ -58,11 +58,32 @@ const SendReceive = () => {
     );
   };
 
+  const handleBackButton = () => {
+    setLocalMode('none');
+    setExpert({
+      character: 'benfranklin',
+      dialog: 'Would you like to send or receive cryptocurrency?',
+    });
+  };
+
   return (
     <Box sx={{ textAlign: 'center', mt: 1, mb: 3 }}>
       <Heading variant="h4" sx={{ mb: 2 }}>
         Transfer Cryptocurrency
       </Heading>
+      {localMode !== 'none' && (
+        <Box sx={{ textAlign: 'start', width: 500, height: 26 }}>
+          <IconButton onClick={handleBackButton} sx={{ top: '-64px' }}>
+            <ArrowBackIcon
+              sx={{
+                fontSize: '2.5rem',
+                fontWeight: 'bold',
+                color: 'var(--color)',
+              }}
+            />
+          </IconButton>
+        </Box>
+      )}
       {localMode === 'none' && (
         <Stack
           sx={{
@@ -99,8 +120,9 @@ const SendReceive = () => {
           <SamUncle style={{ overflow: 'visible' }} />
         </Stack>
       )}
-      <br />
-      {localMode === 'send' && <SendPanel />}
+      {localMode === 'send' && (
+        <SendPanel changeLocalMode={() => setLocalMode('none')} />
+      )}
       {localMode === 'receive' && <AddressPanel />}
     </Box>
   );
