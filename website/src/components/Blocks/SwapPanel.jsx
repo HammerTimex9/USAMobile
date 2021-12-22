@@ -20,14 +20,6 @@ export const SwapPanel = () => {
     setQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
-  const getAmount = () => {
-    let decimals = 18;
-    if (fromToken && fromToken.decimals) {
-      return (txAmount / 10 ** fromToken.decimals).toFixed(3);
-    } else {
-      return (txAmount / 10 ** decimals).toFixed(3);
-    }
-  };
   const getToTokenAmount = () => {
     if (toTokenAmount) {
       return toTokenAmount / 10 ** fromToken.decimals + '';
@@ -35,7 +27,6 @@ export const SwapPanel = () => {
       return 0;
     }
   };
-  console.log(toToken, toTokenAmount, fromToken, txAmount);
   return (
     <Box>
       <Box className="select-amount">
@@ -48,7 +39,7 @@ export const SwapPanel = () => {
       </Box>
       {fromToken && toTokenAmount && (
         <Typography className="trade-result">
-          1 MATIC = {txAmount / toTokenAmount} {toToken.symbol}
+          1 {fromToken.symbol} = {txAmount / toTokenAmount} {toToken.symbol}
         </Typography>
       )}
       {quoteValid && <QuotePanel />}

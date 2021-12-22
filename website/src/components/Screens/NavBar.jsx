@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, Typography, Modal } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 
 import { usePositions } from '../../contexts/portfolioContext';
@@ -12,10 +12,15 @@ import { Tab } from '../UW/Tab';
 export const NavBar = () => {
   const { user } = useMoralis();
   const { positions } = usePositions();
+  const [modal, setModal] = useState(false);
   const address = user?.attributes?.ethAddress;
   const emptyPositions = !address || positions.length === 0;
   const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
-
+  useEffect(() => {
+    if (user && !address) {
+      alert('You should login with Metamask!');
+    }
+  }, [user]);
   return (
     <Stack
       spacing={1}
@@ -67,6 +72,12 @@ export const NavBar = () => {
           </Tab>
         </Link>
       </Box>
+      <Modal open={modal} onBackdropClick={() => setModal(false)}>
+        <Box>
+          <Typography>Alert</Typography>
+          <Typography>You should login with metamask!</Typography>
+        </Box>
+      </Modal>
     </Stack>
   );
 };
