@@ -30,12 +30,12 @@ export const SwapPanel = () => {
   };
   const getToTokenAmount = () => {
     if (toTokenAmount) {
-      return toTokenAmount / 10 ** toToken.decimals + '';
+      return toTokenAmount / 10 ** fromToken.decimals + '';
     } else {
       return 0;
     }
   };
-  console.log(toToken, toTokenAmount, fromToken);
+  console.log(toToken, toTokenAmount, fromToken, txAmount);
   return (
     <Box>
       <Box className="select-amount">
@@ -46,10 +46,9 @@ export const SwapPanel = () => {
         <ToSelect />
         <YouWillGet value={getToTokenAmount()} />
       </Box>
-      {fromToken && toToken && (
+      {fromToken && toTokenAmount && (
         <Typography className="trade-result">
-          {getAmount()} {fromToken.symbol} = {getToTokenAmount()}{' '}
-          {toToken.symbol}
+          1 MATIC = {txAmount / toTokenAmount} {toToken.symbol}
         </Typography>
       )}
       {quoteValid && <QuotePanel />}
