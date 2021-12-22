@@ -7,29 +7,29 @@ import { Box, Stack } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 import { useExperts } from '../../contexts/expertsContext';
-import { useColorMode } from '../../contexts/colorModeContext';
 import { Heading } from '../UW/Heading';
 import { Text } from '../UW/Text';
+import { AlertDialog } from '../UW/AlertDialog';
 
 export const AddressPanel = () => {
   const { Moralis, isAuthenticated } = useMoralis();
-  const { colorMode } = useColorMode();
   const { setDialog } = useExperts();
   const [copied, setCopied] = useState(false);
   const [data, setData] = useState('0x0');
   const user = Moralis.User.current();
   const ethAddress = user?.attributes.ethAddress;
 
+  const [showAlert, setShowAlert] = useState(false);
+
   useEffect(() => {
-    console.log('Called....');
     if (copied) {
-      console.log('Copy Done');
       setDialog(
         'Your wallet address has been copied to the clipboard.  ' +
           'Carefully check the address before sending!  ' +
           'Malware can change your destination address in the clipboard!'
       );
       setCopied(false);
+      setShowAlert(true);
     } else {
       if (isAuthenticated) {
         setData('ethereum:' + user?.attributes['ethAddress'] + '?chainID:137');
@@ -42,6 +42,8 @@ export const AddressPanel = () => {
     <Box
       sx={{
         display: 'inline-flex',
+        minWidth: 420,
+        maxWidth: 660,
         m: 'auto',
         mb: 3,
         borderRadius: '1.5rem',
@@ -61,8 +63,19 @@ export const AddressPanel = () => {
       >
         <Heading variant="h4">Your Address:</Heading>
         <QRCode value={ethAddress} />
-        <Stack direction="row" spacing={1}>
-          <Text sx={{ lineHeight: 2.5 }}>{ethAddress}</Text>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            p: 2,
+            borderRadius: 2.5,
+            boxShadow: '3px 3px 10px 3px rgba(0, 0, 0, 0.25)',
+            background: 'rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <Text sx={{ lineHeight: 2.5, color: 'var(--color)' }}>
+            {ethAddress}
+          </Text>
           <CopyToClipboard
             text={data}
             onCopy={(text, result) => setCopied(result)}
@@ -76,13 +89,21 @@ export const AddressPanel = () => {
                 alignSelf: 'center',
                 fontSize: '2rem',
                 boxShadow: 'var(--boxShadow)',
-                color: colorMode === 'light' ? '#000000de' : '#ffffffeb',
+                color: 'var(--color)',
                 p: 1,
               }}
             />
           </CopyToClipboard>
         </Stack>
       </Stack>
+      <AlertDialog
+        open={showAlert}
+        showCancel={false}
+        onClose={() => setShowAlert(false)}
+      >
+        Your link has been copied successfully, you can share your wallet
+        number.
+      </AlertDialog>
     </Box>
   );
 };
