@@ -6,11 +6,9 @@ import { StartSend } from '../Bits/StartSend';
 // Send mode.
 import { ToAddress } from '../Bits/ToAddress';
 
-import { useActions } from '../../contexts/actionsContext';
+// import { useActions } from '../../contexts/actionsContext';
 
 export const SendPanel = ({ changeLocalMode }) => {
-  const { fromToken } = useActions();
-
   return (
     <Box
       sx={{
@@ -34,15 +32,13 @@ export const SendPanel = ({ changeLocalMode }) => {
         spacing={3}
       >
         <FromSelect sx={{ width: '100%', minWidth: 420 }} />
-        {!!fromToken && (
-          <>
-            <AmountInput />
-            <ToAddress />
-            <Stack sx={{ width: '100%' }} direction="row" spacing={1}>
-              <StartSend changeLocalMode={changeLocalMode} />
-            </Stack>
-          </>
-        )}
+        <>
+          <AmountInput />
+          <ToAddress />
+          <Stack sx={{ width: '100%' }} direction="row" spacing={1}>
+            <StartSend changeLocalMode={changeLocalMode} />
+          </Stack>
+        </>
       </Stack>
     </Box>
   );

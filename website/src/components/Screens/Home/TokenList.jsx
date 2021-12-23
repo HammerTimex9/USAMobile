@@ -1,130 +1,116 @@
 import React from 'react';
 import { Box, Grid, Modal, Typography } from '@mui/material';
+import { styled } from '@mui/system';
 
 import tokenList from '../../../data/TokenList.json';
+import { useExperts } from '../../../contexts/expertsContext';
 import { usePositions } from '../../../contexts/portfolioContext';
 import { Heading } from '../../UW/Heading';
 import TokenCard from '../../Bits/TokenCard';
 
-const TokenList = () => {
-  const [selectedSymbol, setSelectedSymbol] = React.useState(null);
-  const [description, setDescription] = React.useState(null);
-  const { positions } = usePositions();
+const Card = styled(Box)(({ isPosition }) => ({
+  borderRadius: '25px',
+  boxShadow: isPosition
+    ? '0 0 0px 4px #efcc61, 6px 8px 10px rgba(0, 0, 0, 0.3)'
+    : '4px 6px 10px rgba(0, 0, 0, 0.25)',
+  overflow: 'hidden',
 
-  const onCloseModal = () => setSelectedSymbol();
+  '& > div': {
+    position: 'relative',
+    display: 'flex',
+    cursor: 'pointer',
+
+    '& p': {
+      position: 'absolute',
+      color: '#fff',
+      lineHeight: 1,
+
+      '&.name': {
+        top: 18,
+        left: 16,
+        fontSize: 20,
+      },
+
+      '&.symbol': {
+        top: 21,
+        right: 18,
+      },
+
+      '&.value': {
+        bottom: 18,
+        left: 18,
+        fontSize: 14,
+      },
+
+      '&.read-more': {
+        bottom: 20,
+        right: 18,
+        fontSize: 14,
+        textDecoration: 'underline',
+      },
+    },
+  },
+}));
+
+const TokenList = () => {
+  const [selectedToken, setSelectedToken] = React.useState();
+  const [hoverdToken, setHoverdToken] = React.useState();
+  const { positions } = usePositions();
+  const { setDialog } = useExperts();
+
+  const onCloseModal = () => setSelectedToken();
+
+  React.useEffect(() => {
+    setDialog(
+      hoverdToken?.description ||
+        "Welcome to cryptocurrency, Citizen! Here are today's offerings."
+    );
+  }, [hoverdToken, setDialog]);
 
   return (
     <>
       <Heading variant="h4">Tokens</Heading>
 
-      <Box mt={2}>
-        <Grid container spacing={2}>
+      <Box mt={2} sx={{ height: 'calc(100vh - 530px)', overflow: 'auto' }}>
+        <Grid container spacing={2} p={1}>
           {tokenList.map((token, i) => {
             const position = positions.find((p) => p.symbol === token.symbol);
             return (
-              <Grid key={token.token_id} item xs={12} sm={6} md={4} lg={3}>
-                <Box
-                  sx={{
-                    position: 'relative',
-                    display: 'flex',
-                    borderRadius: '25px',
-                    boxShadow: `4px 6px 10px rgba(0, 0, 0, 0.25)${
-                      position ? ', 0 0 0px 4px #efcc61' : ''
-                    }`,
-                    overflow: 'hidden',
-
-                    '& p': {
-                      position: 'absolute',
-                      color: '#fff',
-                      lineHeight: 1,
-                    },
-                  }}
-                >
-                  <img
-                    src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
-                    width="100%"
-                    alt=""
-                    loading="lazy"
-                  />
-                  <Typography sx={{ top: 18, left: 16, fontSize: 20 }}>
-                    {token.name}
-                  </Typography>
-                  <Typography sx={{ top: 21, right: 18 }}>
-                    {token.symbol}
-                  </Typography>
-                  <Typography sx={{ bottom: 18, left: 18, fontSize: 14 }}>
-                    {position?.tokens.toPrecision(3)} {position?.symbol}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      bottom: 20,
-                      right: 18,
-                      fontSize: 14,
-                      textDecoration: 'underline',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => {
-                      setSelectedSymbol(token.symbol);
-                      setDescription(token.description);
-                    }}
+              <Grid key={token.token_id} item xs={12} sm={6} md={4}>
+                <Card isPosition={!!position}>
+                  <Box
+                    onClick={() => setSelectedToken(token)}
+                    onMouseEnter={() => setHoverdToken(token)}
+                    onMouseLeave={() => setHoverdToken()}
                   >
-                    Read more
-                  </Typography>
-                </Box>
+                    <img
+                      src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
+                      width="100%"
+                      alt=""
+                      loading="lazy"
+                    />
+                    <Typography className="name">{token.name}</Typography>
+                    <Typography className="symbol">{token.symbol}</Typography>
+                    <Typography className="value">
+                      {position?.tokens.toPrecision(3)} {position?.symbol}
+                    </Typography>
+                    <Typography className="read-more">Read more</Typography>
+                  </Box>
+                </Card>
               </Grid>
             );
           })}
         </Grid>
       </Box>
 
-      {/* <Box
-        sx={{
-          width: 500,
-          mx: 'auto',
-          borderRadius: '1.5rem',
-          backgroundImage: 'var(--bg)',
-          border: '4px solid var(--borderColor)',
-          overflow: 'hidden',
-        }}
-      >
-        <List
-          sx={{
-            maxHeight: 288,
-            overflow: 'auto',
-          }}
-          className="uw-scrollbar"
-        >
-          {tokenList.map((token) => (
-            <ListItemButton
-              key={token.symbol}
-              onClick={() => {
-                setSelectedSymbol(token.symbol);
-                setDescription(token.description);
-              }}
-            >
-              <ListItemAvatar>
-                <Avatar
-                  src={token.image}
-                  size="sm"
-                  sx={{ backgroundColor: '#fff' }}
-                />
-              </ListItemAvatar>
-              <ListItemText
-                primary={token.name}
-                secondary={token.description}
-              />
-            </ListItemButton>
-          ))}
-        </List>
-      </Box> */}
       <Modal
-        open={!!selectedSymbol}
+        open={!!selectedToken}
         sx={{ maxWidth: '56rem', mx: 'auto', my: '3.56rem' }}
         onBackdropClick={onCloseModal}
       >
         <TokenCard
-          description={description}
-          symbol={selectedSymbol}
+          description={selectedToken?.description}
+          symbol={selectedToken?.symbol}
           onClose={onCloseModal}
         />
       </Modal>
