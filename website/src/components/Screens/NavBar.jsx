@@ -18,7 +18,9 @@ export const NavBar = () => {
   const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
   useEffect(() => {
     if (user && !address) {
-      alert('You should login with Metamask!');
+      alert(
+        'We recommend authenticating with MetaMask as a more secure login than using email and passwords.'
+      );
     }
   }, [user, address]);
   return (
