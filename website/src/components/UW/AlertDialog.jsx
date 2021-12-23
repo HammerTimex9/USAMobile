@@ -31,7 +31,7 @@ export const AlertDialog = ({
           sx={{
             textAlign: 'center',
             wordBreak: 'break-word',
-            color: 'var(--color-primary)',
+            color: 'var(--color)',
           }}
         >
           {props.children}
