@@ -60,7 +60,7 @@ export const RequestQuote = () => {
             <LoadingButton
               disabled={!txAmount || !toTokenSymbol}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
-              sx={{ boxShadow: 'var(--boxShadow)' }}
+              sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={isFetching}
               onClick={fetch}
               className={

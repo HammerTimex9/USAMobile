@@ -11,7 +11,6 @@ import { ActionsProvider } from './contexts/actionsContext';
 import { QuoteProvider } from './contexts/quoteContext';
 import App from './components/App';
 import reportWebVitals from './components/Support/reportWebVitals';
-
 const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID;
 const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL;
 

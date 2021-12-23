@@ -18,8 +18,7 @@ export const SendPanel = ({ changeLocalMode }) => {
         m: 'auto',
         borderRadius: '1.5rem',
         border: 4,
-        backgroundImage: 'var(--bg)',
-        borderColor: 'var(--borderColor)',
+        borderColor: 'var(--border-color)',
       }}
     >
       <Stack

@@ -53,11 +53,18 @@ export const ToAddress = () => {
       )}
       {isPolygon && (
         <TextField
-          id="outlined-basic"
           label="Input destination address"
           type="text"
           variant="outlined"
-          sx={{ width: '100%' }}
+          sx={{
+            width: '100%',
+            background: 'var(--fade-out-bg)',
+            boxShadow: 'var(--box-shadow)',
+            borderRadius: '10px',
+          }}
+          InputProps={{
+            sx: { borderRadius: '10px' },
+          }}
           onChange={(event) => {
             setToToken({ symbol: '', address: event.target.value });
           }}

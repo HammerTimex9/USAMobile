@@ -11,8 +11,8 @@ const Panel = styled(Box)({
   width: 400,
   height: 200,
   padding: '20px',
-  background: 'var(--experts-background)',
-  boxShadow: '5px 5px 10px 3px rgba(0, 0, 0, 0.2)',
+  background: 'var(--fade-out-bg)',
+  boxShadow: 'var(--box-shadow)',
   borderRadius: 40,
   overflow: 'hidden',
 

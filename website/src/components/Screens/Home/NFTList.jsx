@@ -66,8 +66,8 @@ const NFTList = () => {
           sx={{
             width: 600,
             borderRadius: '1.5rem',
-            backgroundImage: 'var(--bg)',
-            border: '4px solid var(--borderColor)',
+            backgroundImage: 'var(--bg)', // unconfirmed
+            border: '4px solid var(--border-color)',
             overflow: 'hidden',
             mx: 'auto',
             my: 2,

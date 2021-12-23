@@ -28,7 +28,11 @@ export const AlertDialog = ({
     >
       <DialogContent sx={{ minHeight: 120, maxWidth: 320 }}>
         <DialogContentText
-          sx={{ textAlign: 'center', wordBreak: 'break-word' }}
+          sx={{
+            textAlign: 'center',
+            wordBreak: 'break-word',
+            color: 'var(--color-primary)',
+          }}
         >
           {props.children}
         </DialogContentText>
@@ -42,9 +46,9 @@ export const AlertDialog = ({
             sx={{
               width: 100,
               height: 40,
-              boxShadow: 'var(--boxShadow)',
+              boxShadow: 'var(--box-shadow-outset)',
               background: 'var(--gradient-300)',
-              color: 'grey.50',
+              color: 'var(--color-white)',
               fontSize: '1rem !important',
             }}
           >
@@ -57,9 +61,9 @@ export const AlertDialog = ({
           sx={{
             width: 100,
             height: 40,
-            boxShadow: 'var(--boxShadow)',
+            boxShadow: 'var(--box-shadow-outset)',
             background: 'var(--gradient-300)',
-            color: 'grey.50',
+            color: 'var(--color-white)',
             fontSize: '1rem !important',
           }}
         >

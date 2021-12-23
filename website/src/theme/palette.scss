@@ -1,0 +1,41 @@
+:root {
+  /* Primary Color */
+  --color-primary: #0e176b;
+  --color-primary-50: #76a6f8;
+  --color-primary-100: #2b79ff;
+  --color-primary-300: #005eff;
+  --color-primary-500: #213db0;
+  --color-primary-700: #111111;
+  --color-primary-A100: #0a3161;
+
+  /* Secondary Color */
+  --color-secondary: #b31942;
+  --color-secondary-50: #f54f55;
+  --color-secondary-100: #ed1c24;
+  --color-secondary-500: #cb151c;
+
+  /* Neutral Color */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-neutral-100: #ededed;
+  --color-neutral-300: #c4c4c4;
+  --color-neutral-500: #ababab;
+  --color-neutral-700: #8c8c8c;
+
+  /* Gradient Color */
+  --gradient-50: linear-gradient(180deg, #005eff 0%, #ffffff 100%);
+  --gradient-100: linear-gradient(240.53deg, #005eff 8.59%, #2e3192 82.27%);
+  --gradient-300: linear-gradient(222.27deg, #00079a 27.32%, #0d182c 139.51%);
+
+  /* BoxShadows */
+  --box-shadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25);
+  --box-shadow-outset: 0px 4px 20px rgba(0, 0, 0, 0.25);
+  --box-shadow-inset: 0px 4px 20px rgba(0, 0, 0, 0.25),
+    inset 0px 4px 15px rgba(0, 0, 0, 0.25);
+
+  /* Default */
+  --border-radius: 25px;
+  --font-family: 'Roboto';
+  --fade-out-bg: rgba(255, 255, 255, 0.1);
+  --send-receive-bg: var(--color-primary-500);
+}

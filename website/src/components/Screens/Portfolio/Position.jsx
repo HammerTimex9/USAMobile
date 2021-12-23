@@ -19,8 +19,8 @@ const Position = ({ position, onSelect }) => {
     <Box
       sx={{
         my: '10px',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.25)',
+        backgroundColor: 'var(--fade-out-bg)',
+        boxShadow: 'var(--box-shadow-outset)',
         borderRadius: '10px',
       }}
     >
@@ -37,7 +37,7 @@ const Position = ({ position, onSelect }) => {
             width: '35px',
             height: '35px',
             mr: 2,
-            background: '#fff',
+            background: 'var(--color-white)',
             cursor: 'pointer',
           }}
           name={position.symbol}
@@ -80,4 +80,5 @@ const Position = ({ position, onSelect }) => {
   );
 };
 
+// We have one unconfirmed Color here on this Page.
 export default Position;

@@ -78,7 +78,7 @@ const SendReceive = () => {
               sx={{
                 fontSize: '2.5rem',
                 fontWeight: 'bold',
-                color: 'var(--color)',
+                color: 'var(--back-button-color)',
               }}
             />
           </IconButton>
@@ -88,7 +88,7 @@ const SendReceive = () => {
         <Stack
           sx={{
             alignItems: 'center',
-            backgroundColor: 'blue.500',
+            backgroundColor: 'var(--send-receive-bg)',
             borderRadius: '50%',
             height: 440,
             width: 480,
@@ -97,12 +97,12 @@ const SendReceive = () => {
         >
           <Text
             sx={{
-              color: 'grey.50',
-              fontFamily: 'Roboto !important',
+              color: 'var(--color-white)',
+              fontFamily: 'var(--font-family)',
               fontWeight: 'bold',
               lineHeight: '19px',
               my: 3,
-              width: 231,
+              width: 240,
             }}
           >
             Would you like to
@@ -110,10 +110,27 @@ const SendReceive = () => {
             send or recieve cryptocurrency?
           </Text>
           <Stack direction="row">
-            <Button variant="uw-solid" onClick={handleSendMode} sx={{ mr: 1 }}>
+            <Button
+              variant="uw-solid"
+              onClick={handleSendMode}
+              sx={{
+                mr: 1,
+                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-white)',
+                boxShadow: 'var(--box-shadow-inset)',
+              }}
+            >
               Send
             </Button>
-            <Button variant="uw-solid" onClick={handleReceiveMode}>
+            <Button
+              variant="uw-solid"
+              onClick={handleReceiveMode}
+              sx={{
+                color: 'var(--color-primary)',
+                backgroundColor: 'var(--color-white)',
+                boxShadow: 'var(--box-shadow-inset)',
+              }}
+            >
               Receive
             </Button>
           </Stack>

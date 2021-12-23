@@ -26,16 +26,16 @@ export const AuthButton = () => {
   }, [history, isAuthenticated]);
 
   // Commented to test on Local Dev
-  useEffect(() => {
-    return () => {
-      window.addEventListener('beforeunload', function (e) {
-        let confirmationMessage = 'o/';
-        (e || window.event).returnValue = confirmationMessage;
-        if (isAuthenticated) logout();
-        return confirmationMessage;
-      });
-    };
-  });
+  // useEffect(() => {
+  //   return () => {
+  //     window.addEventListener('beforeunload', function (e) {
+  //       let confirmationMessage = 'o/';
+  //       (e || window.event).returnValue = confirmationMessage;
+  //       if (isAuthenticated) logout();
+  //       return confirmationMessage;
+  //     });
+  //   };
+  // });
 
   // Commented for build, first need to test this
   // const loginClicked = () => {
@@ -48,7 +48,7 @@ export const AuthButton = () => {
       {isAuthenticated ? (
         <Tooltip title="Log out of USA Wallet.">
           <Button
-            variant="white"
+            variant="uw"
             startIcon={<LogOutSvg style={{ fontSize: 22 }} />}
             onClick={() => logout()}
           >
@@ -59,7 +59,7 @@ export const AuthButton = () => {
         <>
           <Tooltip title="Log into USA Wallet.">
             <Button
-              variant="white"
+              variant="uw"
               startIcon={<LockSvg style={{ fontSize: 22 }} />}
               onClick={() => toggleDrawer(true)} //loginClicked()
             >

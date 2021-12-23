@@ -23,7 +23,7 @@ export const Tab = ({ sx = {}, label = '', ...props }) => {
       {props.children}
       <Text
         sx={{
-          fontFamily: 'Roboto !important',
+          fontFamily: 'var(--font-family)',
           fontSize: '.75rem',
           color: 'var(--tabbar-color)',
         }}

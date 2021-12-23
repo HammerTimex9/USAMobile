@@ -6,8 +6,8 @@ export const Text = ({ variant = 'body1', sx = {}, ...props }) => {
       variant={variant}
       sx={[
         {
-          fontFamily: 'P22-Typewriter',
-          color: 'text.primary',
+          fontFamily: 'var(--font-family)',
+          color: 'var(--color)',
         },
         sx,
       ]}

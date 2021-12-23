@@ -48,8 +48,7 @@ export const AddressPanel = () => {
         mb: 3,
         borderRadius: '1.5rem',
         border: 4,
-        backgroundImage: 'var(--bg)',
-        borderColor: 'var(--borderColor)',
+        borderColor: 'var(--border-color)',
       }}
     >
       <Stack
@@ -69,8 +68,8 @@ export const AddressPanel = () => {
           sx={{
             p: 2,
             borderRadius: 2.5,
-            boxShadow: '3px 3px 10px 3px rgba(0, 0, 0, 0.25)',
-            background: 'rgba(255, 255, 255, 0.1)',
+            boxShadow: 'var(--box-shadow)',
+            background: 'var(--fade-out-bg)',
           }}
         >
           <Text sx={{ lineHeight: 2.5, color: 'var(--color)' }}>
@@ -83,12 +82,12 @@ export const AddressPanel = () => {
             <ContentCopyIcon
               sx={{
                 width: 'auto',
-                borderColor: '#e2e8f0 !important',
+                borderColor: '#e2e8f0 !important', // need to confirm this
                 border: 1,
                 borderRadius: '.3rem',
                 alignSelf: 'center',
                 fontSize: '2rem',
-                boxShadow: 'var(--boxShadow)',
+                boxShadow: 'var(--box-shadow)',
                 color: 'var(--color)',
                 p: 1,
               }}

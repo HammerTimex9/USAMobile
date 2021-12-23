@@ -20,7 +20,7 @@ const BuySell = () => {
         process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'STAGING',
       defaultCryptoCurrency: 'USDC',
       walletAddress: ethAddress,
-      themeColor: colorMode === 'light' ? 'D37277' : '5865C9',
+      themeColor: colorMode === 'light' ? 'D37277' : '5865C9', // Need to confirm these colors from BOB.
       fiatCurrency: 'USD',
       email: emailAddress,
       networks: 'ethereum,polygon',
