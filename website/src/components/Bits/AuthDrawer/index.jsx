@@ -15,6 +15,7 @@ export const AuthDrawer = (props) => {
     setUserData,
     signup,
     user,
+    Moralis,
   } = useMoralis();
 
   const [userName, setUserName] = useState(
@@ -51,22 +52,14 @@ export const AuthDrawer = (props) => {
     if (email === '') {
       alert("Please enter an e-mail, then retry 'Password reset'.");
     } else {
-      // const appId = "CkGKKjw1WWWWNAo2GRMO1yPyjTrRx8YAIX4E8Q8q";
-      // const serverUrl = "https://jlodflimpqon.moralis.io:2053/server";
-      // Moralis.initialize(appId); // Application id from moralis.io
-      // Moralis.serverURL = serverUrl; //Server url from moralis.io
-
-      // Moralis.User
-      //   .requestPasswordReset(email)
-      //   .then(() => {
-      //     // Password reset request was sent successfully
-      alert('Password reset e-mail has been sent to ' + email);
-      //     })
-      //     .catch((error) => {
-      //       // Show the error message somewhere
-      //       alert("Error: " + error.code + " " + error.message);
-      //     });
-      // }
+      Moralis.User.requestPasswordReset(email)
+        .then(() => {
+          alert('Please check your email inbox');
+        })
+        .catch((error) => {
+          // Show the error message somewhere
+          alert('Error: ' + error.code + ' ' + error.message);
+        });
     }
     console.groupEnd();
   };
@@ -163,7 +156,7 @@ export const AuthDrawer = (props) => {
                 <Button
                   variant="outlined"
                   onClick={handlePasswordReset}
-                  disabled
+                  // disabled
                 >
                   Password Reset
                 </Button>

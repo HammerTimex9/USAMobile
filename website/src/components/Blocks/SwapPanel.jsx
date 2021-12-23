@@ -39,7 +39,11 @@ export const SwapPanel = () => {
       </Box>
       {fromToken && toTokenAmount && (
         <Typography className="trade-result">
-          1 {fromToken.symbol} = {txAmount / toTokenAmount} {toToken.symbol}
+          1 {fromToken.symbol} ={' '}
+          {txAmount /
+            10 ** fromToken.decimals /
+            (toTokenAmount / 10 ** toToken.decimals)}{' '}
+          {toToken.symbol}
         </Typography>
       )}
       {quoteValid && <QuotePanel />}
