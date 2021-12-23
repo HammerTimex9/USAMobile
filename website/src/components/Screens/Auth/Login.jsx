@@ -50,6 +50,7 @@ const Login = () => {
         className="authHomeButton"
         to="/"
         component={RouterLink}
+        sx={{ background: 'var(--fade-out-bg)' }}
       >
         <HomeIcon />
       </IconButton>
@@ -70,7 +71,7 @@ const Login = () => {
           <LogoSvg width="320" height="65" />
           <Heading
             variant="h4"
-            sx={{ mt: 3, fontSize: '1.5rem', color: 'white' }}
+            sx={{ mt: 3, fontSize: '1.5rem', color: 'var(--color-white)' }}
           >
             Login
           </Heading>
@@ -131,11 +132,14 @@ const Login = () => {
                   sx={{
                     mt: 5,
                     mb: 2,
-                    backgroundColor: 'white',
+                    color: 'var(--color-primary)',
+                    backgroundColor: 'var(--color-white)',
+                    boxShadow: 'var(--box-shadow-inset)',
                     fontSize: '1.25rem',
                     border: 'none',
+                    minHeight: '3rem',
                   }}
-                  variant="outlined"
+                  variant="uw-solid"
                   onClick={handleLogIn}
                 >
                   Log In
@@ -145,11 +149,14 @@ const Login = () => {
                 <LoadingButton
                   sx={{
                     mb: 2,
-                    backgroundColor: 'white',
+                    color: 'var(--color-primary)',
+                    backgroundColor: 'var(--color-white)',
+                    boxShadow: 'var(--box-shadow-inset)',
                     fontSize: '1.25rem',
                     border: 'none',
+                    minHeight: '3rem',
                   }}
-                  variant="outlined"
+                  variant="uw-solid"
                   loading={isAuthenticating}
                   onClick={handleAuthenticate}
                 >
@@ -170,8 +177,8 @@ const Login = () => {
             sx={{
               pb: 0.5,
               fontSize: '18px',
-              fontFamily: 'Roboto',
-              color: 'white',
+              fontFamily: 'var(--font-family)',
+              color: 'var(--color-white)',
             }}
           >
             You don’t have an account yet?
@@ -184,7 +191,7 @@ const Login = () => {
               boxShadow: 'none',
               fontSize: '1rem',
               height: 20,
-              color: 'white',
+              color: 'var(--color-white)',
               textDecoration: 'underline',
               fontWeight: 700,
             }}

@@ -40,7 +40,6 @@ export const BottomFooter = () => {
           className="FAIcon"
           icon={['fab', 'discord']}
           size="2x"
-          color="lightblue"
         />
         <svg
           width="76"
@@ -71,13 +70,11 @@ export const BottomFooter = () => {
           className="FAIcon"
           icon={['fab', 'youtube-square']}
           size="2x"
-          color="lightblue"
         />
         <FontAwesomeIcon
           className="FAIcon"
           icon={['fab', 'twitter-square']}
           size="2x"
-          color="lightblue"
         />
       </Stack>
       {/*<Spacer />*/}

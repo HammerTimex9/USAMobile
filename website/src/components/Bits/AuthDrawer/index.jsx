@@ -92,7 +92,7 @@ export const AuthDrawer = (props) => {
           p: 2,
           my: 2,
           mx: 5,
-          boxShadow: 'var(--boxShadow)',
+          boxShadow: 'var(--box-shadow)',
         }}
       >
         {authError != null && (
@@ -107,7 +107,7 @@ export const AuthDrawer = (props) => {
               autoComplete="username"
               value={userName}
               onChange={(event) => setUserName(event.currentTarget.value)}
-              sx={{ boxShadow: 'var(--boxShadow)' }}
+              sx={{ boxShadow: 'var(--box-shadow)' }}
             />
           </Tooltip>
         )}
@@ -120,7 +120,7 @@ export const AuthDrawer = (props) => {
             variant="outlined"
             value={email}
             onChange={(event) => setEmail(event.currentTarget.value)}
-            sx={{ boxShadow: 'var(--boxShadow)' }}
+            sx={{ boxShadow: 'var(--box-shadow)' }}
           />
         </Tooltip>
         {user && user.attributes.emailVerified && (
@@ -136,7 +136,7 @@ export const AuthDrawer = (props) => {
             autoComplete="password"
             value={password}
             onChange={(event) => setPassword(event.currentTarget.value)}
-            sx={{ boxShadow: 'var(--boxShadow)' }}
+            sx={{ boxShadow: 'var(--box-shadow)' }}
           />
         </Tooltip>
 

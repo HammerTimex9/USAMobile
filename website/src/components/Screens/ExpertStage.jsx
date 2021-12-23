@@ -30,11 +30,11 @@ const Panel = styled(Box)(({ character, pose }) => ({
   width: 400,
   height: 200,
   padding: '20px',
-  backgroundColor: 'var(--experts-background)',
+  background: 'var(--fade-out-bg)',
   backgroundImage: `url(${process.env.PUBLIC_URL}/images/characters/${character}/${pose}.png)`,
   backgroundRepeat: 'no-repeat',
   ...styles[character],
-  boxShadow: '5px 5px 10px 3px rgba(0, 0, 0, 0.2)',
+  boxShadow: 'var(--box-shadow)',
   borderRadius: 40,
   overflow: 'hidden',
 

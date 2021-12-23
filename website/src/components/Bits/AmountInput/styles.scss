@@ -6,7 +6,7 @@
   &-symbol {
     font-size: 3.125rem;
     font-weight: 700;
-    font-family: Roboto !important;
+    font-family: var(--font-family) !important;
     text-transform: uppercase;
     color: var(--color);
   }

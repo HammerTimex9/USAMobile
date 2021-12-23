@@ -48,7 +48,7 @@ export const AuthButton = () => {
       {isAuthenticated ? (
         <Tooltip title="Log out of USA Wallet.">
           <Button
-            variant="white"
+            variant="uw"
             startIcon={<LogOutSvg style={{ fontSize: 22 }} />}
             onClick={() => logout()}
           >
@@ -59,7 +59,7 @@ export const AuthButton = () => {
         <>
           <Tooltip title="Log into USA Wallet.">
             <Button
-              variant="white"
+              variant="uw"
               startIcon={<LockSvg style={{ fontSize: 22 }} />}
               onClick={() => toggleDrawer(true)} //loginClicked()
             >

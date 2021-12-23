@@ -76,7 +76,7 @@ const TokenList = () => {
           {tokenList.map((token, i) => {
             const position = positions.find((p) => p.symbol === token.symbol);
             return (
-              <Grid key={token.token_id} item xs={12} sm={6} md={4}>
+              <Grid key={`${token.token_id}_${i}`} item xs={12} sm={6} md={4}>
                 <Card isPosition={!!position}>
                   <Box
                     onClick={() => setSelectedToken(token)}

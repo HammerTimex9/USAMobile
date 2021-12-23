@@ -26,7 +26,7 @@ export const UWIconButton = ({
           borderColor: '#e2e8f0 !important',
           border: 1,
           borderRadius: '.3rem',
-          boxShadow: 'var(--boxShadow)',
+          boxShadow: 'var(--box-shadow)',
         }}
         variant={colorMode === 'light' ? 'outlined' : 'contained'}
         onClick={onClick}

@@ -76,9 +76,9 @@ export const StartSend = ({ changeLocalMode }) => {
           <Button
             variant="uw-solid"
             sx={{
-              boxShadow: 'var(--boxShadow)',
-              background: 'var(--solid-button-bg)',
-              color: 'var(--solid-button-color)',
+              boxShadow: 'var(--box-shadow-outset)',
+              background: 'var(--button-bg)',
+              color: 'var(--button-color)',
             }}
             onClick={changeLocalMode} //changeLocalMode
           >
@@ -93,12 +93,18 @@ export const StartSend = ({ changeLocalMode }) => {
             loading={isFetching}
             onClick={handleSendClick} //fetch
             sx={{
-              boxShadow: 'var(--boxShadow)',
+              minWidth: '7.5rem',
+              fontSize: '1.25rem !important',
+              fontFamily: 'var(--font-family)',
+              letterSpacing: '.5px',
+              textTransform: 'UPPERCASE',
+              borderRadius: 'var(--border-radius)',
+              boxShadow: 'var(--box-shadow-outset)',
               background:
                 !txAmount || !toTokenAddress || isFetching
-                  ? 'grey.100'
-                  : 'var(--solid-button-bg)',
-              color: 'var(--solid-button-color)',
+                  ? 'var(--disable-button-bg)'
+                  : 'var(--button-bg)',
+              color: 'var(--button-color)',
             }}
           >
             Send

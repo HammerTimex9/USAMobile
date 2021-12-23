@@ -1,4 +1,5 @@
 @import '../fonts/logofont.css';
+@import '../theme/palette.scss';
 
 html {
   overflow: initial !important;
@@ -6,83 +7,55 @@ html {
 
 body {
   position: relative;
-
-  --color-blue-50: #76a6f8;
-  --color-blue-100: #2b79ff;
-  --color-blue-300: #005eff;
-  --color-blue-500: #213db0;
-  --color-blue-700: #111111;
-  --color-blue-900: #0e176b;
-  --color-blue-A100: #0a3161;
-
-  --color-grey-50: #ffffff;
-  --color-grey-100: #ededed;
-  --color-grey-300: #c4c4c4;
-  --color-grey-500: #ababab;
-  --color-grey-700: #8c8c8c;
-  --color-grey-900: #000000;
-
-  --color-red-50: #f54f55;
-  --color-red-100: #ed1c24;
-  --color-red-300: #b31942;
-  --color-red-500: #cb151c;
-
-  --gradient-50: linear-gradient(180deg, #005eff 0%, #ffffff 100%);
-  --gradient-100: linear-gradient(240.53deg, #005eff 8.59%, #2e3192 82.27%);
-  --gradient-300: linear-gradient(222.27deg, #00079a 27.32%, #0d182c 139.51%);
-
   &.light {
-    --borderColor: #e2e8f0;
-    --color: var(--color-blue-900);
-    --scrollbarThumbColor: rgba(226, 232, 240, 0.7);
-    --selection-bg: rgba(255, 255, 255, 1);
-    --selection-color: var(--color-blue-900);
+    /* Default */
+    --color: var(--color-primary);
+    --border-color: #e2e8f0;
+
+    /* Button Variables */
+    --button-bg: var(--gradient-300);
+    --button-color: var(--color-white);
+    --disable-button-bg: var(--color-primary-50);
+    --back-button-color: var(--color-primary-300);
+
+    /* Tabbar Variables */
+    --tabbar-background: var(--gradient-300);
+    --tabbar-color: var(--color-white);
+
     --arrow: url('../assets/arrow1.svg');
-    --footerIconColor: black;
-    --tabbar-background: linear-gradient(
-      222.27deg,
-      #00079a 27.32%,
-      #0d182c 139.51%
-    );
-    --tabbar-color: var(--color-grey-50);
-
-    --solid-button-bg: var(--gradient-300);
-    --solid-button-color: var(--color-grey-50);
-
-    --experts-background: rgba(255, 255, 255, 0.1);
+    --scroll-bar-thumb-color: rgba(226, 232, 240, 0.7);
+    --footer-icon-color: var(--color-black);
+    --input-select-bg: rgba(255, 255, 255, 1);
 
     background-image: url('../assets/bg-light.svg');
   }
 
   &.dark {
-    --borderColor: rgba(255, 255, 255, 0.16);
-    --color: var(--color-grey-50);
-    --scrollbarThumbColor: rgba(255, 255, 255, 0.2);
-    --selection-bg: #1e277d;
-    --selection-color: var(--color-grey-50);
+    /* Default */
+    --color: var(--color-white);
+    --border-color: rgba(255, 255, 255, 0.16);
+
+    /* Button Variables */
+    --button-bg: var(--color-white);
+    --button-color: var(--color-primary);
+    --disable-button-bg: var(--color-neutral-500);
+    --back-button-color: var(--color-white);
+
+    /* Tabbar Variables */
+    --tabbar-background: var(--color-white);
+    --tabbar-color: var(--color-primary);
+
     --arrow: url('../assets/arrow.svg');
-    --footerIconColor: white;
-    --tabbar-background: var(--color-grey-50);
-    --tabbar-color: var(--color-grey-900);
+    --scroll-bar-thumb-color: rgba(255, 255, 255, 0.2);
+    --footer-icon-color: var(--color-white);
+    --input-select-bg: #1e277d;
 
-    --solid-button-bg: var(--color-grey-50);
-    --solid-button-color: var(--color-blue-900);
-
-    --experts-background: linear-gradient(
-      261.33deg,
-      rgba(255, 255, 255, 0.4) 1.9%,
-      rgba(255, 255, 255, 0) 97.43%
-    );
-
-    background-image: url('../assets/bg-dark.svg'),
-      linear-gradient(222.27deg, #00079a -0.93%, #0d182c 139.51%);
+    background-image: url('../assets/bg-dark.svg'), var(--gradient-300);
   }
-
-  --boxShadow: 5px 5px 10px 3px rgba(0, 0, 0, 0.25); //Middle M Shadow
 
   margin: 0;
   min-height: 100vh;
-  font-family: Roboto !important;
+  font-family: var(--font-family) !important;
   background-repeat: no-repeat;
   background-size: 70%, 100%;
   background-position: center;
@@ -115,7 +88,7 @@ body {
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbarThumbColor);
+    background-color: var(--scroll-bar-thumb-color);
     border-radius: 2px;
     opacity: 0.5;
   }
@@ -155,7 +128,7 @@ body {
 
 .footer-icons {
   svg {
-    color: var(--footerIconColor);
+    color: var(--footer-icon-color);
     width: 34px;
     height: 34px;
   }
@@ -167,9 +140,9 @@ body {
   &__control--menu-is-open {
     border-radius: 10px !important;
     height: 52px !important;
-    color: var(--selection-color) !important;
+    color: var(--color) !important;
     background: transparent;
-    box-shadow: 3px 3px 10px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--box-shadow);
     width: 100% !important;
     border: none !important;
     font-size: 15px !important;
@@ -180,8 +153,8 @@ body {
     display: flex;
     border-radius: 10px !important;
     height: 52px !important;
-    color: var(--selection-color) !important;
-    background-color: rgba(45, 50, 148, 0.1) !important;
+    color: var(--color) !important;
+    background-color: var(--fade-out-bg) !important;
     border: none !important;
     margin-top: 7px;
   }
@@ -189,18 +162,18 @@ body {
   &__single-value {
     font-size: 15px !important;
     line-height: 18px !important;
-    color: var(--selection-color) !important;
+    color: var(--color) !important;
     font-family: Roboto !important;
   }
 
   &__input-container {
     font-size: 15px !important;
     line-height: 18px !important;
-    color: var(--selection-color) !important;
+    color: var(--color) !important;
   }
 
   &__placeholder {
-    color: var(--selection-color) !important;
+    color: var(--color) !important;
     font-size: 15px !important;
     line-height: 18px !important;
     font-family: Roboto !important;
@@ -228,7 +201,8 @@ body {
   &__menu {
     border-radius: 12px !important;
     border: none !important;
-    background-color: var(--selection-bg) !important;
+    background-color: var(--input-select-bg) !important;
+    z-index: 1;
   }
 
   &__menu-list {

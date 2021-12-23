@@ -7,7 +7,8 @@ export const Heading = ({ variant = 'h4', sx = {}, ...props }) => {
       sx={[
         {
           fontWeight: 700,
-          color: 'text.primary',
+          color: 'var(--color)',
+          fontFamily: 'var(--font-family)',
           fontSize: '2.25rem',
           textAlign: 'center',
         },
