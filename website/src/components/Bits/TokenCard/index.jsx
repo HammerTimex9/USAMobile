@@ -171,10 +171,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
             </Typography>
           </Box>
           <Box className="trading-view">
-            <TradingViewWidget
-              symbol={`${data.symbol}USD`}
-              autosize
-            />
+            <TradingViewWidget symbol={`${data.symbol}USD`} autosize />
           </Box>
           <Box
             sx={{
