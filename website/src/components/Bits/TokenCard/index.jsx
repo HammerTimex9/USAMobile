@@ -9,7 +9,7 @@ import { useNetwork } from '../../../contexts/networkContext';
 import tokenList from '../../../data/TokenList.json';
 import './styles.scss';
 
-const TokenCard = ({ symbol, onClose, description }, ref) => {
+const TokenCard = ({ symbol, onClose }, ref) => {
   const { data, prices } = useTokenInfo(symbol);
   const { network } = useNetwork();
   console.log('prices => ', prices);
@@ -167,7 +167,7 @@ const TokenCard = ({ symbol, onClose, description }, ref) => {
               Simple Description
             </Typography>
             <Typography className="description" fontSize="14px">
-              {description ? description : getDescription()}
+              {getDescription()}
             </Typography>
           </Box>
           <Box className="trading-view">

@@ -12,7 +12,7 @@ const Cell = styled('div')({
   cursor: 'pointer',
 });
 
-const Position = ({ position, onSelect }) => {
+const Position = ({ position, onSelect, ...props }) => {
   const [expanded, setExpanded] = React.useState(false);
 
   return (
@@ -23,6 +23,7 @@ const Position = ({ position, onSelect }) => {
         boxShadow: 'var(--box-shadow-outset)',
         borderRadius: '10px',
       }}
+      {...props}
     >
       <Box
         sx={{

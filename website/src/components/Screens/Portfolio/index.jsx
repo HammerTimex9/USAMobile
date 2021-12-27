@@ -3,8 +3,8 @@ import { useMoralis } from 'react-moralis';
 import { Box, Modal } from '@mui/material';
 import { styled } from '@mui/system';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-// import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 
+import tokenList from '../../../data/TokenList.json';
 import { useExperts } from '../../../contexts/expertsContext';
 import { useNetwork } from '../../../contexts/networkContext';
 import { usePositions } from '../../../contexts/portfolioContext';
@@ -29,6 +29,7 @@ const Portfolio = () => {
   const { positions } = usePositions();
   const { switchNetworkToPolygon } = usePolygonNetwork();
   const [selectedSymbol, setSelectedSymbol] = React.useState(null);
+  const [hoverdToken, setHoverdToken] = React.useState();
   const onModalClose = React.useCallback(() => setSelectedSymbol(), []);
 
   useEffect(() => {
@@ -45,12 +46,15 @@ const Portfolio = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isPolygon, isWeb3Enabled, enableWeb3]);
 
-  useEffect(() => {
+  React.useEffect(() => {
+    const token = tokenList.find((t) => t.symbol === hoverdToken?.symbol);
     setExpert({
       character: 'unclesam',
-      dialog: 'Select a currency to view transaction histories.',
+      dialog:
+        token?.shortDescription ||
+        'Select a currency to view transaction histories.',
     });
-  }, [setExpert, setDialog]);
+  }, [hoverdToken, setExpert]);
 
   return (
     <Box sx={{ width: '100%', maxWidth: '450px' }}>
@@ -88,6 +92,8 @@ const Portfolio = () => {
           key={position.name}
           position={position}
           onSelect={setSelectedSymbol}
+          onMouseEnter={() => setHoverdToken(position)}
+          onMouseLeave={() => setHoverdToken()}
         />
       ))}
 
