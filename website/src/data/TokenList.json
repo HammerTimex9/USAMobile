@@ -4,6 +4,7 @@
     "name": "Polygon (Matic)",
     "symbol": "MATIC",
     "decimals": 18,
+    "shortDescription": "The most popular low-cost, high-speed, fully compatible layer 2 network for Ethereum.",
     "description": "Polygon connects the blockchain technology that Ethereum is built on with other compatible platforms, allowing numerous transactions to occur on the blockchain, thus decreasing the congestion on the Ethereum network. It allows for faster movement of tokens along its network while simultaneously costing a significant amount less than the Ethereum Network.",
     "type": "native",
     "image": "https://assets.coingecko.com/coins/images/4713/thumb/matic-token-icon.png?1624446912"
@@ -14,6 +15,7 @@
     "symbol": "USDC",
     "decimals": 6,
     "address": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+    "shortDescription": "A stablecoin pegged to the value of $USD backed 100% by US Dollar deposits.",
     "description": "USDC will always have the same value as the US Dollar. USDC is a digital currency that is anchored to the dollar, making it redeemable on a 1:1 basis with the dollar.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389"
@@ -24,6 +26,7 @@
     "symbol": "ETH",
     "decimals": 18,
     "address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
+    "shortDescription": "A synthetic token that follows Ethereum's price while acting as a fully-featured, DeFi smart contract.",
     "description": "Ethereum token on Polygon. Biggest and most important smart contract platform",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/279/thumb/ethereum.png?1595348880"
@@ -34,6 +37,7 @@
     "symbol": "LINK",
     "decimals": 18,
     "address": "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39",
+    "shortDescription": "The standard bridge from real-world information to reliable, on-chain data used in Web3.",
     "description": "ChainLink improves the blockchain technology, by allowing real world information to be input into all of the blocks on the blockchain. This is done by smart contracts that are programmed to create an action based on information that is incoming. Smart contracts eliminate human error by creating automated processes. ChainLink provides fully developed smart contracts that can be applied to any blockchain by any developer.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1547034700"
@@ -44,6 +48,7 @@
     "symbol": "AAVE",
     "decimals": 18,
     "address": "0xd6df932a45c0f255f85145f286ea0b292b21c90b",
+    "shortDescription": "An innovative, constantly evolving, multi-chain, high liquidity global lending and borrowing platform.",
     "description": "Aave was created to allow you as a consumer to lend, borrow and earn interest on your crypto without needing a middleman (bank or other financial firm). Aave enables peer to peer lending and borrowing through a series of smart contracts within the blockchain. Aave’s smart contracts manages all of the assets within a transaction.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1601374110"
@@ -54,6 +59,7 @@
     "symbol": "UNI",
     "decimals": 18,
     "address": "0xb33eaad8d922b1083446dc23f610c2567fb5180f",
+    "shortDescription": "The original and still the highest liquidity decentralized autonomous token exchange (DEX).",
     "description": "Uniswap is a fully decentralized exchange allowing users to make trades on the Ethereum network. This exchange is unlike the traditional exchange model because it allows users to pool liquidity together to allow for trading. Uniswap is also different from the traditional model because it allows users to hold their tokens instead of having to place them into a third party's control.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604"
@@ -64,6 +70,7 @@
     "symbol": "RENBTC",
     "decimals": 8,
     "address": "0xdbf31df14b66535af65aac99c32e9ea844e14501",
+    "shortDescription": "A synthetic token that follows the Bitcoin price and is 100% backed by Bitcoin on deposit in smart contracts.",
     "description": "Ren allows users to buy Bitcoin without buying Bitcoin. Ren acts as the bridge that joins blockchains to allow for interchange of tokens across different networks. This allows for Bitcoin tokens to be anchored to the  ethereum network, so users can access the value of bitcoin through a token on the Ethereum network.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/11370/thumb/Bitcoin.jpg?1628072791"
@@ -74,6 +81,7 @@
     "symbol": "SWAP",
     "decimals": 18,
     "address": "0x3809dcdd5dde24b37abe64a5a339784c3323c44f",
+    "shortDescription": "A decentralized escrow service and launchpad built without the need for human management.",
     "description": "TrustSwap offers secure, customizable transactions that can be made with ease and minimal fees anywhere in the world. TrustSwap is an escrow service that removes third party facilitation of transactions, and replaces them with smart contracts.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/11795/thumb/Untitled_design-removebg-preview.png?1626926355"
@@ -84,6 +92,7 @@
     "symbol": "SUSHI",
     "decimals": 18,
     "address": "0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a",
+    "shortDescription": "A multi-chain decentralized exchange (DEX) with P2P lending/borrowing, soon be incorporating NFT's",
     "description": "SushiSwap is a fully decentralized exchange allowing users to trade on the Ethereum and Polygon networks. SushiSwap enables peer to peer lending and borrowing through a series of smart contracts within the blockchain.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1606986688"
@@ -94,6 +103,7 @@
     "symbol": "QUICK",
     "decimals": 18,
     "address": "0x831753dd7087cac61ab5644b308642cc1c33dc13",
+    "shortDescription": "A decentralized exchange (DEX) built for Polygon with pooling fund functions.",
     "description": "QuickSwap is a fully decentralized exchange allowing users with tokens to make trades on the Polygon network. This exchange is unlike the traditional exchange model because it allows users to pool tokens together to make trades from the fund. Uniswap is also different from the traditional model because it allows users to hold their tokens instead of having to place them into a third party's control.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/13970/thumb/1_pOU6pBMEmiL-ZJVb0CYRjQ.png?1613386659"
@@ -104,6 +114,7 @@
     "symbol": "BAL",
     "decimals": 18,
     "address": "0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3",
+    "shortDescription": "Similar to a mutual fund. Allows users to invest in existing automated DeFi portfolios or design their own",
     "description": "Balancer allows token holders to create their own index fund with a portfolio of custom tokens they choose. Balancer also allows users to deposit tokens into custom portfolios Balancers has created, which will rebalance themselves according to market data. Users are rewarded for participating in these funds with varying APY generated by staking and other fees collected through their protocol.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958"
@@ -114,6 +125,7 @@
     "symbol": "1INCH",
     "decimals": 18,
     "address": "0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f",
+    "shortDescription": "Searches all decentralized exchanges (DEXs) to find the best and cheapest way(s) to route transactions.",
     "description": "Multi-chain aggregator of decentralized exchanges",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/13469/thumb/1inch-token.png?1608803028"
@@ -124,6 +136,7 @@
     "symbol": "MANA",
     "decimals": 18,
     "address": "0xa1c57f48f0deb89f569dfbe6e2b7f46d33606fd4",
+    "shortDescription": "Currency of a tokenized VR/gaming/metaverse world where users can buy land, interact with it, and own other in-game assets.",
     "description": "DecentraLand is a network running on Ethereum that allows users to operate within a shared virtual world. Users on the DecentraLand platform can buy and sell virtual land / real estate, as well as explore, interact and play games within this digital world. DecentraLand utilizes smart contracts that are layered upon one another to coincide with each part of the virtual world.",
     "type": "erc20",
     "image": "https://s2.coinmarketcap.com/static/img/coins/64x64/1966.png"
@@ -134,6 +147,7 @@
     "symbol": "SUPER",
     "decimals": 18,
     "address": "0xa1428174f516f527fafdd146b883bb4428682737",
+    "shortDescription": "A NFT/gaming focused launchpad focused on supporting development of new projects and creating utility for NFT's.",
     "description": "Non-fungible tokens are unique and can only be purchased online. SuperFarm was created to make the purchasing of NFT’s more accessible to a larger audience. Users on SuperFarm can create and distribute non-fungible tokens that are made available to connect further with an audience",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/14040/thumb/6YPdWn6.png?1613975899"
@@ -144,6 +158,7 @@
     "symbol": "GHST",
     "decimals": 18,
     "address": "0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7",
+    "shortDescription": "A gaming/DeFi protocol using it's base token to buy digital items and pixel ghost avatars, stake and earn rewards in GHST",
     "description": "A digital financial enabled game that allows players to leverage non-fungible tokens to obtain interest-generating tokens to create an avatar within the metaverse. These avatars, called Aavegotchi’s, are pixelated ghosts that live on the Ethereum blockchain that have different values associated with them that allow them to be rare. The more rare the avatar is the more successful they will be.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/12467/thumb/ghst_200.png?1600750321"
@@ -154,6 +169,7 @@
     "symbol": "GRT",
     "decimals": 18,
     "address": "0x5fe2b58c013d7601147dcdd68c143a77499f5531",
+    "shortDescription": "A blockchain API that organizes data and allows users to earn rewards in GRT for providing specific, reliable blockchain data.",
     "description": "A software that is able to take data points from other companies, disseminates it into an average to then be distributed as a batch. The Graph has the ability to collect many different data points related to one topic through Nodes. The Nodes then plug the information gathered into Subgraphs.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1608145566"
@@ -164,6 +180,7 @@
     "symbol": "UBT",
     "decimals": 8,
     "address": "0x7fbc10850cae055b27039af31bd258430e714c62",
+    "shortDescription": "Provides security and integration services necessary to convert enterprise-scale companies to blockchain with a low-code solution.",
     "description": "A service designed to integrate existing enterprise business processes with blockchain-powered features.  Allows confidential business transactions across open, public blockchains.  Enables confidential and complex collaboration between enterprises on a regulatory-friendly blockchain platform.  Runs over multiple blockchains such as Ethereum and Cardano.",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/2707/thumb/UnibrightLogo_colorful_500x500_preview.png?1547036916"
@@ -174,6 +191,7 @@
     "symbol": "CRV",
     "decimals": 18,
     "address": "0x172370d5cd63279efa6d502dab29171933a610af",
+    "shortDescription": "A decentralized exchange (DEX) focusing on providing liquidity through yield farming and stabilizing token prices, mainly synthetics.",
     "description": "Decentralized money market & DeFi",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/12124/thumb/Curve.png?1597369484"
@@ -184,6 +202,7 @@
     "symbol": "RAMP",
     "decimals": 18,
     "address": "0xaecebfcf604ad245eaf0d5bd68459c3a7a6399c2",
+    "shortDescription": "A DeFi lending, borrowing, staking, and farming platform featuring cross-chain functionality and providing utility to staked assets",
     "description": "Unlocking capital from other chains",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/12837/thumb/RAMP-Logo-v2-1000pxsq.png?1617952606"
@@ -194,6 +213,7 @@
     "symbol": "XED",
     "decimals": 18,
     "address": "0x2fe8733dcb25bfbba79292294347415417510067",
+    "shortDescription": "NFT/gaming platform using play-to-mint mechanics to create NFT rarity/utility and play-to-earn tournaments rewarding XED.",
     "description": "(The main goal of ExceedMe is to build a platform that users could play-to-earn on their favorite games in a way that is fair and trustworthy. Since 1 in 4 people in the world play video games, ExceedMe gives users the opportunity to make money while doing what they love. The ExceedMe platform gives gamers the opportunity to play games regardless of their skill level and without predatory ads in the current Free2Play model",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/13518/thumb/exeedme.png?1610669597"
@@ -204,6 +224,7 @@
     "symbol": "TEL",
     "decimals": 2,
     "address": "0xdf7837de1f2fa4631d716cf2502f8b230f1dcc32",
+    "shortDescription": "A blockchain based on Ethereum but built to transfer and exchange money fast and cheap between cell phone users internationally.",
     "description": "Payment service, from cell phones to blockchain",
     "type": "erc20",
     "image": "https://assets.coingecko.com/coins/images/1899/thumb/tel.png?1547036203"
