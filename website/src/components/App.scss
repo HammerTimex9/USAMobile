@@ -119,6 +119,9 @@ body {
       pointer-events: none;
       opacity: 0.5;
     }
+    &.active-usa-wallet-tab{
+      --tabbar-color: var(--color-primary-50);
+    }
   }
 
   svg {

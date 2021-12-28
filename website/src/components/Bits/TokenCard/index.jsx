@@ -9,7 +9,7 @@ import { useNetwork } from '../../../contexts/networkContext';
 import tokenList from '../../../data/TokenList.json';
 import './styles.scss';
 
-const TokenCard = ({ symbol, onClose, description }, ref) => {
+const TokenCard = ({ symbol, onClose, description, details }, ref) => {
   const { data, prices } = useTokenInfo(symbol);
   const { network } = useNetwork();
   console.log('prices => ', prices);
@@ -22,6 +22,14 @@ const TokenCard = ({ symbol, onClose, description }, ref) => {
     let token = tokenList.find((t) => t.symbol === symbol);
     if (token) {
       return token.description;
+    } else {
+      return 'Lorum Ipsum';
+    }
+  };
+  const getDetails = () => {
+    let token = tokenList.find((t) => t.symbol === symbol);
+    if (token) {
+      return token.details;
     } else {
       return 'Lorum Ipsum';
     }
@@ -177,6 +185,14 @@ const TokenCard = ({ symbol, onClose, description }, ref) => {
               allow_symbol_change={false}
               autosize
             />
+          </Box>
+          <Box sx={{ mt: 1.75 }}>
+            <Typography fontSize="17px" fontWeight="500" color="#000">
+              Details
+            </Typography>
+            <Typography className="description" fontSize="14px">
+              {details ? details : getDetails()}
+            </Typography>
           </Box>
           <Box
             sx={{

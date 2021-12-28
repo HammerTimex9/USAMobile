@@ -110,6 +110,7 @@ const TokenList = () => {
       >
         <TokenCard
           description={selectedToken?.description}
+          details={selectedToken?.details}
           symbol={selectedToken?.symbol}
           onClose={onCloseModal}
         />

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 import { Box, Stack, Typography, Modal } from '@mui/material';
@@ -9,7 +10,15 @@ import { PortfolioSvg, TradeSvg, BuySvg, ArrowsSvg } from '../../assets/icons';
 
 import { Tab } from '../UW/Tab';
 
+const activeTab = (history, path) => {
+  if (history.location.pathname === path) {
+    return 'active-usa-wallet-tab';
+  }
+  return '';
+};
+
 export const NavBar = () => {
+  const history = useHistory();
   const { user } = useMoralis();
   const { positions } = usePositions();
   const [modal, setModal] = useState(false);
@@ -44,22 +53,34 @@ export const NavBar = () => {
           },
         }}
       >
-        <Link to="/">
+        <Link to="/" className={`${activeTab(history, '/')}`}>
           <Tab label="Home">
             <HomeIcon />
           </Tab>
         </Link>
-        <Link to="/Portfolio" className={`${emptyPositions ? 'disabled' : ''}`}>
+        <Link
+          to="/Portfolio"
+          className={`${emptyPositions ? 'disabled' : ''} ${activeTab(
+            history,
+            '/Portfolio'
+          )}`}
+        >
           <Tab label="Portfolio">
             <PortfolioSvg />
           </Tab>
         </Link>
-        <Link to="/SwapTrade" className={`${emptyPositions ? 'disabled' : ''}`}>
+        <Link
+          to="/SwapTrade"
+          className={`${emptyPositions ? 'disabled' : ''} ${activeTab(
+            history,
+            '/SwapTrade'
+          )}`}
+        >
           <Tab label="Trade">
             <TradeSvg />
           </Tab>
         </Link>
-        <Link to="/BuySell">
+        <Link to="/BuySell" className={`${activeTab(history, '/BuySell')}`}>
           <Tab label="Buy Crypto">
             <BuySvg />
           </Tab>
@@ -67,7 +88,10 @@ export const NavBar = () => {
 
         <Link
           to="/SendRecieve"
-          className={`${emptyPositions ? 'disabled' : ''}`}
+          className={`${emptyPositions ? 'disabled' : ''} ${activeTab(
+            history,
+            '/SendRecieve'
+          )}`}
         >
           <Tab label={isOnlyMatic ? 'Recieve' : 'Send/Recieve'}>
             <ArrowsSvg />
