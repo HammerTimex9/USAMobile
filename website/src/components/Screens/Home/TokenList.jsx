@@ -62,7 +62,7 @@ const TokenList = () => {
 
   React.useEffect(() => {
     setDialog(
-      hoverdToken?.description ||
+      hoverdToken?.shortDescription ||
         "Welcome to cryptocurrency, Citizen! Here are today's offerings."
     );
   }, [hoverdToken, setDialog]);
@@ -108,12 +108,7 @@ const TokenList = () => {
         sx={{ maxWidth: '56rem', mx: 'auto', my: '3.56rem' }}
         onBackdropClick={onCloseModal}
       >
-        <TokenCard
-          description={selectedToken?.description}
-          details={selectedToken?.details}
-          symbol={selectedToken?.symbol}
-          onClose={onCloseModal}
-        />
+        <TokenCard symbol={selectedToken?.symbol} onClose={onCloseModal} />
       </Modal>
     </>
   );
