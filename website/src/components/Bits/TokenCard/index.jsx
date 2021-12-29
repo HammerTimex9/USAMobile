@@ -26,6 +26,14 @@ const TokenCard = ({ symbol, onClose }, ref) => {
       return 'Lorum Ipsum';
     }
   };
+  const getDetails = () => {
+    let token = tokenList.find((t) => t.symbol === symbol);
+    if (token) {
+      return token.details;
+    } else {
+      return 'Lorum Ipsum';
+    }
+  };
   const getImage = () => {
     let token = tokenList.find((t) => t.symbol === symbol);
     return token.image;
@@ -172,6 +180,14 @@ const TokenCard = ({ symbol, onClose }, ref) => {
           </Box>
           <Box className="trading-view">
             <TradingViewWidget symbol={`${data.symbol}USD`} autosize />
+          </Box>
+          <Box sx={{ mt: 1.75 }}>
+            <Typography fontSize="17px" fontWeight="500" color="#000">
+              Details
+            </Typography>
+            <Typography className="description" fontSize="14px">
+              {getDetails()}
+            </Typography>
           </Box>
           <Box
             sx={{
