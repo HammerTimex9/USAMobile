@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
-
 import Select from 'react-select';
 
 import { usePositions } from '../../contexts/portfolioContext';
@@ -8,14 +8,22 @@ import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
 
-// import { useMoralis } from "react-moralis";
-
 export const FromSelect = ({ sx = {} }) => {
-  const [value, setValue] = useState('');
-  const { positions, waiting } = usePositions();
+  const history = useHistory();
+  const location = useLocation();
+  const [symbol, setSymbol] = useState(location.state?.fromSymbol);
+  const { positions } = usePositions();
   const { setFromToken, setToToken } = useActions();
   const { setDialog } = useExperts();
   const { isPolygon } = useNetwork();
+
+  useEffect(() => {
+    if (location.state?.fromSymbol) {
+      const { state } = location;
+      delete state.fromSymbol;
+      history.replace(location.pathname, state);
+    }
+  }, [history, location]);
 
   useEffect(() => {
     return () => {
@@ -23,9 +31,8 @@ export const FromSelect = ({ sx = {} }) => {
     };
   }, [setFromToken]);
 
-  const handleChange = async (e) => {
-    let position = JSON.parse(e.value);
-    setValue(e);
+  const handleChange = async (item) => {
+    setSymbol(item.symbol);
 
     if (!isPolygon) {
       setFromToken();
@@ -36,41 +43,22 @@ export const FromSelect = ({ sx = {} }) => {
       return;
     }
 
-    if (position) {
-      setFromToken(position);
-      setDialog(
-        'Next set how much ' + position.symbol + ' to use in this trade. '
-      );
-    } else {
-      setFromToken();
-      setToToken();
-      setDialog(
-        "Use the 'Select a token to trade' menu " +
-          'to start creating an action plan.'
-      );
-    }
+    setFromToken(item);
+    setDialog('Next set how much ' + item.symbol + ' to use in this trade. ');
   };
 
-  let options = [];
-  if (!waiting) {
-    positions.forEach((position) => {
-      let obj = {};
-      obj.label = position.symbol.toUpperCase();
-      obj.value = JSON.stringify(position);
-      options.push(obj);
-    });
-  }
   return (
     <Box sx={[{ width: 195, textAlign: 'start' }, sx]}>
       <label>From</label>
       <Select
-        options={options}
+        options={positions}
         onChange={handleChange}
         isSearchable={false}
         placeholder="Select a token to act with."
         className="react-select-container"
         classNamePrefix="react-select"
-        value={value}
+        value={positions.find((o) => o.symbol === symbol)}
+        getOptionLabel={(o) => o.symbol}
       />
     </Box>
   );

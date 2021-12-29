@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 
 import { Box, Button, IconButton, Stack } from '@mui/material';
@@ -16,12 +17,22 @@ import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 import { ReactComponent as SamUncle } from '../../assets/sam.svg';
 
 const SendReceive = () => {
+  const history = useHistory();
+  const location = useLocation();
   const { setExpert, setDialog } = useExperts();
-  const [localMode, setLocalMode] = useState('none');
+  const [localMode, setLocalMode] = useState(location.state?.mode || 'none');
 
   const { isAuthenticated } = useMoralis();
   const { switchNetworkToPolygon } = usePolygonNetwork();
   const { isPolygon } = useNetwork();
+
+  useEffect(() => {
+    if (location.state?.mode) {
+      const { state } = location;
+      delete state.mode;
+      history.replace(location.pathname, state);
+    }
+  }, [history, location]);
 
   useEffect(() => {
     if (isAuthenticated) {
