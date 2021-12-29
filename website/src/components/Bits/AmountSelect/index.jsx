@@ -1,18 +1,27 @@
 import { useRef, useEffect, useState } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { useActions } from '../../../contexts/actionsContext';
 import { useExperts } from '../../../contexts/expertsContext';
 import './styles.scss';
 
 export const AmountSelect = ({ type }) => {
+  const history = useHistory();
+  const location = useLocation();
   const inputRef = useRef();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(location.state?.amount || '');
   const [amount, setAmount] = useState(0);
-  // const [usdAmount, setUSDAmount] = useState(0);
-  // const [isUSDMode, setIsUSDMode] = useState(false);
   const { fromToken, setTxAmount } = useActions();
   const { setDialog } = useExperts();
   const { price, tokens = 0, decimals = 18, symbol } = fromToken || {};
+
+  useEffect(() => {
+    if (location.state?.amount) {
+      const { state } = location;
+      delete state.amount;
+      history.replace(location.pathname, state);
+    }
+  }, [history, location]);
 
   useEffect(() => {
     return () => {

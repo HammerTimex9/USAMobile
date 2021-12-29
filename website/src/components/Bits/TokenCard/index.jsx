@@ -1,43 +1,23 @@
 import React from 'react';
-import { Box, Typography, IconButton, Button } from '@mui/material';
+import { Link } from 'react-router-dom';
+import { Stack, Box, Typography, IconButton, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import TradingViewWidget from 'react-tradingview-widget';
-
 import useTokenInfo from '../../../actions/useTokenInfo';
 import LoadIcon from '../../../media/load.gif';
 import { useNetwork } from '../../../contexts/networkContext';
+import { usePositions } from '../../../contexts/portfolioContext';
 import tokenList from '../../../data/TokenList.json';
 import './styles.scss';
 
 const TokenCard = ({ symbol, onClose }, ref) => {
-  const { data, prices } = useTokenInfo(symbol);
+  const { data } = useTokenInfo(symbol);
+  const { positions } = usePositions();
   const { network } = useNetwork();
-  console.log('prices => ', prices);
-  const handleClick = (link) => {
-    window.open(link, '_blank');
-  };
-
+  const token = tokenList.find((t) => t.symbol === symbol);
+  const { value = 0, tokens } =
+    positions.find((p) => p.symbol === symbol) || {};
   const { market_data, links } = data || {};
-  const getDescription = () => {
-    let token = tokenList.find((t) => t.symbol === symbol);
-    if (token) {
-      return token.description;
-    } else {
-      return 'Lorum Ipsum';
-    }
-  };
-  const getDetails = () => {
-    let token = tokenList.find((t) => t.symbol === symbol);
-    if (token) {
-      return token.details;
-    } else {
-      return 'Lorum Ipsum';
-    }
-  };
-  const getImage = () => {
-    let token = tokenList.find((t) => t.symbol === symbol);
-    return token.image;
-  };
 
   return (
     <Box ref={ref} className="token-card">
@@ -47,7 +27,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'flex-start',
+              alignItems: 'center',
               mt: 3.75,
             }}
           >
@@ -55,14 +35,73 @@ const TokenCard = ({ symbol, onClose }, ref) => {
               <Box
                 component="img"
                 sx={{ height: 70, width: 70 }}
-                src={symbol === 'MANA' ? getImage() : data.image.large}
+                src={token?.image}
               />
               <Box className="header-title">
                 <Typography>{data.name}</Typography>
                 <Typography>Currency</Typography>
               </Box>
             </Box>
-            <Box>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{
+                mx: 3,
+                '& a': {
+                  color: 'inherit',
+                  textDecoration: 'none',
+                },
+              }}
+            >
+              {value > 0 && (
+                <Link
+                  to={{
+                    pathname: '/SwapTrade',
+                    state: { toSymbol: symbol },
+                  }}
+                >
+                  <Button>Buy</Button>
+                </Link>
+              )}
+              {symbol === 'USDC' && (
+                <Link to="/BuySell">
+                  <Button>Buy with Fiat</Button>
+                </Link>
+              )}
+              {value > 0 && (
+                <Link
+                  to={{
+                    pathname: '/SwapTrade',
+                    state: { fromSymbol: symbol, amount: tokens },
+                  }}
+                >
+                  <Button>Sell</Button>
+                </Link>
+              )}
+              {value > 0 && (
+                <Link
+                  to={{
+                    pathname: '/SendRecieve',
+                    state: {
+                      mode: 'send',
+                      fromSymbol: symbol,
+                      amount: tokens * 0.1,
+                    },
+                  }}
+                >
+                  <Button>Send</Button>
+                </Link>
+              )}
+              <Link
+                to={{
+                  pathname: '/SendRecieve',
+                  state: { mode: 'receive' },
+                }}
+              >
+                <Button>Receive</Button>
+              </Link>
+            </Stack>
+            <Box sx={{ position: 'absolute', right: '10px', top: '15px' }}>
               <IconButton onClick={onClose}>
                 <CloseIcon color="primary" />
               </IconButton>
@@ -175,7 +214,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
               Simple Description
             </Typography>
             <Typography className="description" fontSize="14px">
-              {getDescription()}
+              {token?.description}
             </Typography>
           </Box>
           <Box className="trading-view">
@@ -186,7 +225,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
               Details
             </Typography>
             <Typography className="description" fontSize="14px">
-              {getDetails()}
+              {token?.details}
             </Typography>
           </Box>
           <Box
@@ -205,15 +244,21 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                   a.indexOf(network.name ? network.name : 'polygonscan') > -1
               )
               .map((b, index) => (
-                <Button
-                  onClick={() => handleClick(b)}
+                <a
                   key={index}
-                  variant="darkblue"
-                  size={links.blockchain_site.length > 5 ? 'small' : 'medium'}
-                  className="link-button"
+                  href={b}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'inherit', textDecoration: 'none' }}
                 >
-                  {b.split('/')[2].split('.')[0]}
-                </Button>
+                  <Button
+                    variant="darkblue"
+                    size={links.blockchain_site.length > 5 ? 'small' : 'medium'}
+                    className="link-button"
+                  >
+                    {b.split('/')[2].split('.')[0]}
+                  </Button>
+                </a>
               ))}
           </Box>
         </>
