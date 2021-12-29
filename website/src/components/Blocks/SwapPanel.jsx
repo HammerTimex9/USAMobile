@@ -22,7 +22,7 @@ export const SwapPanel = () => {
   }, [fromToken, txAmount]);
   const getToTokenAmount = () => {
     if (toTokenAmount) {
-      return toTokenAmount / 10 ** fromToken.decimals + '';
+      return (toTokenAmount / 10 ** fromToken.decimals).toFixed(3);
     } else {
       return 0;
     }
@@ -40,9 +40,11 @@ export const SwapPanel = () => {
       {fromToken && toTokenAmount && (
         <Typography className="trade-result">
           1 {fromToken.symbol} ={' '}
-          {txAmount /
+          {(
+            txAmount /
             10 ** fromToken.decimals /
-            (toTokenAmount / 10 ** toToken.decimals)}{' '}
+            (toTokenAmount / 10 ** toToken.decimals)
+          ).toFixed(3)}{' '}
           {toToken.symbol}
         </Typography>
       )}
