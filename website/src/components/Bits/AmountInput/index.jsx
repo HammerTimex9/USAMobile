@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 import { Box, FormControl, InputAdornment, TextField } from '@mui/material';
 
 import { useActions } from '../../../contexts/actionsContext';
@@ -8,24 +9,27 @@ import { Text } from '../../UW/Text';
 import './styles.scss';
 
 export const AmountInput = () => {
-  const [value, setValue] = useState('');
-  const [amount, setAmount] = useState(0);
-  // const [usdAmount, setUSDAmount] = useState(0);
-  // const [isUSDMode, setIsUSDMode] = useState(false);
+  const history = useHistory();
+  const location = useLocation();
+  const [value, setValue] = useState(location.state?.amount || '');
   const { fromToken, setTxAmount } = useActions();
   const { setDialog } = useExperts();
   const { price, tokens = 0, decimals = 18, symbol } = fromToken || {};
+  const amount = Number(value) || 0;
+
+  useEffect(() => {
+    if (location.state?.amount) {
+      const { state } = location;
+      delete state.amount;
+      history.replace(location.pathname, state);
+    }
+  }, [history, location]);
 
   useEffect(() => {
     return () => {
       setTxAmount(0);
     };
   }, [setTxAmount]);
-
-  useEffect(() => {
-    let v = Number(value) || 0;
-    setAmount(v);
-  }, [price, value]);
 
   useEffect(() => {
     if (amount <= tokens) {
