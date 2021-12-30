@@ -73,7 +73,7 @@ const TokenList = () => {
         'Press the infinity button above to install Polygon on MetaMask for deeply discounted trading fees!'
       );
     }
-  }, [hoverdToken, setDialog]);
+  }, [hoverdToken, setDialog, isPolygon]);
 
   return (
     <>
