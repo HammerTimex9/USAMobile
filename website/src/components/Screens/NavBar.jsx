@@ -26,6 +26,7 @@ export const NavBar = () => {
   const emptyPositions = !address || positions.length === 0;
   const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
   useEffect(() => {
+    console.log('User:', user);
     if (user && !address) {
       alert(
         'We recommend authenticating with MetaMask as a more secure login than using email and passwords.'

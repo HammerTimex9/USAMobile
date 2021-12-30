@@ -14,7 +14,7 @@ import Logo from './Logo';
 export const TopNavBar = () => {
   const { isAuthenticated } = useMoralis();
   const hasMetamask = window.ethereum?.isMetaMask;
-  const { hasPolygon } = useNetwork();
+  const { hasPolygon, isPolygon } = useNetwork();
 
   return (
     <Stack
@@ -29,7 +29,7 @@ export const TopNavBar = () => {
       <Stack direction="row" alignItems="center" spacing={1} m={0.5}>
         {isAuthenticated && hasPolygon && <ExpertButton />}
         <LightSwitch />
-        {isAuthenticated && hasMetamask && !hasPolygon && <AddNetworkButton />}
+        {isAuthenticated && hasMetamask && !isPolygon && <AddNetworkButton />}
         <AuthButton />
         {isAuthenticated && <OnBoardingButton />}
         {isAuthenticated && <ProfileAvatar />}

@@ -13,8 +13,8 @@ const RPC_URL = 'https://polygon-rpc.com/';
 const BLOCK_EXPLORER_URL = 'https://polygonscan.com/';
 
 export const usePolygonNetwork = () => {
-  const { Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
-  const { isAuthenticated, setNetworkId, setHasPolygon } = useNetwork();
+  const { isAuthenticated, Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
+  const { setNetworkId, setHasPolygon } = useNetwork();
   const { setDialog } = useExperts();
 
   useEffect(() => {
@@ -27,7 +27,14 @@ export const usePolygonNetwork = () => {
   }, [isWeb3Enabled, enableWeb3]);
 
   const switchNetworkToPolygon = () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled() && isAuthenticated) {
+    console.groupCollapsed('SwitchNetworkToPolygon:');
+    console.log('Metamask:', MetaMaskOnboarding.isMetaMaskInstalled());
+    console.log('isAuthenticated:', isAuthenticated);
+    if (
+      MetaMaskOnboarding.isMetaMaskInstalled() &&
+      isAuthenticated &&
+      isWeb3Enabled
+    ) {
       Moralis.switchNetwork(CHAIN_ID)
         .then(
           (success) => {
@@ -58,8 +65,9 @@ export const usePolygonNetwork = () => {
           // setDialog(error.message);
         });
     } else {
-      // setDialog('Install MetaMask First.');
+      console.log('No MetaMask Fount.');
     }
+    console.groupEnd();
   };
 
   const addPolygonNetwork = () => {
