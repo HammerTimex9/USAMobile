@@ -5,6 +5,7 @@ import { styled } from '@mui/system';
 import tokenList from '../../../data/TokenList.json';
 import { useExperts } from '../../../contexts/expertsContext';
 import { usePositions } from '../../../contexts/portfolioContext';
+import { useNetwork } from '../../../contexts/networkContext';
 import { Heading } from '../../UW/Heading';
 import TokenCard from '../../Bits/TokenCard';
 
@@ -57,15 +58,22 @@ const TokenList = () => {
   const [hoverdToken, setHoverdToken] = React.useState();
   const { positions } = usePositions();
   const { setDialog } = useExperts();
+  const { isPolygon } = useNetwork();
 
   const onCloseModal = () => setSelectedToken();
 
   React.useEffect(() => {
-    setDialog(
-      hoverdToken?.shortDescription ||
-        "Welcome to cryptocurrency, Citizen! Here are today's offerings."
-    );
-  }, [hoverdToken, setDialog]);
+    if (isPolygon) {
+      setDialog(
+        hoverdToken?.shortDescription ||
+          "Welcome to cryptocurrency, Citizen! Here are today's offerings."
+      );
+    } else {
+      setDialog(
+        'Press the infinity button above to install Polygon on MetaMask for deeply discounted trading fees!'
+      );
+    }
+  }, [hoverdToken, setDialog, isPolygon]);
 
   return (
     <>

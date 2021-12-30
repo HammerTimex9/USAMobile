@@ -13,8 +13,8 @@ const RPC_URL = 'https://polygon-rpc.com/';
 const BLOCK_EXPLORER_URL = 'https://polygonscan.com/';
 
 export const usePolygonNetwork = () => {
-  const { Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
-  const { isAuthenticated, setNetworkId, setHasPolygon } = useNetwork();
+  const { isAuthenticated, Moralis, enableWeb3, isWeb3Enabled } = useMoralis();
+  const { setNetworkId, setHasPolygon } = useNetwork();
   const { setDialog } = useExperts();
 
   useEffect(() => {
@@ -27,7 +27,16 @@ export const usePolygonNetwork = () => {
   }, [isWeb3Enabled, enableWeb3]);
 
   const switchNetworkToPolygon = () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled() && isAuthenticated) {
+    // To Debug issue of Switching Network
+    // console.groupCollapsed('SwitchNetworkToPolygon:');
+    // console.log('Metamask:', MetaMaskOnboarding.isMetaMaskInstalled());
+    // console.log('isAuthenticated:', isAuthenticated);
+    // console.groupEnd();
+    if (
+      MetaMaskOnboarding.isMetaMaskInstalled() &&
+      isAuthenticated &&
+      isWeb3Enabled
+    ) {
       Moralis.switchNetwork(CHAIN_ID)
         .then(
           (success) => {
@@ -37,7 +46,8 @@ export const usePolygonNetwork = () => {
             setDialog('Polygon Chain switched successfully.');
           },
           (switchError) => {
-            console.log('SwitchError:', switchError);
+            // To Debug issue of Switching Network
+            // console.log('SwitchError:', switchError);
             // setDialog(switchError.message);
             setHasPolygon(false);
             if (switchError.code === 4902) {
@@ -58,7 +68,8 @@ export const usePolygonNetwork = () => {
           // setDialog(error.message);
         });
     } else {
-      // setDialog('Install MetaMask First.');
+      // To Debug issue of Switching Network
+      // console.log('No MetaMask Fount.');
     }
   };
 

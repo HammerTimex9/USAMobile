@@ -55,10 +55,18 @@ const Main = () => {
   }, [isAuthenticated, setExpert]);
 
   useEffect(() => {
+    // To Debug OnBaording Issue
+    // console.groupCollapsed('AppUseEffect:');
+    // console.log('hasMetamask:', hasMetamask);
+    // console.log('isPolygon:', isPolygon);
+    // console.log('isAuthenticated:', isAuthenticated);
+    // console.groupEnd();
+
     if (isAuthenticated && !isPolygon && hasMetamask) {
       switchNetworkToPolygon();
     }
-  }, [hasMetamask, isAuthenticated, isPolygon, switchNetworkToPolygon]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMetamask, isAuthenticated, isPolygon]);
 
   const emptyPositions = !address || positions?.length === 0;
 
