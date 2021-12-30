@@ -30,7 +30,6 @@ const BuySell = () => {
       widgetWidth: '450px',
       widgetHeight: '635px',
     });
-
     transak.init();
 
     transak.on(transak.ALL_EVENTS, (data) => {
@@ -62,6 +61,7 @@ const BuySell = () => {
     });
 
     setExpert({ character: 'ladyliberty' });
+    setDialog('Buy crypto in the safest way');
 
     return () => {
       transak.close();

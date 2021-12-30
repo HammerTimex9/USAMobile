@@ -55,11 +55,12 @@ const Main = () => {
   }, [isAuthenticated, setExpert]);
 
   useEffect(() => {
-    console.groupCollapsed('AppUseEffect:');
-    console.log('hasMetamask:', hasMetamask);
-    console.log('isPolygon:', isPolygon);
-    console.log('isAuthenticated:', isAuthenticated);
-    console.groupEnd();
+    // To Debug OnBaording Issue
+    // console.groupCollapsed('AppUseEffect:');
+    // console.log('hasMetamask:', hasMetamask);
+    // console.log('isPolygon:', isPolygon);
+    // console.log('isAuthenticated:', isAuthenticated);
+    // console.groupEnd();
 
     if (isAuthenticated && !isPolygon && hasMetamask) {
       switchNetworkToPolygon();

@@ -27,9 +27,11 @@ export const usePolygonNetwork = () => {
   }, [isWeb3Enabled, enableWeb3]);
 
   const switchNetworkToPolygon = () => {
-    console.groupCollapsed('SwitchNetworkToPolygon:');
-    console.log('Metamask:', MetaMaskOnboarding.isMetaMaskInstalled());
-    console.log('isAuthenticated:', isAuthenticated);
+    // To Debug issue of Switching Network
+    // console.groupCollapsed('SwitchNetworkToPolygon:');
+    // console.log('Metamask:', MetaMaskOnboarding.isMetaMaskInstalled());
+    // console.log('isAuthenticated:', isAuthenticated);
+    // console.groupEnd();
     if (
       MetaMaskOnboarding.isMetaMaskInstalled() &&
       isAuthenticated &&
@@ -44,7 +46,8 @@ export const usePolygonNetwork = () => {
             setDialog('Polygon Chain switched successfully.');
           },
           (switchError) => {
-            console.log('SwitchError:', switchError);
+            // To Debug issue of Switching Network
+            // console.log('SwitchError:', switchError);
             // setDialog(switchError.message);
             setHasPolygon(false);
             if (switchError.code === 4902) {
@@ -65,9 +68,9 @@ export const usePolygonNetwork = () => {
           // setDialog(error.message);
         });
     } else {
-      console.log('No MetaMask Fount.');
+      // To Debug issue of Switching Network
+      // console.log('No MetaMask Fount.');
     }
-    console.groupEnd();
   };
 
   const addPolygonNetwork = () => {

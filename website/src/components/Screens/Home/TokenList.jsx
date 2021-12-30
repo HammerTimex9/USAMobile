@@ -69,7 +69,9 @@ const TokenList = () => {
           "Welcome to cryptocurrency, Citizen! Here are today's offerings."
       );
     } else {
-      setDialog('Add Polygone Network First!.');
+      setDialog(
+        'Press the infinity button above to install Polygon on MetaMask for deeply discounted trading fees!'
+      );
     }
   }, [hoverdToken, setDialog]);
 
