@@ -52,6 +52,10 @@ export const ToSelect = () => {
   }, [setToToken]);
 
   useEffect(() => {
+    setToToken(tokens.find((o) => o.symbol === symbol));
+  }, [symbol, tokens, setToToken]);
+
+  useEffect(() => {
     if (fromTokenSymbol === symbol) {
       setSymbol();
     }
@@ -59,7 +63,6 @@ export const ToSelect = () => {
 
   const handleChange = async (item) => {
     setSymbol(item.symbol);
-    setToToken(item);
     setDialog(
       "Press the 'Get Trade Quote' " +
         'to get a quote to trade ' +
