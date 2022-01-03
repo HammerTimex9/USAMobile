@@ -13,7 +13,7 @@ export const FromSelect = ({ sx = {} }) => {
   const location = useLocation();
   const [symbol, setSymbol] = useState(location.state?.fromSymbol);
   const { positions } = usePositions();
-  const { setFromToken, setToToken } = useActions();
+  const { setFromToken } = useActions();
   const { setDialog } = useExperts();
   const { isPolygon } = useNetwork();
 
@@ -31,19 +31,20 @@ export const FromSelect = ({ sx = {} }) => {
     };
   }, [setFromToken]);
 
+  useEffect(() => {
+    setFromToken(positions.find((o) => o.symbol === symbol));
+  }, [symbol, positions, setFromToken]);
+
   const handleChange = async (item) => {
     setSymbol(item.symbol);
 
     if (!isPolygon) {
-      setFromToken();
-      setToToken();
       setDialog(
         'Please Switch network to Polygon to use discount network fees.'
       );
       return;
     }
 
-    setFromToken(item);
     setDialog('Next set how much ' + item.symbol + ' to use in this trade. ');
   };
 

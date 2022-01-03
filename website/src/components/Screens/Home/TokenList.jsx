@@ -79,7 +79,15 @@ const TokenList = () => {
     <>
       <Heading variant="h4">Tokens</Heading>
 
-      <Box mt={2} sx={{ height: 'calc(100vh - 530px)', overflow: 'auto' }}>
+      <Box
+        mt={2}
+        sx={{
+          height: 'calc(100vh - 530px)',
+          px: 1,
+          overflow: 'auto',
+        }}
+        className="uw-scrollbar-lg"
+      >
         <Grid container spacing={2} p={1}>
           {tokenList.map((token, i) => {
             const position = positions.find((p) => p.symbol === token.symbol);

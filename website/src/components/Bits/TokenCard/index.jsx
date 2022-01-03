@@ -12,7 +12,7 @@ import './styles.scss';
 
 const TokenCard = ({ symbol, onClose }, ref) => {
   const { data } = useTokenInfo(symbol);
-  const { positions } = usePositions();
+  const { positions, totalValue } = usePositions();
   const { network } = useNetwork();
   const token = tokenList.find((t) => t.symbol === symbol);
   const { value = 0, tokens } =
@@ -53,7 +53,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                 },
               }}
             >
-              {value > 0 && (
+              {totalValue > 0 && (
                 <Link
                   to={{
                     pathname: '/SwapTrade',
