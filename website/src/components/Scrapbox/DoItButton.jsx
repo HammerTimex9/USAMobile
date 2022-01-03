@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMoralis } from 'react-moralis';
-import { Tooltip } from '@mui/material';
+import { Tooltip, Modal, Box, Typography, Button, Stack } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { useQuote } from '../../contexts/quoteContext';
@@ -13,6 +13,7 @@ export const DoItButton = () => {
   const { user } = useMoralis();
   const { network } = useNetwork();
   const { setQuote } = useQuote();
+  const [confirmModal, setConfirmModal] = useState();
   const { fromTokenAddress, fromTokenSymbol, toTokenAddress, txAmount } =
     useActions();
   const { setDialog } = useExperts();
@@ -67,17 +68,63 @@ export const DoItButton = () => {
     }
   }, [error, setDialog]);
 
+  const onCloseModal = () => setConfirmModal();
+  const handleClick = () => setConfirmModal(true);
+  const handleConfirm = () => {
+    onCloseModal();
+    fetch();
+  };
+  const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 300,
+    bgcolor: '#fff',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: 5,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
   return (
-    <Tooltip title="Submit swap order.">
-      <LoadingButton
-        className="ExpertButton"
-        variant="darkblue"
-        sx={{ mr: 2 }}
-        onClick={fetch}
-        loading={isFetching}
-      >
-        Do it.
-      </LoadingButton>
-    </Tooltip>
+    <>
+      <Tooltip title="Submit swap order.">
+        <LoadingButton
+          className="ExpertButton"
+          variant="darkblue"
+          sx={{ mr: 2 }}
+          onClick={handleClick}
+          loading={isFetching}
+        >
+          Do it.
+        </LoadingButton>
+      </Tooltip>
+      <Modal open={!!confirmModal} onBackdropClick={onCloseModal}>
+        <Box sx={style}>
+          <Typography variant="h5" sx={{ color: '#000' }}>
+            Are you sure?
+          </Typography>
+          <Stack direction="row" spacing={2} sx={{ my: '30px' }}>
+            <Button
+              sx={{ color: '#000' }}
+              variant="contained"
+              onClick={handleConfirm}
+            >
+              Confirm
+            </Button>
+            <Button
+              sx={{ color: '#000' }}
+              variant="contained"
+              onClick={onCloseModal}
+            >
+              Cancel
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+    </>
   );
 };
