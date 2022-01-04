@@ -25,6 +25,7 @@ export const NavBar = () => {
   const address = user?.attributes?.ethAddress;
   const emptyPositions = !address || positions.length === 0;
   const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
+  console.log('NavBar variables: ', !address, positions.length === 0);
   useEffect(() => {
     // To Debug User value
     // console.log('User:', user);
