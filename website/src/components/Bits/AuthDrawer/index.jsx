@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useMoralis } from 'react-moralis';
 import { Alert, Box, Button, Stack, TextField, Tooltip } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
+// import LoadingButton from '@mui/lab/LoadingButton';
 
 import './styles.css';
 
 export const AuthDrawer = (props) => {
   const {
-    authenticate,
-    isAuthenticating,
+    // authenticate,
+    // isAuthenticating,
     authError,
     isAuthenticated,
     login,
@@ -34,9 +34,9 @@ export const AuthDrawer = (props) => {
     });
   };
 
-  const handleAuthenticate = () => {
-    authenticate({ usePost: true });
-  };
+  // const handleAuthenticate = () => {
+  //   authenticate({ usePost: true });
+  // };
 
   const handleSave = () => {
     setUserData({
@@ -162,7 +162,7 @@ export const AuthDrawer = (props) => {
                 </Button>
               </span>
             </Tooltip>
-            <Tooltip title="Use Metamask to authenticate into your USA Wallet account.">
+            {/* <Tooltip title="Use Metamask to authenticate into your USA Wallet account.">
               <LoadingButton
                 variant="outlined"
                 loading={isAuthenticating}
@@ -170,7 +170,7 @@ export const AuthDrawer = (props) => {
               >
                 Use MetaMask
               </LoadingButton>
-            </Tooltip>
+            </Tooltip> */}
           </>
         ) : (
           <Tooltip title="Update your USA Wallet account to the currently entered user name, e-mail, and password.">

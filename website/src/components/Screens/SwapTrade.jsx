@@ -12,7 +12,7 @@ import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
 
 const SwapTrade = () => {
   const { setExpert, setDialog } = useExperts();
-  const { isAuthenticated } = useMoralis();
+  const { isAuthenticated, authenticate, user } = useMoralis();
   const { switchNetworkToPolygon } = usePolygonNetwork();
   const { isPolygon } = useNetwork();
 
@@ -22,6 +22,10 @@ const SwapTrade = () => {
         setDialog('Check your Metamast and Accept Polygon Switch.');
         switchNetworkToPolygon();
       }
+    }
+    const address = user?.attributes?.ethAddress;
+    if (!address) {
+      authenticate({ usePost: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isPolygon]);
