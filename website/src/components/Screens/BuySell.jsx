@@ -19,16 +19,19 @@ const BuySell = () => {
       environment:
         process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'STAGING',
       defaultCryptoCurrency: 'USDC',
+      cryptoCurrencyList: 'USDC',
       walletAddress: ethAddress,
       themeColor: colorMode === 'light' ? 'D37277' : '5865C9', // Need to confirm these colors from BOB.
       fiatCurrency: 'USD',
       email: emailAddress,
-      networks: 'ethereum,polygon',
-      defaultNetwork: 'polygon',
+      networks: 'polygon',
+      network: 'polygon',
+      // defaultNetwork: 'matic',
       redirectURL: '',
       hostURL: window.location.origin,
       widgetWidth: '450px',
       widgetHeight: '635px',
+      hideMenu: true,
     });
     transak.init();
 
