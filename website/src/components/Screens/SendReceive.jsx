@@ -10,7 +10,7 @@ import { Heading } from '../UW/Heading';
 import { useExperts } from '../../contexts/expertsContext';
 
 const SendReceive = () => {
-  const { setExpert, setDialog } = useExperts();
+  const { setExpert } = useExperts();
   useEffect(() => {
     setExpert({
       character: 'benfranklin',
