@@ -89,13 +89,14 @@ export const NavBar = () => {
         </Link>
 
         <Link
-          to="/SendRecieve"
+          to="/SendReceive"
           className={`${emptyPositions ? 'disabled' : ''} ${activeTab(
             history,
-            '/SendRecieve'
+            '/SendReceive'
           )}`}
         >
-          <Tab label={isOnlyMatic ? 'Recieve' : 'Send/Recieve'}>
+          {/*<Tab label={isOnlyMatic ? 'Receive' : 'Send/Receive'}>*/}
+          <Tab label="Receive">
             <ArrowsSvg />
           </Tab>
         </Link>
