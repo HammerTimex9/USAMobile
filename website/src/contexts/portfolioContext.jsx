@@ -73,7 +73,7 @@ export const PortfolioProvider = (props) => {
                 name: item.name.replace('(PoS)', '').trim(),
               };
             })
-            .filter((value) => value);
+            .filter(({ value }) => value);
           const totalValue = positions.reduce((s, item) => s + item.value, 0);
           setPositions(positions);
           setTotalValue(totalValue);
