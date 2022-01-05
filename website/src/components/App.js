@@ -36,11 +36,11 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 };
 
 const Main = () => {
-  const { user, isAuthenticated } = useMoralis();
+  const { isAuthenticated } = useMoralis();
   const { setExpert } = useExperts();
-  const { isLoading, positions } = usePositions();
+  const { isLoading } = usePositions();
   const { isPolygon } = useNetwork();
-  const address = user?.attributes?.ethAddress;
+  // const address = user?.attributes?.ethAddress;
   const hasMetamask = window.ethereum?.isMetaMask;
 
   const { switchNetworkToPolygon } = usePolygonNetwork();
@@ -68,7 +68,7 @@ const Main = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMetamask, isAuthenticated, isPolygon]);
 
-  const emptyPositions = !address || positions?.length === 0;
+  const emptyPositions = false; //!address || positions?.length === 0;
 
   return (
     <Stack alignItems="center" spacing={3} p={3}>
