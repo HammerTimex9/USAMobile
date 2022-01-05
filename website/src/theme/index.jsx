@@ -32,6 +32,25 @@ export const getCustomTheme = (mode = 'light') => ({
             borderRadius: 'var(--border-radius)',
           },
         },
+        {
+          props: { variant: 'white-round' },
+          style: {
+            height: 43,
+            borderRadius: 25,
+            color: '#213DB0',
+            background: '#fff',
+            boxShadow:
+              '0px 4px 20px rgba(0, 0, 0, 0.25), inset 0px 4px 15px rgba(0, 0, 0, 0.25)',
+            fontSize: 20,
+            fontWeight: 500,
+            '&:hover': {
+              background: '#fff',
+            },
+            '&:disabled': {
+              color: 'rgb(33, 61, 176, 0.3)',
+            },
+          },
+        },
       ],
     },
     MuiIconButton: {
