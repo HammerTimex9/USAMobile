@@ -1,3 +1,40 @@
+/*******************************
+  Only Receive
+*******************************/
+import React, { useEffect } from 'react';
+
+import { Box } from '@mui/material';
+
+import { AddressPanel } from '../Blocks/AddressPanel';
+import { Heading } from '../UW/Heading';
+import { useExperts } from '../../contexts/expertsContext';
+
+const SendReceive = () => {
+  const { setExpert } = useExperts();
+  useEffect(() => {
+    setExpert({
+      character: 'benfranklin',
+      dialog:
+        'Copy your address for pasting or ' +
+        'select amount to request to generate a QR code.',
+    });
+  }, [setExpert]);
+
+  return (
+    <Box sx={{ textAlign: 'center', mt: 1, mb: 3 }}>
+      <Heading variant="h4" sx={{ mb: 2 }}>
+        Receive Cryptocurrency
+      </Heading>
+      <AddressPanel />
+    </Box>
+  );
+};
+export default SendReceive;
+
+/*******************************
+  Send / Receive
+*******************************/
+/*
 import { useState, useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
@@ -157,3 +194,4 @@ const SendReceive = () => {
 };
 
 export default SendReceive;
+*/

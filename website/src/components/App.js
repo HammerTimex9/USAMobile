@@ -99,7 +99,7 @@ const Main = () => {
                 </Route>
                 <CryptoRoute
                   exact
-                  path="/SendRecieve"
+                  path="/SendReceive"
                   component={SendReceive}
                   emptyPositions={emptyPositions}
                 />

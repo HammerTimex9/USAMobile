@@ -81,7 +81,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
               {value > 0 && (
                 <Link
                   to={{
-                    pathname: '/SendRecieve',
+                    pathname: '/SendReceive',
                     state: {
                       mode: 'send',
                       fromSymbol: symbol,
@@ -94,7 +94,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
               )}
               <Link
                 to={{
-                  pathname: '/SendRecieve',
+                  pathname: '/SendReceive',
                   state: { mode: 'receive' },
                 }}
               >
