@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
-// import { useMoralis } from 'react-moralis';
+import { useMoralis } from 'react-moralis';
 import { Box, Stack, Typography, Modal } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 
@@ -21,6 +21,7 @@ export const NavBar = () => {
   const history = useHistory();
   const { positions } = usePositions();
   const [modal, setModal] = useState(false);
+  const { user } = useMoralis();
   const address = user?.attributes?.ethAddress;
   const emptyPositions = !address || positions.length === 0;
   // const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
