@@ -8,15 +8,10 @@ import { usePositions } from '../contexts/portfolioContext';
 import { useNetwork } from '../contexts/networkContext';
 import { usePolygonNetwork } from '../hooks/usePolygonNetwork';
 
-import Landing from './Screens/Landing';
-import Login from './Screens/Auth/Login';
-import Register from './Screens/Auth/Register';
-
 import { TopNavBar } from './Screens/TopNavBar';
 import { ExpertStage } from './Screens/ExpertStage';
 import { NavBar } from './Screens/NavBar';
 import { BottomFooter } from './Screens/BottomFooter';
-import './App.scss';
 
 const Home = lazy(() => import('./Screens/Home'));
 const Portfolio = lazy(() => import('./Screens/Portfolio'));
@@ -120,23 +115,4 @@ const Main = () => {
   );
 };
 
-const App = () => {
-  return (
-    <Switch>
-      <Route path="/landing">
-        <Landing />
-      </Route>
-      <Route path="/login">
-        <Login />
-      </Route>
-      <Route path="/register">
-        <Register />
-      </Route>
-      <Route path="/">
-        <Main />
-      </Route>
-    </Switch>
-  );
-};
-
-export default App;
+export default Main;

@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
 import { MoralisProvider } from 'react-moralis';
 
 import { ExpertsProvider } from './contexts/expertsContext';
@@ -9,30 +8,29 @@ import { NetworkProvider } from './contexts/networkContext';
 import { PortfolioProvider } from './contexts/portfolioContext';
 import { ActionsProvider } from './contexts/actionsContext';
 import { QuoteProvider } from './contexts/quoteContext';
-import App from './components/App';
+import App from './containers/App';
 import reportWebVitals from './components/Support/reportWebVitals';
+
 const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID;
 const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL;
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <MoralisProvider appId={appId} serverUrl={serverUrl}>
-        <ExpertsProvider>
-          <ColorModeProvider>
-            <NetworkProvider>
-              <PortfolioProvider>
-                <ActionsProvider>
-                  <QuoteProvider>
-                    <App />
-                  </QuoteProvider>
-                </ActionsProvider>
-              </PortfolioProvider>
-            </NetworkProvider>
-          </ColorModeProvider>
-        </ExpertsProvider>
-      </MoralisProvider>
-    </BrowserRouter>
+    <MoralisProvider appId={appId} serverUrl={serverUrl}>
+      <ExpertsProvider>
+        <ColorModeProvider>
+          <NetworkProvider>
+            <PortfolioProvider>
+              <ActionsProvider>
+                <QuoteProvider>
+                  <App />
+                </QuoteProvider>
+              </ActionsProvider>
+            </PortfolioProvider>
+          </NetworkProvider>
+        </ColorModeProvider>
+      </ExpertsProvider>
+    </MoralisProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

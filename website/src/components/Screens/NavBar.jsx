@@ -19,21 +19,23 @@ const activeTab = (history, path) => {
 
 export const NavBar = () => {
   const history = useHistory();
+  const { user, authenticate } = useMoralis();
   const { positions } = usePositions();
   const [modal, setModal] = useState(false);
-  const { user } = useMoralis();
+
   const address = user?.attributes?.ethAddress;
-  const emptyPositions = !address || positions.length === 0;
+  const emptyPositions = false; //!address || positions.length === 0;
   // const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
+  const { pathname } = history.location;
   useEffect(() => {
-    // To Debug User value
-    // console.log('User:', user);
-    if (user && !address) {
-      alert(
-        'We recommend authenticating with MetaMask as a more secure login than using email and passwords.'
-      );
+    if (
+      user &&
+      !address &&
+      (pathname === '/Portfolio' || pathname === '/SwapTrade')
+    ) {
+      authenticate({ usePost: true });
     }
-  }, [user, address]);
+  }, [pathname, user, address, authenticate]);
   return (
     <Stack
       spacing={1}
