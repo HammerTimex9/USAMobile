@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
-// import { useMoralis } from 'react-moralis';
+import { useMoralis } from 'react-moralis';
 import { Box, Stack, Typography, Modal } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 
@@ -19,19 +19,22 @@ const activeTab = (history, path) => {
 
 export const NavBar = () => {
   const history = useHistory();
+  const { user, authenticate } = useMoralis();
   const { positions } = usePositions();
   const [modal, setModal] = useState(false);
+  const address = user?.attributes?.ethAddress;
   const emptyPositions = false; //!address || positions.length === 0;
   const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
-  // useEffect(() => {
-  //   // To Debug User value
-  //   // console.log('User:', user);
-  //   if (user && !address) {
-  //     alert(
-  //       'We recommend authenticating with MetaMask as a more secure login than using email and passwords.'
-  //     );
-  //   }
-  // }, [user, address]);
+  const { pathname } = history.location;
+  useEffect(() => {
+    if (
+      user &&
+      !address &&
+      (pathname === '/Portfolio' || pathname === '/SwapTrade')
+    ) {
+      authenticate({ usePost: true });
+    }
+  }, [pathname, user, address, authenticate]);
   return (
     <Stack
       spacing={1}
