@@ -73,14 +73,15 @@ export const PortfolioProvider = (props) => {
                 name: item.name.replace('(PoS)', '').trim(),
               };
             })
-            .filter((value) => value);
+            .filter(({ value }) => value);
           const totalValue = positions.reduce((s, item) => s + item.value, 0);
           setPositions(positions);
           setTotalValue(totalValue);
           setMaticPrice(positions[0].price);
         });
       })
-      .catch(() => {
+      .catch((e) => {
+        console.log('getPositions error: ', e);
         setPositions([]);
         setTotalValue(0);
       });
@@ -107,6 +108,7 @@ export const PortfolioProvider = (props) => {
       setPositions(address === '' ? [] : null);
       setTotalValue(0);
     } else if (!network) {
+      console.log('network is undefined');
       setPositions([]);
       setTotalValue(0);
     } else {
