@@ -7,8 +7,6 @@ import './styles.css';
 
 export const AuthDrawer = (props) => {
   const {
-    // authenticate,
-    // isAuthenticating,
     authError,
     isAuthenticated,
     login,
@@ -33,10 +31,6 @@ export const AuthDrawer = (props) => {
       usePost: true,
     });
   };
-
-  // const handleAuthenticate = () => {
-  //   authenticate({ usePost: true });
-  // };
 
   const handleSave = () => {
     setUserData({

@@ -16,16 +16,16 @@ export const AuthButton = () => {
   }, [history, isAuthenticated]);
 
   // Commented to test on Local Dev
-  // useEffect(() => {
-  //   return () => {
-  //     window.addEventListener('beforeunload', function (e) {
-  //       let confirmationMessage = 'o/';
-  //       (e || window.event).returnValue = confirmationMessage;
-  //       if (isAuthenticated) logout();
-  //       return confirmationMessage;
-  //     });
-  //   };
-  // });
+  useEffect(() => {
+    return () => {
+      window.addEventListener('beforeunload', function (e) {
+        let confirmationMessage = 'o/';
+        (e || window.event).returnValue = confirmationMessage;
+        if (isAuthenticated) logout();
+        return confirmationMessage;
+      });
+    };
+  });
 
   return (
     <Tooltip title="Log out of USA Wallet.">
