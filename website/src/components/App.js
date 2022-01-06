@@ -66,7 +66,7 @@ const Main = () => {
   const emptyPositions = false; //!address || positions?.length === 0;
 
   return (
-    <Stack alignItems="center" spacing={3} p={3}>
+    <Stack alignItems="center" spacing={3} py={3}>
       <TopNavBar />
       {isAuthenticated && !isLoading ? <NavBar /> : null}
       <ExpertStage />
