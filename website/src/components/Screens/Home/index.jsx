@@ -16,7 +16,7 @@ const Home = () => {
   }, [setExpert]);
 
   return (
-    <Box sx={{ maxWidth: 768 }} px={1}>
+    <Box sx={{ width: '100%' }}>
       {false && <NFTList />}
       <TokenList />
     </Box>

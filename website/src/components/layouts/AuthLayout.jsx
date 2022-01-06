@@ -3,7 +3,6 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 
 import LogoUrl from '../../assets/logos/logo-usawallet.svg';
-import BgUrl from '../../assets/bg-dark.svg';
 
 const Wrapper = styled('div')({
   display: 'flex',
@@ -13,12 +12,6 @@ const Wrapper = styled('div')({
   width: '100vw',
   height: '100vh',
   padding: '0 20px',
-  backgroundImage: `url(${BgUrl}), var(--gradient-300)`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: '70%, 100%',
-  backgroundPosition: 'center',
-  backgroundAttachment: 'fixed',
-  color: '#fff',
 
   img: {
     position: 'absolute',
@@ -57,7 +50,7 @@ const AuthLayout = ({ title, error, children }) => {
 
       <h1>{title}</h1>
 
-      <Stack direction="column" className="content" spacing={4}>
+      <Stack direction="column" className="content" spacing={5}>
         {children}
       </Stack>
     </Wrapper>
