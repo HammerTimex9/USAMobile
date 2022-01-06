@@ -18,7 +18,36 @@ const TokenCard = ({ symbol, onClose }, ref) => {
   const { value = 0, tokens } =
     positions.find((p) => p.symbol === symbol) || {};
   const { market_data, links } = data || {};
-
+  const numberWithCommas = (x) => {
+    return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
+  };
+  const abbreviateNumber = (value) => {
+    let newValue = value;
+    if (value >= 1000) {
+      let suffixes = ['', 'K', 'M', 'B', 'T'];
+      let suffixNum = Math.floor(('' + value).length / 3);
+      let shortValue = '';
+      for (let precision = 2; precision >= 1; precision--) {
+        shortValue = parseFloat(
+          (suffixNum != 0
+            ? value / Math.pow(1000, suffixNum)
+            : value
+          ).toPrecision(precision)
+        );
+        let dotLessShortValue = (shortValue + '').replace(
+          /[^a-zA-Z 0-9]+/g,
+          ''
+        );
+        if (dotLessShortValue.length <= 2) {
+          break;
+        }
+      }
+      if (shortValue % 1 != 0) shortValue = shortValue.toFixed(1);
+      newValue = shortValue + suffixes[suffixNum];
+    }
+    return newValue;
+  };
+  console.log(data);
   return (
     <Box ref={ref} className="token-card">
       {data ? (
@@ -118,10 +147,10 @@ const TokenCard = ({ symbol, onClose }, ref) => {
             <Box>
               <Typography className="title">Market Price</Typography>
               <Typography className="price">
-                ${market_data.current_price.usd}
+                ${abbreviateNumber(market_data.current_price.usd)}
               </Typography>
               <Typography className="title">
-                {market_data.current_price.btc} BTC
+                {market_data.current_price.btc.toFixed(3)} BTC
               </Typography>
             </Box>
             <Box>
@@ -133,7 +162,24 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                     : 'percent negative'
                 }
               >
-                {market_data.price_change_percentage_1h_in_currency.usd}%
+                {market_data.price_change_percentage_1h_in_currency.usd.toFixed(
+                  3
+                )}
+                %
+              </Typography>
+              <Typography
+                className={
+                  market_data.price_change_percentage_1h_in_currency > 0
+                    ? 'i-price'
+                    : 'i-price negative'
+                }
+              >
+                $
+                {(
+                  (market_data.current_price.usd *
+                    market_data.price_change_percentage_1h_in_currency.usd) /
+                  100
+                ).toFixed(3)}
               </Typography>
             </Box>
             <Box>
@@ -145,7 +191,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                     : 'percent negative'
                 }
               >
-                {market_data.price_change_percentage_24h}%
+                {market_data.price_change_percentage_24h.toFixed(3)}%
               </Typography>
               <Typography
                 className={
@@ -154,7 +200,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                     : 'i-price negative'
                 }
               >
-                ${market_data.price_change_24h}
+                ${numberWithCommas(market_data.price_change_24h.toFixed(3))}
               </Typography>
             </Box>
             <Box>
@@ -166,7 +212,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                     : 'percent negative'
                 }
               >
-                {market_data.price_change_percentage_7d}%
+                {market_data.price_change_percentage_7d.toFixed(3)}%
               </Typography>
               <Typography
                 className={
@@ -176,9 +222,13 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                 }
               >
                 $
-                {(market_data.current_price.usd *
-                  market_data.price_change_percentage_7d) /
-                  100}
+                {numberWithCommas(
+                  (
+                    (market_data.current_price.usd *
+                      market_data.price_change_percentage_7d) /
+                    100
+                  ).toFixed(3)
+                )}
               </Typography>
             </Box>
           </Box>
@@ -193,19 +243,27 @@ const TokenCard = ({ symbol, onClose }, ref) => {
             <Box>
               <Typography className="title">Market Cap</Typography>
               <Typography fontSize="14px" className="price">
-                ${market_data.market_cap.usd}
+                ${abbreviateNumber(market_data.market_cap.usd)}
               </Typography>
               <Typography className="title">
-                {market_data.market_cap.btc} BTC
+                {abbreviateNumber(market_data.market_cap.btc)} BTC
               </Typography>
             </Box>
+            <img
+              src={`${process.env.PUBLIC_URL}/images/tokens/${symbol}.png`}
+              alt=""
+              loading="lazy"
+            />
             <Box>
               <Typography className="title">24H Volume</Typography>
               <Typography className="title" fontSize="14px" opacity={1}>
-                ${market_data.market_cap_change_24h}
+                ${abbreviateNumber(market_data.market_cap_change_24h)}
               </Typography>
               <Typography className="title">
-                {market_data.market_cap_change_24h_in_currency.btc} BTC
+                {numberWithCommas(
+                  market_data.market_cap_change_24h_in_currency.btc
+                )}
+                BTC
               </Typography>
             </Box>
           </Box>
