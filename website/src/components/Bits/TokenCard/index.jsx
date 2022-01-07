@@ -32,7 +32,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
           (suffixNum !== 0
             ? value / Math.pow(1000, suffixNum)
             : value
-          ).toPrecision(precision)
+          ).toPrecision(3)
         );
         let dotLessShortValue = (shortValue + '').replace(
           /[^a-zA-Z 0-9]+/g,
@@ -42,10 +42,47 @@ const TokenCard = ({ symbol, onClose }, ref) => {
           break;
         }
       }
-      if (shortValue % 1 !== 0) shortValue = shortValue.toFixed(1);
+      if (shortValue % 1 !== 0) shortValue = shortValue.toPrecision(3);
       newValue = shortValue + suffixes[suffixNum];
     }
     return newValue;
+  };
+  const abbreviateNumber1 = (v) => {
+    let pre = '',
+      value = v,
+      last;
+    if (v < 0) {
+      pre = '-';
+    }
+    value = Number((Math.abs(v) + '').split('.')[0]);
+    last =
+      value > 1000
+        ? ''
+        : '.' + (Math.abs(v) + '').split('.')[1].substring(0, 3);
+    let newValue = value;
+    if (value >= 1000) {
+      let suffixes = ['', 'K', 'M', 'B', 'T'];
+      let suffixNum = Math.floor(('' + value).length / 3);
+      let shortValue = '';
+      for (let precision = 2; precision >= 1; precision--) {
+        shortValue = parseFloat(
+          (suffixNum !== 0
+            ? value / Math.pow(1000, suffixNum)
+            : value
+          ).toPrecision(3)
+        );
+        let dotLessShortValue = (shortValue + '').replace(
+          /[^a-zA-Z 0-9]+/g,
+          ''
+        );
+        if (dotLessShortValue.length <= 2) {
+          break;
+        }
+      }
+      if (shortValue % 1 !== 0) shortValue = shortValue.toPrecision(3);
+      newValue = shortValue + suffixes[suffixNum];
+    }
+    return pre + newValue + last;
   };
   return (
     <Box ref={ref} className="token-card">
@@ -161,7 +198,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                     : 'percent negative'
                 }
               >
-                {market_data.price_change_percentage_1h_in_currency.usd.toFixed(
+                {market_data.price_change_percentage_1h_in_currency.usd.toPrecision(
                   3
                 )}
                 %
@@ -190,7 +227,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                     : 'percent negative'
                 }
               >
-                {market_data.price_change_percentage_24h.toFixed(3)}%
+                {market_data.price_change_percentage_24h.toPrecision(3)}%
               </Typography>
               <Typography
                 className={
@@ -211,7 +248,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
                     : 'percent negative'
                 }
               >
-                {market_data.price_change_percentage_7d.toFixed(3)}%
+                {market_data.price_change_percentage_7d.toPrecision(3)}%
               </Typography>
               <Typography
                 className={
@@ -234,12 +271,12 @@ const TokenCard = ({ symbol, onClose }, ref) => {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
               alignItems: 'flex-start',
               mt: 3.75,
             }}
           >
-            <Box>
+            <Box sx={{ position: 'absolute', left: 32 }}>
               <Typography className="title">Market Cap</Typography>
               <Typography fontSize="14px" className="price">
                 ${abbreviateNumber(market_data.market_cap.usd)}
@@ -252,14 +289,15 @@ const TokenCard = ({ symbol, onClose }, ref) => {
               src={`${process.env.PUBLIC_URL}/images/tokens/${symbol}.png`}
               alt=""
               loading="lazy"
+              style={{ borderRadius: 2 }}
             />
-            <Box>
+            <Box sx={{ position: 'absolute', right: 32 }}>
               <Typography className="title">24H Volume</Typography>
               <Typography className="title" fontSize="14px" opacity={1}>
-                ${abbreviateNumber(market_data.market_cap_change_24h)}
+                ${abbreviateNumber1(market_data.market_cap_change_24h)}
               </Typography>
               <Typography className="title">
-                {numberWithCommas(
+                {abbreviateNumber1(
                   market_data.market_cap_change_24h_in_currency.btc
                 )}
                 BTC
