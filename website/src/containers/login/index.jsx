@@ -6,56 +6,59 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { styled } from '@mui/system';
 
+import { validateEmail } from '../../utils/helper';
 import AuthLayout from '../../components/layouts/AuthLayout';
 
-const PasswordField = styled('div')({
-  display: 'flex',
-  flexDirection: 'column',
-
-  '.forgot': {
-    marginTop: 15,
-    textAlign: 'right',
-    a: {
-      color: 'inherit',
-    },
-  },
+const ForgotField = styled('div')({
+  marginBottom: 40,
+  textAlign: 'right',
 });
 
 const Login = () => {
   const { isAuthenticating, authError, login } = useMoralis();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const _email = email.trim();
+  const disabled = !validateEmail(_email) || !password || isAuthenticating;
 
-  const handleLogin = () => {
-    login(username.trim(), password, { usePost: true });
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (!disabled) {
+      login(_email, password, { usePost: true });
+    }
   };
 
   return (
-    <AuthLayout title="Log In" error={authError?.message}>
+    <AuthLayout
+      title="Log In"
+      error={authError?.message}
+      onSubmit={handleLogin}
+    >
       <TextField
         variant="standard"
-        label="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        sx={{ mb: 5 }}
       />
-      <PasswordField>
-        <TextField
-          variant="standard"
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <div className="forgot">
-          <Link to="/reset-password">Forgot Password?</Link>
-        </div>
-      </PasswordField>
+      <TextField
+        variant="standard"
+        label="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        sx={{ mb: '15px' }}
+      />
+      <ForgotField>
+        <Link to="/reset-password">Forgot Password?</Link>
+      </ForgotField>
 
       <LoadingButton
         variant="white-round"
-        mt={5}
-        onClick={handleLogin}
-        disabled={!username.trim() || !password || isAuthenticating}
+        type="submit"
+        disabled={disabled}
+        sx={{ mb: 5 }}
       >
         {isAuthenticating ? <CircularProgress size={20} /> : 'Log In'}
       </LoadingButton>

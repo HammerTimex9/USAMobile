@@ -10,36 +10,34 @@ import AuthLayout from '../../components/layouts/AuthLayout';
 const ResetPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const _email = email.trim();
+  const disabled = !validateEmail(_email) || loading;
 
-  const handleReset = () => {
-    const _email = email.trim();
-    if (!validateEmail(_email)) {
-      setError('Please use a valid email address.');
-      return;
+  const handleReset = (e) => {
+    e.preventDefault();
+    if (!disabled) {
+      setLoading(true);
+      // reset api
+      setLoading(false);
     }
-
-    setError();
-    setLoading(true);
-    // reset api
-    setLoading(false);
   };
 
   return (
-    <AuthLayout title="Reset Password" error={error}>
+    <AuthLayout title="Reset Password" onSubmit={handleReset}>
       <TextField
         variant="standard"
         label="Email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        sx={{ mb: '74px' }}
       />
 
       <LoadingButton
         variant="white-round"
-        mt={5}
-        onClick={handleReset}
-        disabled={!email.trim() || loading}
+        type="submit"
+        disabled={disabled}
+        sx={{ mb: 5 }}
       >
         {loading ? <CircularProgress size={20} /> : 'Reset Password'}
       </LoadingButton>
