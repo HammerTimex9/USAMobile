@@ -1,5 +1,4 @@
 import { styled } from '@mui/system';
-import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 
 import LogoUrl from '../../assets/logos/logo-usawallet.svg';
@@ -23,21 +22,24 @@ const Wrapper = styled('div')({
     marginTop: 0,
     marginBottom: 30,
   },
+});
 
-  '.content': {
-    width: '100%',
-    maxWidth: 300,
+const Form = styled('form')({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  maxWidth: 300,
 
-    '.footer': {
-      textAlign: 'center',
-      a: {
-        color: 'inherit',
-      },
-    },
+  a: {
+    color: 'inherit',
+  },
+
+  '.footer': {
+    textAlign: 'center',
   },
 });
 
-const AuthLayout = ({ title, error, children }) => {
+const AuthLayout = ({ title, error, onSubmit, children }) => {
   return (
     <Wrapper>
       <img src={LogoUrl} alt="logo" />
@@ -50,9 +52,7 @@ const AuthLayout = ({ title, error, children }) => {
 
       <h1>{title}</h1>
 
-      <Stack direction="column" className="content" spacing={5}>
-        {children}
-      </Stack>
+      <Form onSubmit={onSubmit}>{children}</Form>
     </Wrapper>
   );
 };

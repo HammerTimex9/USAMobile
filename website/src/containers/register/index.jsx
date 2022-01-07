@@ -10,29 +10,31 @@ import AuthLayout from '../../components/layouts/AuthLayout';
 
 const Register = () => {
   const { isAuthenticating, authError, signup } = useMoralis();
-  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+  const _email = email.trim();
+  const disabled = !validateEmail(_email) || !password || isAuthenticating;
 
-  const handleRegister = () => {
-    const _email = email.trim();
-    if (_email && !validateEmail(_email)) {
-      setError('Please use a valid email address.');
-      return;
+  const handleRegister = (e) => {
+    e.preventDefault();
+    if (!disabled) {
+      signup(_email, password, _email, { usePost: true });
     }
-
-    setError();
-    signup(username.trim(), password, _email, { usePost: true });
   };
 
   return (
-    <AuthLayout title="Register" error={authError?.message || error}>
+    <AuthLayout
+      title="Register"
+      error={authError?.message}
+      onSubmit={handleRegister}
+    >
       <TextField
         variant="standard"
-        label="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        sx={{ mb: 5 }}
       />
       <TextField
         variant="standard"
@@ -40,20 +42,14 @@ const Register = () => {
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-      />
-      <TextField
-        variant="standard"
-        label="Email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        sx={{ mb: '74px' }}
       />
 
       <LoadingButton
         variant="white-round"
-        mt={5}
-        onClick={handleRegister}
-        disabled={!username.trim() || !password || isAuthenticating}
+        type="submit"
+        disabled={disabled}
+        sx={{ mb: 5 }}
       >
         {isAuthenticating ? <CircularProgress size={20} /> : 'Register'}
       </LoadingButton>
