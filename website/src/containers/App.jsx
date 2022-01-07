@@ -27,9 +27,12 @@ const PublicRoute = ({ component: Component, ...rest }) => {
 };
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { isAuthenticated, Moralis } = useMoralis();
-  const user = Moralis.User.current();
-  console.log('user:', user);
+  const { isAuthenticated } = useMoralis();
+
+  // Just to Debug and We can use to setup Route later
+  // const { Moralis } = useMoralis();
+  // const user = Moralis.User.current();
+  // console.log('user:', user);
 
   return (
     <Route
