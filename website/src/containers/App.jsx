@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 import CircularProgress from '@mui/material/CircularProgress';
+import 'keen-slider/keen-slider.min.css';
 
 import Login from './login';
 import Register from './register';
