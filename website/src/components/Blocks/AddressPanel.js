@@ -60,40 +60,49 @@ export const AddressPanel = () => {
         }}
         spacing={6}
       >
-        <Heading variant="h4">Your Address:</Heading>
-        <QRCode value={ethAddress} />
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{
-            p: 2,
-            borderRadius: 2.5,
-            boxShadow: 'var(--box-shadow)',
-            background: 'var(--fade-out-bg)',
-          }}
-        >
+        {!ethAddress && (
           <Text sx={{ lineHeight: 2.5, color: 'var(--color)' }}>
-            {ethAddress}
+            Connect Metamask First to get Address
           </Text>
-          <CopyToClipboard
-            text={data}
-            onCopy={(text, result) => setCopied(result)}
-          >
-            <ContentCopyIcon
+        )}
+        {ethAddress && (
+          <>
+            <Heading variant="h4">Your Address:</Heading>
+            <QRCode value={ethAddress} />
+            <Stack
+              direction="row"
+              spacing={1}
               sx={{
-                width: 'auto',
-                borderColor: '#e2e8f0 !important', // need to confirm this
-                border: 1,
-                borderRadius: '.3rem',
-                alignSelf: 'center',
-                fontSize: '2rem',
+                p: 2,
+                borderRadius: 2.5,
                 boxShadow: 'var(--box-shadow)',
-                color: 'var(--color)',
-                p: 1,
+                background: 'var(--fade-out-bg)',
               }}
-            />
-          </CopyToClipboard>
-        </Stack>
+            >
+              <Text sx={{ lineHeight: 2.5, color: 'var(--color)' }}>
+                {ethAddress}
+              </Text>
+              <CopyToClipboard
+                text={data}
+                onCopy={(text, result) => setCopied(result)}
+              >
+                <ContentCopyIcon
+                  sx={{
+                    width: 'auto',
+                    borderColor: '#e2e8f0 !important', // need to confirm this
+                    border: 1,
+                    borderRadius: '.3rem',
+                    alignSelf: 'center',
+                    fontSize: '2rem',
+                    boxShadow: 'var(--box-shadow)',
+                    color: 'var(--color)',
+                    p: 1,
+                  }}
+                />
+              </CopyToClipboard>
+            </Stack>
+          </>
+        )}
       </Stack>
       <AlertDialog
         open={showAlert}

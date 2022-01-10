@@ -24,14 +24,16 @@ export const ToSelect = () => {
   const { setQuote } = useQuote();
   const { network } = useNetwork();
   const [symbol, setSymbol] = useState(location.state?.toSymbol);
+  // Just to Debug
+  // console.log('SelectedNetwork:', network);
   const tokens = useMemo(
     () =>
       tokenList.filter((item) => {
         return (
           (fromTokenSymbol &&
-            item.networkId === network.id &&
+            item.networkId === network?.id &&
             item.symbol.toLowerCase() !== fromTokenSymbol.toLowerCase()) ||
-          (!fromTokenSymbol && item.networkId === network.id)
+          (!fromTokenSymbol && item.networkId === network?.id)
         );
       }),
     [network, fromTokenSymbol]

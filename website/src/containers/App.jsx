@@ -6,6 +6,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Login from './login';
 import Register from './register';
 import ResetPassworod from './reset-password';
+import CryptoLogin from './crypto-login';
 import Main from '../components/App';
 import './App.scss';
 
@@ -27,6 +28,12 @@ const PublicRoute = ({ component: Component, ...rest }) => {
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const { isAuthenticated } = useMoralis();
+
+  // Just to Debug and We can use to setup Route later
+  // const { Moralis } = useMoralis();
+  // const user = Moralis.User.current();
+  // console.log('user:', user);
+
   return (
     <Route
       {...rest}
@@ -65,6 +72,7 @@ const Routers = () => {
         <PublicRoute exact path="/login" component={Login} />
         <PublicRoute exact path="/register" component={Register} />
         <PublicRoute exact path="/reset-password" component={ResetPassworod} />
+        <PublicRoute path="/crypto-login" component={CryptoLogin} />
         <PrivateRoute path="/" component={Main} />
       </Switch>
     </BrowserRouter>
