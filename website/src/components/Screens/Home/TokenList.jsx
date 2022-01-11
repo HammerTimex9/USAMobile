@@ -1,6 +1,9 @@
 import React from 'react';
 import { Modal, Typography } from '@mui/material';
 import { styled } from '@mui/system';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import IconButton from '@mui/material/IconButton';
 import { useKeenSlider } from 'keen-slider/react';
 
 import tokenList from '../../../data/TokenList.json';
@@ -10,9 +13,19 @@ import { Heading } from '../../UW/Heading';
 import TokenCard from '../../Bits/TokenCard';
 
 const Slider = styled('div')({
+  alignItems: 'center',
   width: '100%',
   maxWidth: 700,
   margin: '0 auto',
+
+  '.back-btn': {
+    position: 'absolute',
+    left: 10,
+  },
+  '.forward-btn': {
+    position: 'absolute',
+    right: 10,
+  },
 });
 
 const Card = styled('div')(({ isPosition }) => ({
@@ -59,7 +72,8 @@ const TokenList = () => {
   const [centerIndex, setCenterIndex] = React.useState(0);
   const { positions } = usePositions();
   const { setDialog } = useExperts();
-  const [sliderRef] = useKeenSlider({
+  const [sliderRef, instanceRef] = useKeenSlider({
+    loop: true,
     mode: 'free-snap',
     slides: {
       origin: 'center',
@@ -110,6 +124,18 @@ const TokenList = () => {
             </Card>
           );
         })}
+        <IconButton
+          className="back-btn"
+          onClick={(e) => e.stopPropagation() || instanceRef.current?.prev()}
+        >
+          <ArrowBackIosNewIcon />
+        </IconButton>
+        <IconButton
+          className="forward-btn"
+          onClick={(e) => e.stopPropagation() || instanceRef.current?.next()}
+        >
+          <ArrowForwardIosIcon />
+        </IconButton>
       </Slider>
 
       <Modal
