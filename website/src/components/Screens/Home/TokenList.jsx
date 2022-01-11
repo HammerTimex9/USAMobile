@@ -21,10 +21,12 @@ const Slider = styled('div')({
   '.back-btn': {
     position: 'absolute',
     left: 10,
+    color: '#fff',
   },
   '.forward-btn': {
     position: 'absolute',
     right: 10,
+    color: '#fff',
   },
 });
 
