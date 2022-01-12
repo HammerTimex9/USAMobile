@@ -22,7 +22,7 @@ export const RequestQuote = () => {
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
   const { fetch, isFetching, data, error } = useQuoteAction({
-    chain: network.name,
+    chain: network?.name,
     fromTokenAddress,
     toTokenAddress,
     amount: txAmount,
