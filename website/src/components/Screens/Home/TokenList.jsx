@@ -1,126 +1,144 @@
 import React from 'react';
-import { Box, Grid, Modal, Typography } from '@mui/material';
+import { Modal, Typography } from '@mui/material';
 import { styled } from '@mui/system';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import IconButton from '@mui/material/IconButton';
+import { useKeenSlider } from 'keen-slider/react';
 
 import tokenList from '../../../data/TokenList.json';
 import { useExperts } from '../../../contexts/expertsContext';
 import { usePositions } from '../../../contexts/portfolioContext';
-import { useNetwork } from '../../../contexts/networkContext';
 import { Heading } from '../../UW/Heading';
 import TokenCard from '../../Bits/TokenCard';
 
-const Card = styled(Box)(({ isPosition }) => ({
+const Slider = styled('div')({
+  alignItems: 'center',
+  width: '100%',
+  maxWidth: 700,
+  margin: '0 auto',
+
+  '.back-btn': {
+    position: 'absolute',
+    left: 10,
+    color: '#fff',
+  },
+  '.forward-btn': {
+    position: 'absolute',
+    right: 10,
+    color: '#fff',
+  },
+});
+
+const Card = styled('div')(({ isPosition }) => ({
+  display: 'flex',
   borderRadius: '25px',
   boxShadow: isPosition
     ? '0 0 0px 4px #efcc61, 6px 8px 10px rgba(0, 0, 0, 0.3)'
     : '4px 6px 10px rgba(0, 0, 0, 0.25)',
-  overflow: 'hidden',
+  cursor: 'pointer',
 
-  '& > div': {
-    position: 'relative',
-    display: 'flex',
-    cursor: 'pointer',
+  '& p': {
+    position: 'absolute',
+    color: '#fff',
+    lineHeight: 1,
 
-    '& p': {
-      position: 'absolute',
-      color: '#fff',
-      lineHeight: 1,
+    '&.name': {
+      top: 18,
+      left: 16,
+      fontSize: 20,
+    },
 
-      '&.name': {
-        top: 18,
-        left: 16,
-        fontSize: 20,
-      },
+    '&.symbol': {
+      top: 21,
+      right: 18,
+    },
 
-      '&.symbol': {
-        top: 21,
-        right: 18,
-      },
+    '&.value': {
+      bottom: 18,
+      left: 18,
+      fontSize: 14,
+    },
 
-      '&.value': {
-        bottom: 18,
-        left: 18,
-        fontSize: 14,
-      },
-
-      '&.read-more': {
-        bottom: 20,
-        right: 18,
-        fontSize: 14,
-        textDecoration: 'underline',
-      },
+    '&.read-more': {
+      bottom: 20,
+      right: 18,
+      fontSize: 14,
+      textDecoration: 'underline',
     },
   },
 }));
 
 const TokenList = () => {
   const [selectedToken, setSelectedToken] = React.useState();
-  const [hoverdToken, setHoverdToken] = React.useState();
+  const [centerIndex, setCenterIndex] = React.useState(0);
   const { positions } = usePositions();
   const { setDialog } = useExperts();
-  const { isPolygon } = useNetwork();
+  const [sliderRef, instanceRef] = useKeenSlider({
+    loop: true,
+    mode: 'free-snap',
+    slides: {
+      origin: 'center',
+      perView: 2,
+      spacing: 15,
+    },
+    slideChanged(s) {
+      setCenterIndex(s.track.details.abs);
+    },
+  });
 
   const onCloseModal = () => setSelectedToken();
 
   React.useEffect(() => {
-    if (isPolygon) {
-      setDialog(
-        hoverdToken?.shortDescription ||
-          "Welcome to cryptocurrency, Citizen! Here are today's offerings."
-      );
-    } else {
-      setDialog(
-        'Press the infinity button above to install Polygon on MetaMask for deeply discounted trading fees!'
-      );
-    }
-  }, [hoverdToken, setDialog, isPolygon]);
+    setDialog(
+      tokenList[centerIndex]?.shortDescription ||
+        "Welcome to cryptocurrency, Citizen! Here are today's offerings."
+    );
+  }, [centerIndex, setDialog]);
 
   return (
     <>
-      <Heading variant="h4">Tokens</Heading>
+      <Heading variant="h4" sx={{ my: 4 }}>
+        Tokens
+      </Heading>
 
-      <Box
-        mt={2}
-        sx={{
-          height: 'calc(100vh - 530px)',
-          overflow: 'auto',
-        }}
-        className="uw-scrollbar-lg"
-      >
-        <Grid
-          container
-          spacing={2}
-          sx={{ width: '100%', maxWidth: 700, mx: 'auto', p: 1 }}
+      <Slider ref={sliderRef} className="keen-slider">
+        {tokenList.map((token, i) => {
+          const position = positions.find((p) => p.symbol === token.symbol);
+          return (
+            <Card
+              className="keen-slider__slide"
+              isPosition={!!position}
+              onClick={() => setSelectedToken(token)}
+            >
+              <img
+                src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
+                width="100%"
+                alt=""
+                loading="lazy"
+              />
+              <Typography className="name">{token.name}</Typography>
+              <Typography className="symbol">{token.symbol}</Typography>
+              <Typography className="value">
+                {position?.tokens.toPrecision(3)} {position?.symbol}
+              </Typography>
+              <Typography className="read-more">Read more</Typography>
+            </Card>
+          );
+        })}
+        <IconButton
+          className="back-btn"
+          onClick={(e) => e.stopPropagation() || instanceRef.current?.prev()}
         >
-          {tokenList.map((token, i) => {
-            const position = positions.find((p) => p.symbol === token.symbol);
-            return (
-              <Grid key={`${token.token_id}_${i}`} item xs={12} sm={6} md={4}>
-                <Card isPosition={!!position}>
-                  <Box
-                    onClick={() => setSelectedToken(token)}
-                    onMouseEnter={() => setHoverdToken(token)}
-                    onMouseLeave={() => setHoverdToken()}
-                  >
-                    <img
-                      src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
-                      width="100%"
-                      alt=""
-                      loading="lazy"
-                    />
-                    <Typography className="name">{token.name}</Typography>
-                    <Typography className="symbol">{token.symbol}</Typography>
-                    <Typography className="value">
-                      {position?.tokens.toPrecision(3)} {position?.symbol}
-                    </Typography>
-                    <Typography className="read-more">Read more</Typography>
-                  </Box>
-                </Card>
-              </Grid>
-            );
-          })}
-        </Grid>
-      </Box>
+          <ArrowBackIosNewIcon />
+        </IconButton>
+        <IconButton
+          className="forward-btn"
+          onClick={(e) => e.stopPropagation() || instanceRef.current?.next()}
+        >
+          <ArrowForwardIosIcon />
+        </IconButton>
+      </Slider>
 
       <Modal
         open={!!selectedToken}

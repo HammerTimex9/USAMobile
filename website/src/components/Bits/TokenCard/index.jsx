@@ -52,7 +52,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
       value = v,
       last;
     if (v < 0) {
-      pre = '-';
+      // pre = '-';
     }
     value = Number((Math.abs(v) + '').split('.')[0]);
     last =
