@@ -39,7 +39,7 @@ export const NavBar = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, user, address]);
-  // console.log('== user ==', user);
+
   return (
     <Stack
       spacing={1}

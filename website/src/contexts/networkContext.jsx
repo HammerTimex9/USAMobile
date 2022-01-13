@@ -8,8 +8,7 @@ const NetworkContext = React.createContext();
 export const useNetwork = () => useContext(NetworkContext);
 
 export const NetworkProvider = (props) => {
-  const { isAuthenticated, isWeb3Enabled, enableWeb3, Moralis, user } =
-    useMoralis();
+  const { isAuthenticated, isWeb3Enabled, enableWeb3, Moralis } = useMoralis();
   const [networkId, setNetworkId] = useState();
   const [hasPolygon, setHasPolygon] = useState(true);
 

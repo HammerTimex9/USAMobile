@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import MetaMaskOnboarding from '@metamask/onboarding';
 
@@ -14,7 +13,7 @@ const BLOCK_EXPLORER_URL = 'https://polygonscan.com/';
 
 export const usePolygonNetwork = () => {
   const { isAuthenticated, Moralis, isWeb3Enabled } = useMoralis();
-  const { setNetworkId, setHasPolygon, isPolygon } = useNetwork();
+  const { setNetworkId, setHasPolygon } = useNetwork();
   const { setDialog } = useExperts();
 
   // useEffect(() => {
