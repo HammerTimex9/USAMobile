@@ -1,6 +1,16 @@
 import { Stack, Box } from '@mui/material';
+import { styled } from '@mui/system';
 
 import { ReactComponent as LogoSvg } from '../../../media/logos/USAWalletLogo.svg';
+
+const Version = styled('span')({
+  display: 'block',
+  textAlign: 'right',
+  fontSize: '10px',
+  fontFamily: 'Roboto !important',
+  marginTop: '-4px',
+  marginRight: '8px',
+});
 
 const Logo = () => {
   return (
@@ -17,6 +27,7 @@ const Logo = () => {
         }}
       >
         USA Wallet
+        <Version>Version Beta</Version>
       </Box>
     </Stack>
   );
