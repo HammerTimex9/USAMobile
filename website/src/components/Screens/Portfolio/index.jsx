@@ -1,17 +1,23 @@
 import React, { useEffect } from 'react';
-import { useMoralis } from 'react-moralis';
+
 import { Box, Modal } from '@mui/material';
 import { styled } from '@mui/system';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 import tokenList from '../../../data/TokenList.json';
 import { useExperts } from '../../../contexts/expertsContext';
-import { useNetwork } from '../../../contexts/networkContext';
+
 import { usePositions } from '../../../contexts/portfolioContext';
-import { usePolygonNetwork } from '../../../hooks/usePolygonNetwork';
+
 import { Heading } from '../../UW/Heading';
 import Position from './Position';
 import TokenCard from '../../Bits/TokenCard';
+
+// We are commenting below Import, we are not using this to stop multiple request.
+
+// import { useMoralis } from 'react-moralis';
+// import { useNetwork } from '../../../contexts/networkContext';
+// import { usePolygonNetwork } from '../../../hooks/usePolygonNetwork';
 
 const HeaderCell = styled('div')({
   display: 'flex',
@@ -23,30 +29,36 @@ const HeaderCell = styled('div')({
 });
 
 const Portfolio = () => {
-  const { isAuthenticated, enableWeb3, isWeb3Enabled } = useMoralis();
-  const { setExpert, setDialog } = useExperts();
-  const { isPolygon } = useNetwork();
+  const { setExpert } = useExperts();
   const { positions } = usePositions();
-  const { switchNetworkToPolygon } = usePolygonNetwork();
   const [selectedSymbol, setSelectedSymbol] = React.useState(null);
   const [hoverdToken, setHoverdToken] = React.useState();
   const onModalClose = React.useCallback(() => setSelectedSymbol(), []);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (!isWeb3Enabled) {
-        enableWeb3();
-      } else {
-        if (!isPolygon) {
-          setDialog('Check your Metamast and Accept Polygon Switch.');
-          switchNetworkToPolygon();
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isPolygon, isWeb3Enabled, enableWeb3]);
+  /**
+   * We are commenting this,
+   * because we don't need metamask/Web3 connection on this page
+   * If we need in Future we can undo this code
+   * and can use according to our logic.
+   */
 
-  React.useEffect(() => {
+  // const { isAuthenticated, enableWeb3, isWeb3Enabled } = useMoralis();
+  // const { isPolygon } = useNetwork();
+  // const { switchNetworkToPolygon } = usePolygonNetwork();
+
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     if (isWeb3Enabled) {
+  //       if (!isPolygon) {
+  //         setDialog('Check your Metamast and Accept Polygon Switch.');
+  //         switchNetworkToPolygon();
+  //       }
+  //     }
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isAuthenticated, isPolygon, isWeb3Enabled]);
+
+  useEffect(() => {
     const token = tokenList.find((t) => t.symbol === hoverdToken?.symbol);
     setExpert({
       character: 'unclesam',
