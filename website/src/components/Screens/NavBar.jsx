@@ -36,7 +36,6 @@ export const NavBar = () => {
       authenticate({ usePost: true });
     }
   }, [pathname, user, address, authenticate]);
-  console.log('== user ==', user);
   return (
     <Stack
       spacing={1}
