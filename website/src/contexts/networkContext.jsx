@@ -20,12 +20,12 @@ export const NetworkProvider = (props) => {
       const user = Moralis.User.current();
       const ethAddress = user?.attributes.ethAddress;
       if (ethAddress) {
-        console.log(
-          'We have User Eth Address and we are not calling this anymore.'
-        );
+        //Used for Debugging
+        // console.log(
+        //   'We have User Eth Address and we are not calling this anymore.'
+        // );
         setNetworkId(137); // We are doing this , because we have to select NetworkId to use app.
       } else {
-        console.log('Calling From Network Provider to Open MetaMask');
         if (isWeb3Enabled) {
           Moralis.getChainId().then(setNetworkId);
         } else {
@@ -40,7 +40,7 @@ export const NetworkProvider = (props) => {
 
   useEffect(() => {
     Moralis.onChainChanged((chainId) => {
-      console.log('ChainID Changed:', chainId);
+      // console.log('ChainID Changed:', chainId);  //Used for Debugging
       setNetworkId(parseInt(chainId));
     });
   }, [Moralis, isAuthenticated]);
