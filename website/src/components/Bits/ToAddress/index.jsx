@@ -9,15 +9,19 @@ import { useNetwork } from '../../../contexts/networkContext';
 import './styles.scss';
 
 export const ToAddress = () => {
-  const { web3, enableWeb3, isWeb3Enabled } = useMoralis();
+  const { web3, isWeb3Enabled } = useMoralis();
+  // const { enableWeb3 } = useMoralis();  // Commenting to stop multiple request.
   const { setToToken } = useActions();
   const { isPolygon } = useNetwork();
 
   useEffect(() => {
     if (!isWeb3Enabled) {
-      enableWeb3();
+      console.log('isWeb3Enabled:', isWeb3Enabled);
+      // Commenting to stop multiple request.
+      // enableWeb3();
     }
-  }, [isWeb3Enabled, enableWeb3]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWeb3Enabled]);
 
   useEffect(() => {
     return () => {

@@ -19,7 +19,7 @@ const activeTab = (history, path) => {
 
 export const NavBar = () => {
   const history = useHistory();
-  const { user, authenticate, logout } = useMoralis();
+  const { user, authenticate, logout, isAuthenticating } = useMoralis();
   // const { positions } = usePositions();
   const [modal, setModal] = useState(false);
 
@@ -39,6 +39,9 @@ export const NavBar = () => {
         logout();
         history.push('/crypto-login');
       }
+      if (!isAuthenticating) {
+        authenticate({ usePost: true });
+      }
     }
     if (
       user &&
@@ -48,7 +51,9 @@ export const NavBar = () => {
       logout();
       history.push('/crypto-login');
     }
-  }, [pathname, user, address, authenticate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, user, address]);
+
   return (
     <Stack
       spacing={1}

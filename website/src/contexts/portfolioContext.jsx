@@ -98,8 +98,11 @@ export const PortfolioProvider = (props) => {
 
   useEffect(() => {
     Moralis.onAccountsChanged((accounts) => {
-      Moralis.link(accounts[0]);
-      setAddress(accounts[0]);
+      console.log('Account Change', accounts);
+      if (accounts && accounts.length > 0) {
+        Moralis.link(accounts[0]);
+        setAddress(accounts[0]);
+      }
     });
   }, [Moralis]);
 
