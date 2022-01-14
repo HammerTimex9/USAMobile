@@ -74,10 +74,15 @@ export const PortfolioProvider = (props) => {
               };
             })
             .filter(({ value }) => value);
-          const totalValue = positions.reduce((s, item) => s + item.value, 0);
-          setPositions(positions);
-          setTotalValue(totalValue);
-          setMaticPrice(positions[0].price);
+          if (positions.length > 0) {
+            const totalValue = positions.reduce((s, item) => s + item.value, 0);
+            setPositions(positions);
+            setTotalValue(totalValue);
+            setMaticPrice(positions[0]?.price);
+          } else {
+            setPositions([]);
+            setTotalValue(0);
+          }
         });
       })
       .catch((e) => {
@@ -98,7 +103,7 @@ export const PortfolioProvider = (props) => {
 
   useEffect(() => {
     Moralis.onAccountsChanged((accounts) => {
-      console.log('Account Change', accounts);
+      // console.log('Account Change', accounts); //Used for Debugging
       if (accounts && accounts.length > 0) {
         Moralis.link(accounts[0]);
         setAddress(accounts[0]);
@@ -111,7 +116,7 @@ export const PortfolioProvider = (props) => {
       setPositions(address === '' ? [] : null);
       setTotalValue(0);
     } else if (!network) {
-      console.log('network is undefined');
+      // console.log('network is undefined'); //Used for Debugging
       setPositions([]);
       setTotalValue(0);
     } else {

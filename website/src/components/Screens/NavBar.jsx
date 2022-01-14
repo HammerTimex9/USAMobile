@@ -5,7 +5,7 @@ import { useMoralis } from 'react-moralis';
 import { Box, Stack, Typography, Modal } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 
-// import { usePositions } from '../../contexts/portfolioContext';
+import { usePositions } from '../../contexts/portfolioContext';
 import { PortfolioSvg, TradeSvg, BuySvg, ArrowsSvg } from '../../assets/icons';
 
 import { Tab } from '../UW/Tab';
@@ -20,7 +20,7 @@ const activeTab = (history, path) => {
 export const NavBar = () => {
   const history = useHistory();
   const { user, authenticate, logout, isAuthenticating } = useMoralis();
-  // const { positions } = usePositions();
+  const { positions } = usePositions();
   const [modal, setModal] = useState(false);
 
   const address = user?.attributes?.ethAddress;
@@ -93,7 +93,7 @@ export const NavBar = () => {
         </Link>
         <Link
           to="/SwapTrade"
-          className={`${emptyPositions ? 'disabled' : ''} ${activeTab(
+          className={`${positions.length === 0 ? 'disabled' : ''} ${activeTab(
             history,
             '/SwapTrade'
           )}`}
