@@ -29,7 +29,7 @@ export const usePolygonNetwork = () => {
 
   const switchNetworkToPolygon = (action = 'app') => {
     // To Debug issue of Switching Network
-    console.log('switchNetworkToPolygon Called...');
+    // console.log('switchNetworkToPolygon Called...');
     // console.groupCollapsed('SwitchNetworkToPolygon:');
     // console.log('Metamask:', MetaMaskOnboarding.isMetaMaskInstalled());
     // console.log('isAuthenticated:', isAuthenticated);
@@ -41,8 +41,8 @@ export const usePolygonNetwork = () => {
             .then(
               (success) => {
                 setHasPolygon(true);
-                console.log('Success:', success);
-                console.log('If Success!');
+                // console.log('Success:', success);
+                // console.log('If Success!');
                 setNetworkId(CHAIN_ID);
                 setDialog('Polygon Chain switched successfully.');
               },
@@ -52,7 +52,7 @@ export const usePolygonNetwork = () => {
                 // setDialog(switchError.message);
                 setHasPolygon(false);
                 if (switchError.code === 4902) {
-                  console.log('If Error!');
+                  // console.log('If Error!');
                   // console.log('We will call Add Network here.');
                   // addPolygonNetwork();
                 } else {
@@ -72,13 +72,14 @@ export const usePolygonNetwork = () => {
               // setDialog(error.message);
             });
         } else {
-          console.log('Web3 is not enabled.');
+          // console.log('Web3 is not enabled.');
           const user = Moralis.User.current();
           const ethAddress = user?.attributes.ethAddress;
           if (ethAddress) {
-            console.log(
-              'We have User Eth Address and we are not calling this anymore.'
-            );
+            //Used for Debugging
+            // console.log(
+            //   'We have User Eth Address and we are not calling this anymore.'
+            // );
             setNetworkId(CHAIN_ID);
           }
         }
