@@ -12,20 +12,35 @@ export const NetworkProvider = (props) => {
   const [networkId, setNetworkId] = useState();
   const [hasPolygon, setHasPolygon] = useState(true);
 
+  /**
+   * TODO: Need to review this and add more checkes for enable Web3.
+   */
   useEffect(() => {
     if (isAuthenticated) {
-      if (isWeb3Enabled) {
-        Moralis.getChainId().then(setNetworkId);
+      const user = Moralis.User.current();
+      const ethAddress = user?.attributes.ethAddress;
+      if (ethAddress) {
+        console.log(
+          'We have User Eth Address and we are not calling this anymore.'
+        );
+        setNetworkId(137); // We are doing this , because we have to select NetworkId to use app.
       } else {
-        enableWeb3();
+        console.log('Calling From Network Provider to Open MetaMask');
+        if (isWeb3Enabled) {
+          Moralis.getChainId().then(setNetworkId);
+        } else {
+          enableWeb3();
+        }
       }
     } else {
       setNetworkId();
     }
-  }, [Moralis, enableWeb3, isAuthenticated, isWeb3Enabled]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isWeb3Enabled]);
 
   useEffect(() => {
     Moralis.onChainChanged((chainId) => {
+      console.log('ChainID Changed:', chainId);
       setNetworkId(parseInt(chainId));
     });
   }, [Moralis, isAuthenticated]);

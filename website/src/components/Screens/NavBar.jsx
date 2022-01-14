@@ -19,7 +19,7 @@ const activeTab = (history, path) => {
 
 export const NavBar = () => {
   const history = useHistory();
-  const { user, authenticate } = useMoralis();
+  const { user, authenticate, isAuthenticating } = useMoralis();
   // const { positions } = usePositions();
   const [modal, setModal] = useState(false);
 
@@ -33,9 +33,13 @@ export const NavBar = () => {
       !address &&
       (pathname === '/Portfolio' || pathname === '/SwapTrade')
     ) {
-      authenticate({ usePost: true });
+      if (!isAuthenticating) {
+        authenticate({ usePost: true });
+      }
     }
-  }, [pathname, user, address, authenticate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, user, address]);
+
   return (
     <Stack
       spacing={1}

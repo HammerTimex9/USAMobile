@@ -31,7 +31,7 @@ const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
 };
 
 const Main = () => {
-  const { isAuthenticated } = useMoralis();
+  const { isAuthenticated, isWeb3Enabled } = useMoralis();
   const { setExpert } = useExperts();
   const { isLoading } = usePositions();
   const { isPolygon } = useNetwork();
@@ -57,7 +57,7 @@ const Main = () => {
     // console.log('isAuthenticated:', isAuthenticated);
     // console.groupEnd();
 
-    if (isAuthenticated && !isPolygon && hasMetamask) {
+    if (isAuthenticated && !isPolygon && hasMetamask && isWeb3Enabled) {
       switchNetworkToPolygon();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

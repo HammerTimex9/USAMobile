@@ -107,6 +107,7 @@ const TokenList = () => {
           const position = positions.find((p) => p.symbol === token.symbol);
           return (
             <Card
+              key={`key-token-card-${i}`}
               className="keen-slider__slide"
               isPosition={!!position}
               onClick={() => setSelectedToken(token)}
