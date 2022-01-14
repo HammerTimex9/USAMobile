@@ -19,7 +19,7 @@ const activeTab = (history, path) => {
 
 export const NavBar = () => {
   const history = useHistory();
-  const { user, authenticate, isAuthenticating, logout } = useMoralis();
+  const { user, authenticate, logout, isAuthenticating } = useMoralis();
   const { positions } = usePositions();
   const [modal, setModal] = useState(false);
 
