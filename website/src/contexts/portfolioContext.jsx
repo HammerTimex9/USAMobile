@@ -69,7 +69,7 @@ export const PortfolioProvider = (props) => {
                 ...item,
                 tokens,
                 value,
-                image: markets[item.symbol].image,
+                image: markets[item.symbol]?.image,
                 name: item.name.replace('(PoS)', '').trim(),
               };
             })
