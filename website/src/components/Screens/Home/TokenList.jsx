@@ -3,6 +3,7 @@ import { Modal, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import { useKeenSlider } from 'keen-slider/react';
 
@@ -16,18 +17,12 @@ const Slider = styled('div')({
   alignItems: 'center',
   width: '100%',
   maxWidth: 700,
+  maxHeight: 220,
   margin: '0 auto',
+});
 
-  '.back-btn': {
-    position: 'absolute',
-    left: 10,
-    color: '#fff',
-  },
-  '.forward-btn': {
-    position: 'absolute',
-    right: 10,
-    color: '#fff',
-  },
+const Button = styled(IconButton)({
+  color: 'var(--color)',
 });
 
 const Card = styled('div')(({ isPosition }) => ({
@@ -102,44 +97,50 @@ const TokenList = () => {
         Tokens
       </Heading>
 
-      <Slider ref={sliderRef} className="keen-slider">
-        {tokenList.map((token, i) => {
-          const position = positions.find((p) => p.symbol === token.symbol);
-          return (
-            <Card
-              key={`key-token-card-${i}`}
-              className="keen-slider__slide"
-              isPosition={!!position}
-              onClick={() => setSelectedToken(token)}
-            >
-              <img
-                src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
-                width="100%"
-                alt=""
-                loading="lazy"
-              />
-              <Typography className="name">{token.name}</Typography>
-              <Typography className="symbol">{token.symbol}</Typography>
-              <Typography className="value">
-                {position?.tokens.toPrecision(3)} {position?.symbol}
-              </Typography>
-              <Typography className="read-more">Read more</Typography>
-            </Card>
-          );
-        })}
-        <IconButton
-          className="back-btn"
+      <Stack
+        direction="row"
+        justifyContent="center"
+        alignItems="center"
+        spacing={2}
+      >
+        <Button
           onClick={(e) => e.stopPropagation() || instanceRef.current?.prev()}
         >
           <ArrowBackIosNewIcon />
-        </IconButton>
-        <IconButton
+        </Button>
+        <Slider ref={sliderRef} className="keen-slider">
+          {tokenList.map((token, i) => {
+            const position = positions.find((p) => p.symbol === token.symbol);
+            return (
+              <Card
+                key={`key-token-card-${i}`}
+                className="keen-slider__slide"
+                isPosition={!!position}
+                onClick={() => setSelectedToken(token)}
+              >
+                <img
+                  src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
+                  width="100%"
+                  alt=""
+                  loading="lazy"
+                />
+                <Typography className="name">{token.name}</Typography>
+                <Typography className="symbol">{token.symbol}</Typography>
+                <Typography className="value">
+                  {position?.tokens.toPrecision(3)} {position?.symbol}
+                </Typography>
+                <Typography className="read-more">Read more</Typography>
+              </Card>
+            );
+          })}
+        </Slider>
+        <Button
           className="forward-btn"
           onClick={(e) => e.stopPropagation() || instanceRef.current?.next()}
         >
           <ArrowForwardIosIcon />
-        </IconButton>
-      </Slider>
+        </Button>
+      </Stack>
 
       <Modal
         open={!!selectedToken}

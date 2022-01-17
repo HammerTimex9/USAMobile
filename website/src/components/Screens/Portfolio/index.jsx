@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
-import { Box, Modal } from '@mui/material';
+import { Box, Modal, Button } from '@mui/material';
 import { styled } from '@mui/system';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
@@ -18,6 +19,18 @@ import TokenCard from '../../Bits/TokenCard';
 // import { useMoralis } from 'react-moralis';
 // import { useNetwork } from '../../../contexts/networkContext';
 // import { usePolygonNetwork } from '../../../hooks/usePolygonNetwork';
+
+const Toolbar = styled('div')({
+  marginTop: 18,
+  textAlign: 'right',
+  a: {
+    color: 'inherit',
+    textDecoration: 'none',
+  },
+  button: {
+    padding: '6px 14px',
+  },
+});
 
 const HeaderCell = styled('div')({
   display: 'flex',
@@ -71,6 +84,17 @@ const Portfolio = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: '450px' }}>
       <Heading variant="h4">Portfolio and Prices</Heading>
+
+      <Toolbar>
+        <Link
+          to={{
+            pathname: '/SwapTrade',
+            state: { fromSymbol: 'MATIC', toSymbol: 'USDC' },
+          }}
+        >
+          <Button px={4}>Trade Matic for USDC</Button>
+        </Link>
+      </Toolbar>
 
       <Box
         sx={{
