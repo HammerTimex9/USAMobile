@@ -48,6 +48,7 @@ const TokenCard = ({ symbol, onClose }, ref) => {
     return newValue;
   };
   const abbreviateNumber1 = (v) => {
+    if (!v) return v;
     let pre = '',
       value = v,
       last;
