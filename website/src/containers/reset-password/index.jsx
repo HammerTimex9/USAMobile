@@ -31,6 +31,7 @@ const ResetPassword = () => {
         setLoading(true);
         Moralis.User.requestPasswordReset(_email)
           .then(() => {
+            setEmail('');
             setLoading(false);
             setAlertMessage('Reset Password Email Sent! check your email.');
             setShowAlert(true);
