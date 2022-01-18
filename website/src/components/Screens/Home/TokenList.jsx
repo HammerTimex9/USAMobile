@@ -19,7 +19,7 @@ const Slider = styled('div')({
   maxWidth: 700,
   margin: '0 auto',
 
-  '.keen-slider__slide': { padding: '0 8px' },
+  '.keen-slider__slide': { padding: '20px 8px' },
 });
 
 const Button = styled(IconButton)({
@@ -27,6 +27,7 @@ const Button = styled(IconButton)({
 });
 
 const Card = styled('div')(({ isPosition }) => ({
+  position: 'relative',
   display: 'flex',
   borderRadius: '25px',
   boxShadow: isPosition
@@ -68,7 +69,7 @@ const Card = styled('div')(({ isPosition }) => ({
 
 const ResizePlugin = (slider) => {
   const observer = new ResizeObserver(function () {
-    const height = ((slider.container.clientWidth / 2 - 16) / 280) * 172;
+    const height = ((slider.container.clientWidth / 2 - 16) / 280) * 172 + 40;
     slider.container.style.height = `${height}px`;
     slider.update();
   });
@@ -111,7 +112,7 @@ const TokenList = () => {
 
   return (
     <>
-      <Heading variant="h4" sx={{ my: 4 }}>
+      <Heading variant="h4" sx={{ mt: 4, mb: 2 }}>
         Tokens
       </Heading>
 
