@@ -17,8 +17,9 @@ const Slider = styled('div')({
   alignItems: 'center',
   width: '100%',
   maxWidth: 700,
-  maxHeight: 220,
   margin: '0 auto',
+
+  '.keen-slider__slide': { padding: '0 8px' },
 });
 
 const Button = styled(IconButton)({
@@ -32,6 +33,7 @@ const Card = styled('div')(({ isPosition }) => ({
     ? '0 0 0px 4px #efcc61, 6px 8px 10px rgba(0, 0, 0, 0.3)'
     : '4px 6px 10px rgba(0, 0, 0, 0.25)',
   cursor: 'pointer',
+  overflow: 'hidden',
 
   '& p': {
     position: 'absolute',
@@ -64,23 +66,39 @@ const Card = styled('div')(({ isPosition }) => ({
   },
 }));
 
+const ResizePlugin = (slider) => {
+  const observer = new ResizeObserver(function () {
+    const height = ((slider.container.clientWidth / 2 - 16) / 280) * 172;
+    slider.container.style.height = `${height}px`;
+    slider.update();
+  });
+  slider.on('created', () => {
+    observer.observe(slider.container);
+  });
+  slider.on('destroyed', () => {
+    observer.unobserve(slider.container);
+  });
+};
+
 const TokenList = () => {
   const [selectedToken, setSelectedToken] = React.useState();
   const [centerIndex, setCenterIndex] = React.useState(0);
   const { positions } = usePositions();
   const { setDialog } = useExperts();
-  const [sliderRef, instanceRef] = useKeenSlider({
-    loop: true,
-    mode: 'free-snap',
-    slides: {
-      origin: 'center',
-      perView: 2,
-      spacing: 15,
+  const [sliderRef, instanceRef] = useKeenSlider(
+    {
+      loop: true,
+      mode: 'free-snap',
+      slides: {
+        origin: 'center',
+        perView: 2,
+      },
+      slideChanged(s) {
+        setCenterIndex(s.track.details.abs);
+      },
     },
-    slideChanged(s) {
-      setCenterIndex(s.track.details.abs);
-    },
-  });
+    [ResizePlugin]
+  );
 
   const onCloseModal = () => setSelectedToken();
 
@@ -112,25 +130,25 @@ const TokenList = () => {
           {tokenList.map((token, i) => {
             const position = positions.find((p) => p.symbol === token.symbol);
             return (
-              <Card
-                key={`key-token-card-${i}`}
-                className="keen-slider__slide"
-                isPosition={!!position}
-                onClick={() => setSelectedToken(token)}
-              >
-                <img
-                  src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
-                  width="100%"
-                  alt=""
-                  loading="lazy"
-                />
-                <Typography className="name">{token.name}</Typography>
-                <Typography className="symbol">{token.symbol}</Typography>
-                <Typography className="value">
-                  {position?.tokens.toPrecision(3)} {position?.symbol}
-                </Typography>
-                <Typography className="read-more">Read more</Typography>
-              </Card>
+              <div key={`key-token-card-${i}`} className="keen-slider__slide">
+                <Card
+                  isPosition={!!position}
+                  onClick={() => setSelectedToken(token)}
+                >
+                  <img
+                    src={`${process.env.PUBLIC_URL}/images/tokens/${token.symbol}.png`}
+                    width="100%"
+                    alt=""
+                    loading="lazy"
+                  />
+                  <Typography className="name">{token.name}</Typography>
+                  <Typography className="symbol">{token.symbol}</Typography>
+                  <Typography className="value">
+                    {position?.tokens.toPrecision(3)} {position?.symbol}
+                  </Typography>
+                  <Typography className="read-more">Read more</Typography>
+                </Card>
+              </div>
             );
           })}
         </Slider>
