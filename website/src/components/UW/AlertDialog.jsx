@@ -26,18 +26,30 @@ export const AlertDialog = ({
       onClose={() => handleClose()}
       sx={{ borderRadius: '10px' }}
     >
-      <DialogContent sx={{ minHeight: 120, maxWidth: 320 }}>
+      <DialogContent
+        sx={{
+          minHeight: 120,
+          maxWidth: 320,
+          backgroundColor: 'var(--color-white)',
+        }}
+      >
         <DialogContentText
           sx={{
             textAlign: 'center',
             wordBreak: 'break-word',
-            color: 'var(--color)',
+            color: 'var(--color-primary)',
           }}
         >
           {props.children}
         </DialogContentText>
       </DialogContent>
-      <DialogActions sx={{ justifyContent: 'space-evenly', mb: 2 }}>
+      <DialogActions
+        sx={{
+          justifyContent: 'space-evenly',
+          mb: 2,
+          backgroundColor: 'var(--color-white)',
+        }}
+      >
         {showCancel && (
           <Button
             autoFocus
