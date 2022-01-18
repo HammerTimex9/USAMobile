@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Typography } from '@mui/material';
-import { styled } from '@mui/system';
+import { Box, styled } from '@mui/system';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import Stack from '@mui/material/Stack';
@@ -26,7 +26,7 @@ const Button = styled(IconButton)({
   color: 'var(--color)',
 });
 
-const Card = styled('div')(({ isPosition }) => ({
+const Card = styled(Box)(({ isPosition }) => ({
   position: 'relative',
   display: 'flex',
   borderRadius: '25px',
