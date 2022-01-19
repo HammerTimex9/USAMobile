@@ -41,16 +41,7 @@ export const PortfolioProvider = (props) => {
               });
               return map;
             }),
-          Promise.all(
-            tokens.map((item) =>
-              Moralis.Web3API.token.getTokenPrice({
-                address: item.token_address,
-                chain: network.name,
-                exchange: 'quickswap',
-              })
-            )
-          ),
-        ]).then(([markets, prices]) => {
+        ]).then(([markets]) => {
           const positions = [
             {
               ...network,
@@ -59,7 +50,7 @@ export const PortfolioProvider = (props) => {
             },
             ...tokens.map((item, i) => ({
               ...item,
-              price: prices[i].usdPrice,
+              price: markets[network.symbol].current_price,
             })),
           ]
             .map((item) => {
