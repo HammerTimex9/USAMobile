@@ -29,52 +29,54 @@ export const PortfolioProvider = (props) => {
         const ids = [network, ...tokens].map(
           ({ symbol }) => geckoCoinIds[symbol.toLowerCase()]
         );
-        return Promise.all([
-          fetch(
-            `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`
-          )
-            .then((response) => response.json())
-            .then((data) => {
-              const map = {};
-              data.forEach((item) => {
-                map[item.symbol.toUpperCase()] = item;
-              });
-              return map;
-            }),
-        ]).then(([markets]) => {
-          const positions = [
-            {
-              ...network,
-              ...native,
-              price: markets[network.symbol].current_price,
-            },
-            ...tokens.map((item, i) => ({
-              ...item,
-              price: markets[network.symbol].current_price,
-            })),
-          ]
-            .map((item) => {
-              const tokens = item.balance / 10 ** item.decimals || 0;
-              const value = tokens * item.price || 0;
-              return {
+        return fetch(
+          `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            const map = {};
+            data.forEach((item) => {
+              map[item.symbol.toLowerCase()] = item;
+            });
+            return map;
+          })
+          .then((markets) => {
+            const positions = [
+              {
+                ...network,
+                ...native,
+                price: markets[network.symbol.toLowerCase()].current_price,
+              },
+              ...tokens.map((item) => ({
                 ...item,
-                tokens,
-                value,
-                image: markets[item.symbol]?.image,
-                name: item.name.replace('(PoS)', '').trim(),
-              };
-            })
-            .filter(({ value }) => value);
-          if (positions.length > 0) {
-            const totalValue = positions.reduce((s, item) => s + item.value, 0);
-            setPositions(positions);
-            setTotalValue(totalValue);
-            setMaticPrice(positions[0]?.price);
-          } else {
-            setPositions([]);
-            setTotalValue(0);
-          }
-        });
+                price: markets[item.symbol.toLowerCase()].current_price,
+              })),
+            ]
+              .map((item) => {
+                const tokens = item.balance / 10 ** item.decimals || 0;
+                const value = tokens * item.price || 0;
+                return {
+                  ...item,
+                  tokens,
+                  value,
+                  image: markets[item.symbol.toLowerCase()]?.image,
+                  name: item.name.replace('(PoS)', '').trim(),
+                };
+              })
+              .filter(({ value }) => value);
+            if (positions.length > 0) {
+              const totalValue = positions.reduce(
+                (s, item) => s + item.value,
+                0
+              );
+              setPositions(positions);
+              setTotalValue(totalValue);
+              setMaticPrice(positions[0]?.price);
+            } else {
+              setPositions([]);
+              setTotalValue(0);
+            }
+          });
       })
       .catch((e) => {
         console.log('getPositions error: ', e);
