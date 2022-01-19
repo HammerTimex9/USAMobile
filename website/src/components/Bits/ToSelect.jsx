@@ -25,7 +25,6 @@ export const ToSelect = () => {
   const { network } = useNetwork();
   const [symbol, setSymbol] = useState(location.state?.toSymbol);
   // Just to Debug
-  // console.log('SelectedNetwork:', network);
   const tokens = useMemo(
     () =>
       tokenList.filter((item) => {
@@ -64,6 +63,12 @@ export const ToSelect = () => {
   }, [fromTokenSymbol, symbol]);
 
   const handleChange = async (item) => {
+    if (!fromTokenSymbol) {
+      setDialog('Please select from token first');
+      setSymbol();
+      setToToken();
+      return;
+    }
     setSymbol(item.symbol);
     setDialog(
       "Press the 'Get Trade Quote' " +
@@ -97,6 +102,7 @@ export const ToSelect = () => {
         value={tokens.find((o) => o.symbol === symbol)}
         styles={customStyles}
         getOptionLabel={(o) => o.symbol}
+        isDisabled={!fromTokenSymbol}
       />
     </Box>
   );

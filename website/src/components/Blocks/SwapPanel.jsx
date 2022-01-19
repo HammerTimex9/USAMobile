@@ -21,8 +21,12 @@ export const SwapPanel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
   const getToTokenAmount = () => {
-    if (toTokenAmount) {
-      return (toTokenAmount / 10 ** fromToken.decimals).toFixed(3);
+    if (toTokenAmount && fromToken && toToken) {
+      if (toToken && toToken.decimals) {
+        return (toTokenAmount / 10 ** toToken.decimals).toFixed(3);
+      } else {
+        return (toTokenAmount / 10 ** fromToken.decimals).toFixed(3);
+      }
     } else {
       return 0;
     }

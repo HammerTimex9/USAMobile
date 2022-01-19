@@ -16,7 +16,6 @@ export const FromSelect = ({ sx = {} }) => {
   const { setFromToken } = useActions();
   const { setDialog } = useExperts();
   const { isPolygon } = useNetwork();
-
   useEffect(() => {
     if (location.state?.fromSymbol) {
       const { state } = location;
