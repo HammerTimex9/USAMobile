@@ -10,6 +10,7 @@ const Version = styled('span')({
   fontFamily: 'Roboto !important',
   marginTop: '-4px',
   marginRight: '8px',
+  color: 'var(--color)',
 });
 
 const Logo = () => {
