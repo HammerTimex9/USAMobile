@@ -32,7 +32,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
   var isOnboarded = true;
   const user = Moralis?.User?.current();
   const ethAddress = user?.attributes?.ethAddress;
-  const hasMetamask = window.ethereum?.isMetaMask;
+  // const hasMetamask = window.ethereum?.isMetaMask; //
 
   // New case , we discuss in Status, check only address, if don't have address, then move to onBoarding page
   if (!ethAddress) {
@@ -78,12 +78,20 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
   //   isOnboarded = false;
   // }
 
+  // TODO: I am waiting from Thomas's help on this
+  // to review with me and setup navigation.
+  // May be need few changes on this about checks etc.
+
   return (
     <Route
       {...rest}
       render={(props) =>
         isAuthenticated ? (
-          <Component {...props} />
+          isOnboarded ? (
+            <Component {...props} />
+          ) : (
+            <OnBoadrding {...props} />
+          )
         ) : (
           <Redirect
             to={{ pathname: '/login', state: { from: props.location } }}
@@ -116,7 +124,9 @@ const Routers = () => {
         <PublicRoute exact path="/login" component={Login} />
         <PublicRoute exact path="/register" component={Register} />
         <PublicRoute exact path="/reset-password" component={ResetPassworod} />
-        <PrivateRoute path="/onboarding" component={OnBoadrding} />
+
+        {/*Commened this because need help on navigation from thomas.*/}
+        {/*<PrivateRoute path="/onboarding" component={OnBoadrding} />*/}
         <PrivateRoute path="/" component={Main} />
       </Switch>
     </BrowserRouter>

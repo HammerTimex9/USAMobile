@@ -64,7 +64,7 @@ const Onboarding = () => {
         <Button
           variant="uw"
           onClick={() => {
-            console.log('Continue');
+            window.open('https://www.usawallet.org/USA-Wallet-Onboarding');
           }}
           endIcon={<ArrowForwardIcon />}
         >
