@@ -10,7 +10,7 @@ import { LightSwitch } from '../../components/Bits/LightSwitch';
 import { AuthButton } from '../../components/Bits/AuthButton';
 
 const Onboarding = () => {
-  const { Moralis } = useMoralis();
+  const { isAuthenticated, Moralis, logout } = useMoralis();
   const { setDialog } = useExperts();
   const hasMetamask = window.ethereum?.isMetaMask;
   const user = Moralis?.User?.current();
@@ -32,6 +32,11 @@ const Onboarding = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleContinueClick = () => {
+    if (isAuthenticated) logout();
+    window.open('https://www.usawallet.org/USA-Wallet-Onboarding');
+  };
 
   return (
     <Stack alignItems="center" spacing={3} py={3}>
@@ -63,9 +68,7 @@ const Onboarding = () => {
         <ExpertStage />
         <Button
           variant="uw"
-          onClick={() => {
-            window.open('https://www.usawallet.org/USA-Wallet-Onboarding');
-          }}
+          onClick={handleContinueClick}
           endIcon={<ArrowForwardIcon />}
         >
           Press here to continue
