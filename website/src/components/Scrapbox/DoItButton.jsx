@@ -10,7 +10,7 @@ import { useNetwork } from '../../contexts/networkContext';
 import useSwapAction from '../../actions/useSwapAction';
 
 export const DoItButton = () => {
-  const { user } = useMoralis();
+  const { user, isWeb3Enabled, enableWeb3 } = useMoralis();
   const { network } = useNetwork();
   const { setQuote } = useQuote();
   const [confirmModal, setConfirmModal] = useState();
@@ -25,7 +25,6 @@ export const DoItButton = () => {
     fromAddress: user.attributes.ethAddress,
     slippage: 3,
   });
-
   useEffect(() => {
     if (isFetching) {
       setDialog(
@@ -71,6 +70,9 @@ export const DoItButton = () => {
   const onCloseModal = () => setConfirmModal();
   const handleClick = () => setConfirmModal(true);
   const handleConfirm = () => {
+    if (!isWeb3Enabled) {
+      enableWeb3();
+    }
     onCloseModal();
     fetch();
   };

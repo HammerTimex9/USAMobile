@@ -45,9 +45,9 @@ export const SwapPanel = () => {
         <Typography className="trade-result">
           1 {fromToken.symbol} ={' '}
           {(
-            txAmount /
-            10 ** fromToken.decimals /
-            (toTokenAmount / 10 ** toToken.decimals)
+            toTokenAmount /
+            10 ** toToken.decimals /
+            (txAmount / 10 ** fromToken.decimals)
           ).toFixed(3)}{' '}
           {toToken.symbol}
         </Typography>
