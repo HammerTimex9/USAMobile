@@ -37,17 +37,19 @@ export const NavBar = () => {
         authenticate({ usePost: true });
       } else {
         logout();
-        history.push('/crypto-login');
+        // history.push('/crypto-login');
       }
     }
-    if (
-      user &&
-      (pathname === '/Portfolio' || pathname === '/SwapTrade') &&
-      !window.ethereum
-    ) {
-      logout();
-      history.push('/crypto-login');
-    }
+    // We should comment this, because we are not depending on MetaMask.
+    // if (
+    //   user &&
+    //   (pathname === '/Portfolio' || pathname === '/SwapTrade') &&
+    //   !window.ethereum
+    // ) {
+    //   logout();
+    //   // history.push('/crypto-login');
+    // }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, user, address]);
 

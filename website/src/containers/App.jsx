@@ -7,7 +7,7 @@ import 'keen-slider/keen-slider.min.css';
 import Login from './login';
 import Register from './register';
 import ResetPassworod from './reset-password';
-import CryptoLogin from './crypto-login';
+import OnBoadrding from './onboarding';
 import Main from '../components/App';
 import './App.scss';
 
@@ -28,19 +28,70 @@ const PublicRoute = ({ component: Component, ...rest }) => {
 };
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { isAuthenticated } = useMoralis();
+  const { isAuthenticated, Moralis } = useMoralis();
+  var isOnboarded = true;
+  const user = Moralis?.User?.current();
+  const ethAddress = user?.attributes?.ethAddress;
+  // const hasMetamask = window.ethereum?.isMetaMask; //
 
-  // Just to Debug and We can use to setup Route later
-  // const { Moralis } = useMoralis();
-  // const user = Moralis.User.current();
-  // console.log('user:', user);
+  // New case , we discuss in Status, check only address, if don't have address, then move to onBoarding page
+  if (!ethAddress) {
+    isOnboarded = false;
+  }
+
+  //  if we don't have addres, but have metamask/polygon , what we should do that in that case.
+  // if (!ethAddress) {
+  //   if (hasMetamask) {
+  //     // try {
+  //     //   await window?.ethereum.request({
+  //     //     method: 'wallet_switchEthereumChain',
+  //     //     params: [{ chainId: '0x89' }],
+  //     //   });
+  //     //   return;
+  //     // } catch (switchError) {
+  //     //   console.log('Polygon is not added.');
+  //     //   console.log('SwitchError:', switchError);
+  //     // }
+  //   }
+  //   isOnboarded = false;
+  // }
+
+  // If we are checking first Metamask/Polygon and then address.
+
+  // if (hasMetamask) {
+  //   try {
+  //     await window?.ethereum.request({
+  //       method: 'wallet_switchEthereumChain',
+  //       params: [{ chainId: '0x89' }],
+  //     });
+  //     if (ethAddress) {
+  //       return;
+  //     }
+  //     console.log('User is not connected with MetaMask');
+  //   } catch (switchError) {
+  //     console.log('Polygon is not added.');
+  //     console.log('SwitchError:', switchError);
+  //   }
+  //   isOnboarded = false;
+  // } else {
+  //   console.log('MetaMask is not Installed.');
+  //   isOnboarded = false;
+  // }
+
+  // TODO: I am waiting from Thomas's help on this
+  // to review with me and setup navigation.
+  // May be need few changes on this about checks etc.
 
   return (
     <Route
       {...rest}
       render={(props) =>
         isAuthenticated ? (
-          <Component {...props} />
+          isOnboarded ? (
+            <Component {...props} />
+          ) : (
+            <OnBoadrding {...props} />
+          )
         ) : (
           <Redirect
             to={{ pathname: '/login', state: { from: props.location } }}
@@ -73,7 +124,9 @@ const Routers = () => {
         <PublicRoute exact path="/login" component={Login} />
         <PublicRoute exact path="/register" component={Register} />
         <PublicRoute exact path="/reset-password" component={ResetPassworod} />
-        <PublicRoute path="/crypto-login" component={CryptoLogin} />
+
+        {/*Commened this because need help on navigation from thomas.*/}
+        {/*<PrivateRoute path="/onboarding" component={OnBoadrding} />*/}
         <PrivateRoute path="/" component={Main} />
       </Switch>
     </BrowserRouter>
