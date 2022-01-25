@@ -10,7 +10,32 @@ export const useNetwork = () => useContext(NetworkContext);
 export const NetworkProvider = (props) => {
   const { isAuthenticated, isWeb3Enabled, enableWeb3, Moralis } = useMoralis();
   const [networkId, setNetworkId] = useState();
-  const [hasPolygon, setHasPolygon] = useState(true);
+  const [hasPolygon, setHasPolygon] = useState();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const hasMetamask = window.ethereum?.isMetaMask;
+      const user = Moralis.User.current();
+      const hasAddress = !!user?.get('ethAddress');
+      if (hasMetamask && hasAddress) {
+        if (!isWeb3Enabled) {
+          enableWeb3();
+          return;
+        }
+
+        Moralis.switchNetwork(137).then(
+          () => {
+            setHasPolygon(true);
+          },
+          (switchError) => {
+            setHasPolygon(false);
+          }
+        );
+      } else {
+        setHasPolygon(false);
+      }
+    }
+  }, [isAuthenticated, isWeb3Enabled, Moralis, enableWeb3]);
 
   /**
    * TODO: Need to review this and add more checkes for enable Web3.
