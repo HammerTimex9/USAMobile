@@ -2,40 +2,37 @@ import React, { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import { Stack, Button } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { useExperts } from '../../contexts/expertsContext';
 
-import { ExpertStage } from '../../components//Screens/ExpertStage';
+import { useExperts } from '../../contexts/expertsContext';
 import Logo from '../../components/Screens/TopNavBar/Logo';
 import { LightSwitch } from '../../components/Bits/LightSwitch';
-import { AuthButton } from '../../components/Bits/AuthButton';
+import { ExpertStage } from '../../components//Screens/ExpertStage';
 
 const Onboarding = () => {
-  const { isAuthenticated, Moralis, logout } = useMoralis();
+  const { user, logout } = useMoralis();
   const { setDialog } = useExperts();
   const hasMetamask = window.ethereum?.isMetaMask;
-  const user = Moralis?.User?.current();
-  const ethAddress = user?.attributes?.ethAddress;
+  const hasAddress = !!user?.get('ethAddress');
 
   useEffect(() => {
-    if (!ethAddress) {
-      setDialog(
-        "Let's equip you to explore the cryptocurrency universe. Press below for instructions"
-      );
-    } else if (!hasMetamask) {
+    if (!hasMetamask) {
       setDialog(
         "We've not equipped this browser to explore the cryptocurrency universe. Press below for instructions"
+      );
+    } else if (!hasAddress) {
+      setDialog(
+        "Let's equip you to explore the cryptocurrency universe. Press below for instructions"
       );
     } else {
       setDialog(
         "Let's complete your equipment for exploring the cryptocurrency universe"
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasAddress, hasMetamask, setDialog]);
 
   const handleContinueClick = () => {
-    if (isAuthenticated) logout();
-    window.open('https://www.usawallet.org/USA-Wallet-Onboarding');
+    logout();
+    window.open('https://www.usawallet.org/USA-Wallet-Onboarding', '_blank');
   };
 
   return (
@@ -50,7 +47,6 @@ const Onboarding = () => {
         <Logo />
         <Stack direction="row" alignItems="center" spacing={1} m={0.5}>
           <LightSwitch />
-          <AuthButton />
         </Stack>
       </Stack>
       <Stack
