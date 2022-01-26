@@ -10,7 +10,11 @@ const axios = require('axios');
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 const ONEINCH4_API = 'https://api.1inch.io/v4.0';
-const ENDPOINT = '/swap';
+const ALLOWANCE_ENDPOINT = '/approve/allowance';
+const APPROVE_ENDPOINT = '/approve/transaction';
+const SWAP_ENDPOINT = '/swap';
+const REFERRER_ADDRESS = process.env.REACT_APP_ONEINCH_REFERRER_ADDRESS;
+const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
 const useSwapAction = ({
   chain,
@@ -44,11 +48,35 @@ const useSwapAction = ({
     const fromAddress = user.get('ethAddress');
 
     try {
-      await Moralis.Plugins.oneInch.approve({
-        chain,
-        tokenAddress: fromTokenAddress || NATIVE_ADDRESS,
-        fromAddress,
+      // await Moralis.Plugins.oneInch.approve({
+      //   chain,
+      //   tokenAddress: fromTokenAddress || NATIVE_ADDRESS,
+      //   fromAddress,
+      // });
+
+      // Check current allowances
+      const allowance = await axios({
+        method: 'get',
+        url: '/' + network.id.toString() + ALLOWANCE_ENDPOINT,
+        baseURL: ONEINCH4_API,
+        data: {
+          tokenAddress: fromTokenAddress || NATIVE_ADDRESS,
+          walletAddress: fromAddress,
+        },
       });
+
+      // Approve more as necessary.
+      if (amount - allowance > 0) {
+        const approve = await axios({
+          method: 'get',
+          url: '/' + network.id.toString() + APPROVE_ENDPOINT,
+          baseURL: ONEINCH4_API,
+          data: {
+            tokenAddress: fromTokenAddress || NATIVE_ADDRESS,
+            amount: amount - allowance,
+          },
+        });
+      }
 
       updaters.current?.setIsApproved(true);
       getPositions();
@@ -57,16 +85,16 @@ const useSwapAction = ({
 
       const data = await axios({
         method: 'get',
-        url: ENDPOINT,
-        baseURL: ONEINCH4_API + '/' + network.id.toString(),
+        url: '/' + network.id.toString() + SWAP_ENDPOINT,
+        baseURL: ONEINCH4_API,
         data: {
           fromTokenAddress: fromTokenAddress || NATIVE_ADDRESS,
           toTokenAddress: toTokenAddress || NATIVE_ADDRESS,
           amount: amount,
           fromAddress: fromAddress,
-          referrerAddress: '0x2Acac84f80b61f399e17607bC70fd8aC2B322E72',
           slippage: 0.5,
-          fee: 1.5,
+          referrerAddress: REFERRER_ADDRESS,
+          fee: REFERRER_FEE,
           disableEstimate: false,
           allowPartialFill: false,
         },
@@ -98,10 +126,9 @@ const useSwapAction = ({
   }, [
     updaters,
     user,
-    Moralis.Plugins.oneInch,
-    chain,
     fromTokenAddress,
     getPositions,
+    network.id,
     toTokenAddress,
     amount,
   ]);
