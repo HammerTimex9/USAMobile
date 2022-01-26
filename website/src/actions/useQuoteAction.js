@@ -9,6 +9,7 @@ const axios = require('axios');
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 const ONEINCH4_API = 'https://api.1inch.io/v4.0';
 const ENDPOINT = '/quote';
+const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
 const useQuoteAction = ({
   chain,
@@ -40,7 +41,7 @@ const useQuoteAction = ({
           fromTokenAddress: fromTokenAddress || NATIVE_ADDRESS,
           toTokenAddress: toTokenAddress || NATIVE_ADDRESS,
           amount: amount,
-          fee: 1.5,
+          fee: REFERRER_FEE,
         },
       });
       updaters.current?.setData(data);
