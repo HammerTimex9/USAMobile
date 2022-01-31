@@ -67,7 +67,7 @@ const useSwapAction = ({
 
       // Approve more as necessary.
       if (amount - allowance > 0) {
-        const approve = await axios({
+        await axios({
           method: 'get',
           url: '/' + network.id.toString() + APPROVE_ENDPOINT,
           baseURL: ONEINCH4_API,

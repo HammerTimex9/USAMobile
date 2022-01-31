@@ -12,6 +12,7 @@ import { ToSelect } from '../Bits/ToSelect';
 import { RequestQuote } from '../Bits/RequestQuote';
 import { QuotePanel } from '../Scrapbox/QuotePanel';
 import YouWillGet from '../Bits/Youwillget';
+import { ManageAllowance } from '../Bits/ManageAllowance';
 
 export const SwapPanel = () => {
   const { fromToken, txAmount, toToken } = useActions();
@@ -54,6 +55,7 @@ export const SwapPanel = () => {
       )}
       {quoteValid && <QuotePanel />}
       <RequestQuote />
+      <ManageAllowance />
     </Box>
   );
 };
