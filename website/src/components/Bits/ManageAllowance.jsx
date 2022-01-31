@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -9,9 +9,12 @@ import useCheckAllowanceAction from '../../actions/useCheckAllowanceAction';
 import useSetAllowanceAction from '../../actions/useSetAllowanceAction';
 
 export const ManageAllowance = () => {
-  const { fromTokenAddress, fromTokenSymbol, txAmount } = useActions();
+  const { fromTokenAddress, fromTokenSymbol, toTokenSymbol, txAmount } =
+    useActions();
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
+  const { buttonText, setButtonText } = useState();
+  const { mode, setMode } = useState('idle');
 
   const { checkAllowance, isChecking, allowance, getError } =
     useCheckAllowanceAction({
@@ -28,27 +31,36 @@ export const ManageAllowance = () => {
   useEffect(() => {
     if (isChecking & !isForging) {
       setDialog(`Checking ${fromTokenSymbol} trading allowance...`);
+      setButtonText('Checking allownace.');
+      setMode('checking');
     } else if (isForging & !isChecking) {
       setDialog(
         `Creating command to unlock ${txAmount} of ${fromTokenSymbol} for trade ...`
       );
+      setButtonText('Creating unlock codes.');
+      setMode('forging');
     } else if (isChecking & isForging) {
       setDialog(
         `Impatientce error while checking allowance ${txAmount} of ${fromTokenSymbol}.`
       );
+      setDialog('Tx collision...');
+      setMode('error');
     } else if (txAmount - allowance < 0) {
       if (typeof Tx == 'undefined') {
         forgeTx({ fromTokenAddress, txAmount });
       } else {
         if (confirmations < 1) {
-          send4Signature({ data: Tx });
+          setMode('need2sign');
         } else {
           setDialog('Allowance unlocked!');
-          // TODO: set button style to disabled, green.
+          setButtonText('Allowance unlocked!');
+          setMode('signed');
         }
       }
     } else {
       setDialog(`${txAmount} of ${fromTokenSymbol} allowance unlocked.`);
+      setButtonText('Allowance unlocking...');
+      setMode('unlocking');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -62,9 +74,11 @@ export const ManageAllowance = () => {
   ]);
 
   useEffect(() => {
-    if (txAmount > 0 || confirmations >= 1)
+    if (txAmount > 0 || confirmations >= 1) {
       checkAllowance({ fromTokenAddress, txAmount });
-  }, [fromTokenAddress, txAmount, confirmations, checkAllowance]);
+      setMode('checking');
+    }
+  }, [fromTokenAddress, txAmount, confirmations, checkAllowance, setMode]);
 
   useEffect(() => {
     if (getError) {
@@ -72,8 +86,10 @@ export const ManageAllowance = () => {
         `Checking ${fromTokenSymbol} trading allowance went wrong: ` +
           getError.message
       );
+      setButtonText('Check error...');
+      setMode('error');
     }
-  }, [getError, fromTokenSymbol, setDialog]);
+  }, [getError, fromTokenSymbol, setDialog, setButtonText, setMode]);
 
   useEffect(() => {
     if (forgeError) {
@@ -81,28 +97,47 @@ export const ManageAllowance = () => {
         `Setting ${fromTokenSymbol} trading allowance to ${txAmount} went wrong: ` +
           forgeError.message
       );
+      setButtonText('Set error...');
+      setMode('error');
     }
-  }, [forgeError, fromTokenSymbol, setDialog, txAmount]);
+  }, [
+    forgeError,
+    fromTokenSymbol,
+    setButtonText,
+    setDialog,
+    setMode,
+    txAmount,
+  ]);
+
+  const handleButton = (button) => {
+    if (mode === 'need2sign') {
+      send4Signature({ data: Tx });
+      setMode('waiting');
+    } else {
+      console.groupCollapsed('ManageAllowance::handleButton()');
+      console.log('Pressed, but mode is:', mode);
+    }
+  };
 
   return (
     // TODO: fix this.
     <Box style={{ marginTop: 20 }}>
       <FormControl id="sendstart" fullWidth>
-        <Tooltip title="Check token trading allowance.">
+        <Tooltip title="Manage token trading allowance.">
           <span>
             <LoadingButton
-              disabled={!txAmount || !toTokenSymbol}
+              disabled={mode !== 'need2sign'}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
               sx={{ boxShadow: 'var(--box-shadow)' }}
-              loading={isFetching}
-              onClick={check}
+              loading={isChecking || isForging}
+              onClick={handleButton}
               className={
                 !txAmount || !toTokenSymbol
-                  ? 'quote-button disable'
-                  : 'quote-button'
+                  ? 'allowance-button disable'
+                  : 'allowance-button'
               }
             >
-              {quoteValid ? 'Refresh Swap Quote' : 'GET QUOTE'}
+              {buttonText}
             </LoadingButton>
           </span>
         </Tooltip>

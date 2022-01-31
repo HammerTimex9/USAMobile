@@ -10,9 +10,10 @@ import { AmountSelect } from '../Bits/AmountSelect';
 // Swap mode.
 import { ToSelect } from '../Bits/ToSelect';
 import { RequestQuote } from '../Bits/RequestQuote';
-import { QuotePanel } from '../Scrapbox/QuotePanel';
+import { QuotePanel } from './QuotePanel';
 import YouWillGet from '../Bits/Youwillget';
 import { ManageAllowance } from '../Bits/ManageAllowance';
+import { DoItButton } from '../Bits/DoItButton';
 
 export const SwapPanel = () => {
   const { fromToken, txAmount, toToken } = useActions();
@@ -56,6 +57,7 @@ export const SwapPanel = () => {
       {quoteValid && <QuotePanel />}
       <RequestQuote />
       <ManageAllowance />
+      <DoItButton />
     </Box>
   );
 };

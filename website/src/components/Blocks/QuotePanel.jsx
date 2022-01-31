@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stack } from '@mui/material';
 
-import { DoItButton } from './DoItButton';
+import { DoItButton } from '../Bits/DoItButton';
 
 export const QuotePanel = () => {
   return (
