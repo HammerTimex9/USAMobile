@@ -4,16 +4,14 @@ import { Box, Typography } from '@mui/material';
 import { useActions } from '../../contexts/actionsContext';
 import { useQuote } from '../../contexts/quoteContext';
 
-import { FromSelect } from '../Bits/FromSelect';
-import { AmountSelect } from '../Bits/AmountSelect';
+import { FromSelect } from '../../components/Bits/FromSelect';
+import { AmountSelect } from '../../components/Bits/AmountSelect';
 
 // Swap mode.
-import { ToSelect } from '../Bits/ToSelect';
-import { RequestQuote } from '../Bits/RequestQuote';
-import { QuotePanel } from './QuotePanel';
-import YouWillGet from '../Bits/Youwillget';
-import { ManageAllowance } from '../Bits/ManageAllowance';
-import { DoItButton } from '../Bits/DoItButton';
+import { ToSelect } from '../../components/Bits/ToSelect';
+import { RequestQuote } from '../../components/Bits/RequestQuote';
+import { QuotePanel } from '../QuotePanel';
+import YouWillGet from '../../components/Bits/Youwillget';
 
 export const SwapPanel = () => {
   const { fromToken, txAmount, toToken } = useActions();
@@ -56,8 +54,6 @@ export const SwapPanel = () => {
       )}
       {quoteValid && <QuotePanel />}
       <RequestQuote />
-      <ManageAllowance />
-      <DoItButton />
     </Box>
   );
 };

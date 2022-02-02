@@ -7,9 +7,9 @@ import { Box, Stack } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 import { useExperts } from '../../contexts/expertsContext';
-import { Heading } from '../UW/Heading';
-import { Text } from '../UW/Text';
-import { AlertDialog } from '../UW/AlertDialog';
+import { Heading } from '../../components/UW/Heading';
+import { Text } from '../../components/UW/Text';
+import { AlertDialog } from '../../components/UW/AlertDialog';
 
 export const AddressPanel = () => {
   const { Moralis, isAuthenticated } = useMoralis();

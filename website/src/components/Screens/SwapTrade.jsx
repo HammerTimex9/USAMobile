@@ -3,7 +3,7 @@ import { useMoralis } from 'react-moralis';
 
 import { Box } from '@mui/material';
 
-import { SwapPanel } from '../Blocks/SwapPanel';
+import { SwapPanel } from '../../containers/SwapPanel';
 import { Heading } from '../UW/Heading';
 
 import { useExperts } from '../../contexts/expertsContext';
