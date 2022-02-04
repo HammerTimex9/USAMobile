@@ -9,7 +9,7 @@ import useCheckAllowanceAction from '../../actions/useCheckAllowanceAction';
 import useSetAllowanceAction from '../../actions/useSetAllowanceAction';
 import { useMoralisRawWeb3 } from '../../hooks/useMoralisRawWeb3';
 
-export const ManageAllowance = () => {
+export const RequestAllowance = () => {
   const { fromTokenAddress, fromTokenSymbol, toTokenSymbol, txAmount } =
     useActions();
   const { setDialog } = useExperts();
