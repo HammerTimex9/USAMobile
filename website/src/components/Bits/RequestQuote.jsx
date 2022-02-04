@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -7,10 +7,15 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useQuote } from '../../contexts/quoteContext';
 import { useColorMode } from '../../contexts/colorModeContext';
 import { useNetwork } from '../../contexts/networkContext';
-import useQuoteAction from '../../actions/useQuoteAction';
+
+const axios = require('axios');
+
+const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const ONEINCH4_API = 'https://api.1inch.io/v4.0';
+const ENDPOINT = '/quote';
+const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
 export const RequestQuote = () => {
-  const { network } = useNetwork();
   const {
     fromTokenSymbol,
     fromTokenAddress,
@@ -21,35 +26,67 @@ export const RequestQuote = () => {
   const { setQuote, quoteValid } = useQuote();
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
-  const { fetch, isFetching, data, error } = useQuoteAction({
-    chain: network?.name,
-    fromTokenAddress,
-    toTokenAddress,
-    amount: txAmount,
-  });
+  const { network } = useNetwork();
+  const [fetching, setFetching] = useState(false);
 
-  useEffect(() => {
-    if (isFetching) {
-      setDialog(
-        `Estimating costs to swap ${fromTokenSymbol} to ${toTokenSymbol} ... `
-      );
-    }
-  }, [isFetching, fromTokenSymbol, toTokenSymbol, setDialog]);
-
-  useEffect(() => {
-    if (data && !data.error) {
-      setQuote(data);
-      setDialog(
-        "Push 'Do it!' to execute trade.  Or adjust inputs to update quote."
-      );
-    }
-  }, [data, setQuote, setDialog]);
-
-  useEffect(() => {
-    if (error) {
-      setDialog('Something went wrong: ' + error.message);
-    }
-  }, [error, setDialog]);
+  const handleClick = () => {
+    setFetching(true);
+    setDialog(
+      `Estimating rates to swap ${txAmount} of ${fromTokenSymbol} to ${toTokenSymbol} ... `
+    );
+    console.log(
+      'Estimating rates to swap ' +
+        txAmount.toString() +
+        ' of ' +
+        fromTokenSymbol +
+        ' to ' +
+        toTokenSymbol +
+        '... '
+    );
+    const params = {
+      fromTokenAddress: fromTokenAddress || NATIVE_ADDRESS,
+      toTokenAddress: toTokenAddress || NATIVE_ADDRESS,
+      fee: REFERRER_FEE,
+      amount: txAmount.toString(),
+    };
+    axios({
+      method: 'get',
+      url: ENDPOINT,
+      baseURL: ONEINCH4_API + '/' + network.id.toString(),
+      data: params,
+    })
+      .then((response) => {
+        console.log('RequestQuote::handleClick()::axios(response):', response);
+        setFetching(false);
+        const now = new Date();
+        setQuote(response.data);
+        setDialog(
+          'Quote valid as of: ' +
+            now.toLocaleTimeString('en-US') +
+            '.  Press "Do it!" to execute trade.'
+        );
+      })
+      .catch((error) => {
+        console.groupCollapsed('RequestQuote::handleClick()::catch(error):');
+        setQuote(null);
+        setFetching(false);
+        if (error.response) {
+          setDialog(
+            'Bad 1Inch server response. ' + error.response.data.description
+          );
+          console.log('.params:', params);
+          console.log('.data:', error.response.data);
+          console.log('.status:', error.response.status);
+          console.log('.headers', error.response.headers);
+        } else if (error.request) {
+          setDialog('Network error.  Try again.');
+          console.log('.request:', error.request);
+        } else {
+          setDialog('Quote request error: ', error.message);
+        }
+        console.groupEnd();
+      });
+  };
 
   return (
     <Box style={{ marginTop: 20 }}>
@@ -60,8 +97,8 @@ export const RequestQuote = () => {
               disabled={!txAmount || !toTokenSymbol}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
               sx={{ boxShadow: 'var(--box-shadow)' }}
-              loading={isFetching}
-              onClick={fetch}
+              loading={fetching}
+              onClick={handleClick}
               className={
                 !txAmount || !toTokenSymbol
                   ? 'quote-button disable'

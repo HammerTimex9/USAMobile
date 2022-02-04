@@ -7,6 +7,7 @@ import { useExperts } from '../../contexts/expertsContext';
 import { useColorMode } from '../../contexts/colorModeContext';
 import useCheckAllowanceAction from '../../actions/useCheckAllowanceAction';
 import useSetAllowanceAction from '../../actions/useSetAllowanceAction';
+import { useMoralisRawWeb3 } from '../../hooks/useMoralisRawWeb3';
 
 export const ManageAllowance = () => {
   const { fromTokenAddress, fromTokenSymbol, toTokenSymbol, txAmount } =
@@ -26,7 +27,7 @@ export const ManageAllowance = () => {
     amount: txAmount,
   });
   // TODO: write this function
-  const { send4Signature, confirmations } = useMoralisRawWeb3({ data: Tx });
+  const { pushTx, confirmations } = useMoralisRawWeb3();
 
   useEffect(() => {
     if (isChecking & !isForging) {
@@ -111,7 +112,7 @@ export const ManageAllowance = () => {
 
   const handleButton = (button) => {
     if (mode === 'need2sign') {
-      send4Signature({ data: Tx });
+      pushTx({ data: Tx });
       setMode('waiting');
     } else {
       console.groupCollapsed('ManageAllowance::handleButton()');

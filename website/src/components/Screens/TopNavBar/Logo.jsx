@@ -16,7 +16,7 @@ const Version = styled('span')({
 const Logo = () => {
   return (
     <Stack direction="row" alignItems="center" spacing={1} m={0.5}>
-      <LogoSvg width="70" />
+      <LogoSvg width="70" length="auto" />
       <Box
         sx={{
           fontFamily: 'LogoFont !important',

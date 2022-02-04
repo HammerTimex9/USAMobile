@@ -11,48 +11,52 @@ const ONEINCH4_API = 'https://api.1inch.io/v4.0';
 const ENDPOINT = '/quote';
 const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
-const useQuoteAction = ({
-  chain,
-  fromTokenAddress,
-  toTokenAddress,
-  amount,
-}) => {
+const useQuoteAction = ({ fromTokenAddress, toTokenAddress, amount }) => {
   const [isFetching, setIsFetching] = useState(false);
-  const [data, setData] = useState();
+  const [callData, setCallData] = useState({});
   const [error, setError] = useState();
   const updaters = useUpdaters({
     setIsFetching,
-    setData,
+    setCallData,
     setError,
   });
   const { network } = useNetwork();
 
   const fetch = useCallback(async () => {
     updaters.current?.setIsFetching(true);
-    updaters.current?.setData();
+    updaters.current?.setCallData();
     updaters.current?.setError();
 
+    setCallData({
+      fromTokenAddress: fromTokenAddress || NATIVE_ADDRESS,
+      toTokenAddress: toTokenAddress || NATIVE_ADDRESS,
+      amount: amount,
+      fee: REFERRER_FEE,
+    });
+
     try {
-      const data = await axios({
+      console.groupCollapsed('useQuoteAction');
+      console.log('url:', ENDPOINT);
+      console.log('baseURL:', ONEINCH4_API + '/' + network.id.toString());
+      console.log('callData:', callData);
+      const message = await axios({
         method: 'get',
         url: ENDPOINT,
         baseURL: ONEINCH4_API + '/' + network.id.toString(),
-        data: {
-          fromTokenAddress: fromTokenAddress || NATIVE_ADDRESS,
-          toTokenAddress: toTokenAddress || NATIVE_ADDRESS,
-          amount: amount,
-          fee: REFERRER_FEE,
-        },
+        data: callData,
       });
-      updaters.current?.setData(data);
+      updaters.current?.setData(message);
+      console.log('message:', message);
+      console.groupEnd();
     } catch (e) {
       updaters.current?.setError(e);
     }
 
     updaters.current?.setIsFetching(false);
-  }, [updaters, fromTokenAddress, toTokenAddress, amount, network]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updaters, network.id, fromTokenAddress, toTokenAddress, amount]);
 
-  return { fetch, isFetching, data, error };
+  return { fetch, isFetching, callData, error };
 };
 
 export default useQuoteAction;
