@@ -2,7 +2,7 @@ import React from 'react';
 import { Stack } from '@mui/material';
 
 import { DoItButton } from '../../components/Bits/DoItButton';
-import { ManageAllowance } from '../../components/Bits/ManageAllowance';
+import { RequestAllowance } from '../../components/Bits/RequestAllowance';
 
 export const QuotePanel = () => {
   return (
@@ -19,7 +19,7 @@ export const QuotePanel = () => {
       spacing={2}
     >
       <Stack direction="row">
-        <ManageAllowance />
+        <RequestAllowance />
         <DoItButton />
       </Stack>
     </Stack>
