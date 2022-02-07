@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -7,11 +8,17 @@ import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
 import { useColorMode } from '../../contexts/colorModeContext';
 import { useNetwork } from '../../contexts/networkContext';
+import { useAllowance } from '../../contexts/allowanceContext';
 
+const NODE_URL =
+  'wss://speedy-nodes-nyc.moralis.io/df08fdd9ffc987fa73735432/polygon/mainnet/ws';
+const provider = new ethers.providers.WebSocketProvider(NODE_URL);
+const signer = provider.getSigner();
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-const ONEINCH4_API = 'https://api.1inch.io/v4.0/approve';
-const CHECK_ENDPOINT = '/allowance';
-const GENERATE_ENDPOINT = '/transaction';
+const ONEINCH_API = 'https://api.1inch.io/v4.0/';
+const CHECK_ENDPOINT = '/approve/allowance';
+const GENERATE_ENDPOINT = '/approve/transaction';
+const BROADCAST_ENDPOINT = '/broadcast';
 
 export const RequestAllowance = () => {
   const { isAuthenticated, user } = useMoralis();
@@ -19,31 +26,32 @@ export const RequestAllowance = () => {
     useActions();
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
+
   const { network } = useNetwork();
+  const checkAPI = ONEINCH_API + network.id.toString() + CHECK_ENDPOINT;
+  const generateAPI = ONEINCH_API + network.id.toString() + GENERATE_ENDPOINT;
+  const broadcastAPI = ONEINCH_API + network.id.toString() + BROADCAST_ENDPOINT;
+
+  const { allowance, setAllowance } = useAllowance();
 
   const { buttonText, setButtonText } = useState('TradingAllowance');
 
-  const [allowance, setAllowance] = useState(0);
   const [checking, setChecking] = useState(false);
-
-  const [tradeTxData, setTradeTxData] = useState({});
   const [generating, setGenerating] = useState(false);
-
-  const [setting, setSetting] = useState(false);
+  const [signing, setSigning] = useState(false);
+  const [broadcasting, setBroadcasting] = useState(false);
 
   useEffect(() => {
-    if (!setting & isAuthenticated) {
+    if (!checking & !generating & !signing & !broadcasting & isAuthenticated) {
       setChecking(true);
       setDialog('Checking ' + fromTokenSymbol + ' trading allowance...');
-      const baseURL =
-        ONEINCH4_API + '/' + network.id.toString() + CHECK_ENDPOINT;
-      const url =
-        baseURL +
+      const checkURL =
+        checkAPI +
         '?tokenAddress=' +
         (fromTokenAddress || NATIVE_ADDRESS) +
         '&walletAddress=' +
         user?.attributes['ethAddress'];
-      fetch(url, {
+      fetch(checkURL, {
         method: 'GET',
       })
         .then((response) => {
@@ -106,7 +114,17 @@ export const RequestAllowance = () => {
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromTokenAddress, isAuthenticated, setting, user?.attributes]);
+  }, [
+    allowance,
+    checking,
+    fromTokenAddress,
+    generating,
+    isAuthenticated,
+    signing,
+    broadcasting,
+    txAmount,
+    user?.attributes,
+  ]);
 
   const handleClick = () => {
     setGenerating(true);
@@ -117,62 +135,98 @@ export const RequestAllowance = () => {
         fromTokenSymbol +
         ' trading allowance.'
     );
-    const baseURL =
-      ONEINCH4_API + '/' + network.id.toString() + GENERATE_ENDPOINT;
-    const url =
-      baseURL +
+    const generateURL =
+      generateAPI +
       '?tokenAddress=' +
       (fromTokenAddress || NATIVE_ADDRESS) +
       '&amount=' +
       txAmount;
-    fetch(url, {
+    fetch(generateURL, {
       method: 'GET',
     })
       .then((response) => {
         return response.json();
       })
-      .then((response) => {
+      .then((allowanceTxData) => {
         console.groupCollapsed(
           'RequestAllowance::Generate(tokenAddress,amount)'
         );
-        console.log('response:', response);
+        console.log('allowanceTxData:', allowanceTxData);
         console.groupEnd();
         setGenerating(false);
-        setTradeTxData(response);
         setDialog(
-          'Generated Transaction to unlock ' +
+          'Please sign this transaction in MetaMask to unlock ' +
             txAmount / 10 ** fromToken?.decimals +
             ' ' +
             fromTokenSymbol +
-            ' to trade.  Please sign this Tx in MetaMask.'
+            ' for trade.'
         );
         setButtonText('Sending Unlock Tx for signature...');
-      })
-      .catch((error) => {
-        console.groupCollapsed('RequestAllowance::Generate()::catch(error):');
-        console.log('Error:', error);
-        console.groupEnd();
-        setAllowance(0);
-        setGenerating(false);
+        setSigning(true);
+        signer
+          .signTransaction(allowanceTxData)
+          .then((response) => {
+            return response.json;
+          })
+          .then((signedTx) => {
+            console.groupCollapsed('RequestAllowance:signer.signTx():');
+            console.log('signedTx:', signedTx);
+            console.groupEnd();
+            setSigning(false);
+            setBroadcasting(true);
+            setDialog(
+              'broadcasting signed allowance transaction to blockchain...'
+            );
+            setButtonText('broadcasting...');
+            fetch(broadcastAPI, {
+              method: 'post',
+              body: JSON.stringify({ signedTx }),
+              headers: { 'Content-Type': 'application/json' },
+            })
+              .then((result) => result.json())
+              .then((txReceipt) => {
+                console.groupCollapsed('RequestAllowance::broadcast()');
+                console.log('receipt:', txReceipt);
+                console.groupEnd();
+                setBroadcasting(false);
+                setDialog('Allowance Transaction Receipt received.');
+                setButtonText('Tx Receipt Received!');
+              })
+              .catch((error) => {
+                console.groupCollapsed('RequestAllowance::brodcastError()');
+                console.log('broadcast error: ', error);
+                console.groupEnd();
+                setBroadcasting(false);
+              });
+          })
+          .catch((error) => {
+            console.groupCollapsed('RequestAllowance::signatureError()');
+            console.log('signing error: ', error);
+            console.groupEnd();
+            setSigning(false);
+          })
+          .catch((error) => {
+            console.groupCollapsed(
+              'RequestAllowance::Generate()::catch(error):'
+            );
+            console.log('Error:', error);
+            console.groupEnd();
+            setAllowance(0);
+            setGenerating(false);
+          });
       });
-
-    // TODO: Fire transaction through MetaMask
-    console.log('SIGN ALOWANCE TRANSACTION');
-    setSetting(true);
-    console.log('tradeTxData:', tradeTxData);
-    setSetting(false);
   };
 
   return (
     <Box style={{ marginTop: 20 }}>
-      <FormControl id="sendstart" fullWidth>
+      <FormControl id="allowance" fullWidth>
         <Tooltip title="Manage token trading allowance.">
           <span>
             <LoadingButton
               disabled={allowance < txAmount}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
               sx={{ boxShadow: 'var(--box-shadow)' }}
-              loading={checking || generating || setting}
+              loading={checking || generating || signing || broadcasting}
               onClick={handleClick}
               className={
                 allowance < txAmount
