@@ -13,7 +13,6 @@ const ONEINCH_API = 'https://api.1inch.io/v4.0/';
 const CHECK_ALLOWANCE_ENDPOINT = '/approve/allowance';
 const SET_ALLOWANCE_ENDPOINT = '/approve/transaction';
 const GENERATE_SWAP_ENDPOINT = '/swap';
-const BROADCAST_ENDPOINT = '/broadcast';
 const REFERRER_ADDRESS = process.env.REACT_APP_ONEINCH_REFERRER_ADDRESS;
 const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
@@ -21,13 +20,16 @@ export const TradeTokens = () => {
   const { fromToken, toToken, txAmount } = useActions();
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
+
   const { isAuthenticated, Moralis, user } = useMoralis();
   const { network } = useNetwork();
+  const ethers = Moralis.web3Library;
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
 
   const [buttonText, setButtonText] = useState('Trade Tokens.');
   const [trading, setTrading] = useState(false);
   const [allowance, setAllowance] = useState('0');
-  const [web3Provider, setWeb3Provider] = useState({});
   const [userAddress, setUserAddress] = useState('');
 
   const checkAllowanceAPI =
@@ -36,18 +38,6 @@ export const TradeTokens = () => {
     ONEINCH_API + network.id.toString() + SET_ALLOWANCE_ENDPOINT;
   const generateSwapAPI =
     ONEINCH_API + network.id.toString() + GENERATE_SWAP_ENDPOINT;
-  const broadcastAPI = ONEINCH_API + network.id.toString() + BROADCAST_ENDPOINT;
-
-  useEffect(() => {
-    if (!Moralis.ensureWeb3IsInstalled()) {
-      setTrading(true);
-      setDialog('Connecting to the blockchain...');
-      setButtonText('Connecting...');
-      setWeb3Provider(Moralis.enable());
-      setDialog('Choose a token to trade.');
-      setButtonText('Complete Trade');
-    }
-  }, [Moralis, setDialog, user?.attributes]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -164,33 +154,32 @@ export const TradeTokens = () => {
 
   const signTransaction = (transactionData, title) => {
     setDialog('Please use MetaMask to approve this ' + title + ' transaction.');
-    return web3Provider.eth.accounts
-      .signTransaction(transactionData)
-      .catch((error) => {
-        setDialog('Tx signature error: ', error.message);
-        setButtonText('Retry');
-        console.log('Tx signature error:', error);
-      });
+    return signer.signTransaction(transactionData).catch((error) => {
+      setDialog('Tx signature error: ', error.message);
+      setButtonText('Retry');
+      console.log('Tx signature error:', error);
+    });
   };
 
-  const broadcastTx = (signedTxData, title) => {
-    setDialog('Transmitting ' + title + ' to the blockchain...');
-    return fetch(broadcastAPI, {
-      method: 'post',
-      body: JSON.stringify({ signedTxData }),
-      headers: { 'Content-Type': 'application/json' },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setDialog(
-          'Received receipt for ' + title + '. Transaction is complete.'
-        );
-        return res.transactionHash;
+  const broadcastTx = (signedTx, title) => {
+    setDialog('Sending ' + title + ' to the blockchain...');
+    setButtonText('Sending...');
+    return provider
+      .sendTransaction(signedTx)
+      .then((raw) => {
+        setDialog('Waiting for ' + title + ' to be mined...');
+        setButtonText('Mining...');
+        return provider.waitForTransaction(raw.hash);
+      })
+      .then((mined) => {
+        setDialog('Retrieving Tx receipt...');
+        setButtonText('Receipt...');
+        return provider.getTransactionReceipt(mined.hash);
       })
       .catch((error) => {
-        setDialog('Tx signature error: ', error.message);
+        setDialog('Tx send error: ', error.message);
         setButtonText('Retry');
-        console.log('Tx signature error:', error);
+        console.log('Tx send error:', error);
       });
   };
 
@@ -202,7 +191,7 @@ export const TradeTokens = () => {
     setTrading(true);
     prepAllowanceTx(fromToken, txAmount)
       .then((allowanceTx) =>
-        signTransaction(web3Provider, allowanceTx, 'unlock trading allowance')
+        signTransaction(allowanceTx, 'unlock trading allowance')
       )
       .then((signedAllowanceTx) =>
         broadcastTx(signedAllowanceTx, 'signed trading allowance transaction')
