@@ -5,7 +5,7 @@ const AllowanceContext = React.createContext();
 export const useAllowance = () => useContext(AllowanceContext);
 
 export const AllowanceProvider = (props) => {
-  const [allowance, setAllowance] = useState(0);
+  const [allowance, setAllowance] = useState('0');
 
   return (
     <AllowanceContext.Provider

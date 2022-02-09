@@ -25,6 +25,7 @@ export const RequestAllowance = () => {
   const { fromTokenAddress, fromTokenSymbol, fromToken, txAmount } =
     useActions();
   const { setDialog } = useExperts();
+  const [buttonText, setButtonText] = useState('TradingAllowance');
   const { colorMode } = useColorMode();
 
   const { network } = useNetwork();
@@ -33,8 +34,6 @@ export const RequestAllowance = () => {
   const broadcastAPI = ONEINCH_API + network.id.toString() + BROADCAST_ENDPOINT;
 
   const { allowance, setAllowance } = useAllowance();
-
-  const { buttonText, setButtonText } = useState('TradingAllowance');
 
   const [checking, setChecking] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -90,8 +89,13 @@ export const RequestAllowance = () => {
                 ' before you can trade it.'
             );
           }
+          console.groupCollapsed('Break@92');
+          console.log('allowance:', allowance);
+          console.log('txAmount:', txAmount);
+          console.log('fromToken', fromToken);
+          console.groupEnd();
           setButtonText(
-            allowance >= txAmount
+            allowance >= txAmount > 0
               ? allowance / 10 ** fromToken?.decimals +
                   ' ' +
                   fromTokenSymbol +
@@ -101,16 +105,17 @@ export const RequestAllowance = () => {
                   ' ' +
                   fromTokenSymbol +
                   ' to trade!'
-          ).catch((error) => {
-            console.groupCollapsed(
-              'RequestAllowance::useEffect(fromTokenAddress)'
-            );
-            console.log('error:', error);
-            console.groupEnd();
-            setAllowance(null);
-            setChecking(false);
-            setButtonText('Re-Check Tx Allowance!');
-          });
+          );
+        })
+        .catch((error) => {
+          console.groupCollapsed(
+            'RequestAllowance::useEffect(fromTokenAddress)'
+          );
+          console.log('error:', error);
+          console.groupEnd();
+          setAllowance(null);
+          setChecking(false);
+          setButtonText('Re-Check Tx Allowance!');
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

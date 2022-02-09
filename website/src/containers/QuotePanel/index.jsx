@@ -1,8 +1,6 @@
 import React from 'react';
 import { Stack } from '@mui/material';
-
-import { DoItButton } from '../../components/Bits/DoItButton';
-import { RequestAllowance } from '../../components/Bits/RequestAllowance';
+import { TradeTokens } from '../../components/Bits/TradeTokens';
 
 export const QuotePanel = () => {
   return (
@@ -19,8 +17,7 @@ export const QuotePanel = () => {
       spacing={2}
     >
       <Stack direction="row">
-        <RequestAllowance />
-        <DoItButton />
+        <TradeTokens />
       </Stack>
     </Stack>
   );
