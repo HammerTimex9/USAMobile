@@ -14,13 +14,7 @@ const ENDPOINT = '/quote';
 const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
 export const RequestQuote = () => {
-  const {
-    fromTokenSymbol,
-    fromTokenAddress,
-    toTokenSymbol,
-    toTokenAddress,
-    txAmount,
-  } = useActions();
+  const { fromToken, toToken, txAmount } = useActions();
   const { setQuote, quoteValid } = useQuote();
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
@@ -30,16 +24,17 @@ export const RequestQuote = () => {
   const handleClick = () => {
     setFetching(true);
     setDialog(
-      `Estimating rates to swap ${txAmount} of ${fromTokenSymbol} to ${toTokenSymbol} ... `
+      `Estimating rates to swap ${txAmount / 10 ** fromToken?.decimals} of
+       ${fromToken?.symbol} to ${toToken?.symbol} ... `
     );
     const baseURL = ONEINCH4_API + '/' + network.id.toString();
     const url =
       baseURL +
       ENDPOINT +
       '?fromTokenAddress=' +
-      (fromTokenAddress || NATIVE_ADDRESS) +
+      (fromToken?.address || NATIVE_ADDRESS) +
       '&toTokenAddress=' +
-      (toTokenAddress || NATIVE_ADDRESS) +
+      (toToken?.address || NATIVE_ADDRESS) +
       '&fee=' +
       REFERRER_FEE.toString() +
       '&amount=' +
@@ -52,9 +47,6 @@ export const RequestQuote = () => {
         return response.json();
       })
       .then((response) => {
-        console.groupCollapsed('RequestQuote::handleClick()::fetch(response):');
-        console.log('response:', response);
-        console.groupEnd();
         setFetching(false);
         const now = new Date();
         setQuote(response);
@@ -65,9 +57,6 @@ export const RequestQuote = () => {
         );
       })
       .catch((error) => {
-        console.groupCollapsed('RequestQuote::handleClick()::catch(error):');
-        console.log('Error:', error);
-        console.groupEnd();
         setQuote(null);
         setFetching(false);
       });
@@ -79,13 +68,13 @@ export const RequestQuote = () => {
         <Tooltip title="Preview token transmission.">
           <span>
             <LoadingButton
-              disabled={!txAmount || !toTokenSymbol}
+              disabled={!txAmount || !toToken?.symbol}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={fetching}
               onClick={handleClick}
               className={
-                !txAmount || !toTokenSymbol
+                !txAmount || !toToken?.symbol
                   ? 'quote-button disable'
                   : 'quote-button'
               }
