@@ -23,9 +23,8 @@ export const TradeTokens = () => {
 
   const { isAuthenticated, Moralis, user } = useMoralis();
   const { network } = useNetwork();
-  const ethers = Moralis.web3Library;
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
+  const [provider, setProvider] = useState({});
+  const [signer, setSigner] = useState({});
 
   const [buttonText, setButtonText] = useState('Trade Tokens.');
   const [trading, setTrading] = useState(false);
@@ -38,6 +37,19 @@ export const TradeTokens = () => {
     ONEINCH_API + network.id.toString() + SET_ALLOWANCE_ENDPOINT;
   const generateSwapAPI =
     ONEINCH_API + network.id.toString() + GENERATE_SWAP_ENDPOINT;
+
+  useEffect(() => {
+    Moralis.web3Library
+      .then((e) => new e.providers.Web3Provider(window.ethereum))
+      .then((p) => {
+        setProvider(p);
+        return provider.getSigner();
+      })
+      .then((s) => {
+        setSigner(s);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Moralis.web3Library]);
 
   useEffect(() => {
     if (isAuthenticated) {
