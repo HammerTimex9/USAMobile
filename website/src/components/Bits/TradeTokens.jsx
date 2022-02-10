@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
-
+//import detectEthereumProvider from '@metamask/detect-provider';
+import { ethers } from 'ethers';
 import { useMoralis } from 'react-moralis';
+
 import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
 import { useColorMode } from '../../contexts/colorModeContext';
@@ -21,7 +23,7 @@ export const TradeTokens = () => {
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
 
-  const { isAuthenticated, Moralis, user } = useMoralis();
+  const { isAuthenticated, user, web3 } = useMoralis();
   const { network } = useNetwork();
   const [provider, setProvider] = useState({});
   const [signer, setSigner] = useState({});
@@ -39,19 +41,6 @@ export const TradeTokens = () => {
     ONEINCH_API + network.id.toString() + GENERATE_SWAP_ENDPOINT;
 
   useEffect(() => {
-    Moralis.web3Library
-      .then((e) => new e.providers.Web3Provider(window.ethereum))
-      .then((p) => {
-        setProvider(p);
-        return provider.getSigner();
-      })
-      .then((s) => {
-        setSigner(s);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Moralis.web3Library]);
-
-  useEffect(() => {
     if (isAuthenticated) {
       try {
         setUserAddress(user?.attributes['ethAddress']);
@@ -61,6 +50,35 @@ export const TradeTokens = () => {
       }
     }
   }, [isAuthenticated, setDialog, user?.attributes]);
+
+  async function setupProvider() {
+    try {
+      const p = await Moralis.enableWeb3();
+      setProvider(p);
+      console.log('provider:', p);
+      // From now on, this should always be true:
+      // provider === window.ethereum
+    } catch {
+      // TODO: divert to onboarding.
+      console.log('MetaMask not detected! ');
+    }
+  }
+
+  function checkNetworkId() {
+    const networkId = provider.request({ method: 'eth_chainId' });
+    console.log('networkId:', networkId);
+    return networkId;
+  }
+
+  function setupSigner() {
+    try {
+      const s = new ethers.providers.Web3Provider(provider).getSigner();
+      setSigner(s);
+      console.log('signer:', s);
+    } catch (e) {
+      console.log('setupSigner error:', e);
+    }
+  }
 
   function retrieveAllowance(token) {
     setDialog('Checking your token trading allowance...');
@@ -201,7 +219,10 @@ export const TradeTokens = () => {
 
   const handleClick = () => {
     setTrading(true);
-    prepAllowanceTx(fromToken, txAmount)
+    setupProvider()
+      .then(() => checkNetworkId())
+      .then(() => setupSigner())
+      .then(() => prepAllowanceTx(fromToken, txAmount))
       .then((allowanceTx) =>
         signTransaction(allowanceTx, 'unlock trading allowance')
       )
