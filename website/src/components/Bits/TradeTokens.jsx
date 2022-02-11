@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
-//import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import { useMoralis } from 'react-moralis';
 
@@ -23,7 +22,7 @@ export const TradeTokens = () => {
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
 
-  const { isAuthenticated, user, web3 } = useMoralis();
+  const { isAuthenticated, Moralis, user } = useMoralis();
   const { network } = useNetwork();
   const [provider, setProvider] = useState({});
   const [signer, setSigner] = useState({});
@@ -65,9 +64,10 @@ export const TradeTokens = () => {
   }
 
   function checkNetworkId() {
-    const networkId = provider.request({ method: 'eth_chainId' });
-    console.log('networkId:', networkId);
-    return networkId;
+    provider.eth.getChainId().then((iD) => {
+      console.log('networkId:', iD);
+      return iD;
+    });
   }
 
   function setupSigner() {
