@@ -126,13 +126,13 @@ export const TradeTokens = () => {
   }
 
   const prepAllowanceTx = (token, txAmount) => {
-    setDialog(
+    const outputText =
       'Preparing to unlock' +
-        txAmount / 10 ** token.decimals +
-        ' ' +
-        token.symbol.toUpperCase() +
-        ' for trade.'
-    );
+      txAmount / 10 ** token.decimals +
+      ' ' +
+      token.symbol.toUpperCase() +
+      ' for trade.';
+    setDialog(outputText);
     setButtonText('Prepping Unlock...');
     const url =
       setAllowanceAPI +
@@ -140,6 +140,7 @@ export const TradeTokens = () => {
       (fromToken?.address || NATIVE_ADDRESS) +
       '&amount=' +
       txAmount.toString();
+    console.log('url 4 unlock:', url);
     return fetch(url, {
       method: 'GET',
     })
@@ -147,6 +148,7 @@ export const TradeTokens = () => {
       .then((res) => {
         setDialog('Allowance unlock Tx prepped!');
         setButtonText('Prepped Allowance Tx!');
+        console.log('Allowance Unlock Tx: ', res);
         return res;
       })
       .catch((error) => {
@@ -157,16 +159,17 @@ export const TradeTokens = () => {
   };
 
   const prepSwapTx = (fromToken, toToken, txAmount) => {
-    setDialog(
+    const outputText =
       'Preparing transaction to swap ' +
-        txAmount / 10 ** fromToken.decimals +
-        ' ' +
-        fromToken.symbol.toUppperCase() +
-        ' for ' +
-        toToken.symbol.toUpperCase() +
-        '.'
-    );
+      txAmount / 10 ** fromToken.decimals +
+      ' ' +
+      fromToken.symbol.toUppperCase() +
+      ' for ' +
+      toToken.symbol.toUpperCase() +
+      '.';
+    setDialog(outputText);
     setButtonText('Prepping Swap...');
+    console.log(outputText);
     const url =
       generateSwapAPI + '?fromTokenAddress=' + fromToken?.address ||
       NATIVE_ADDRESS + '&toTokenAddress=' + toToken?.address ||
@@ -185,6 +188,7 @@ export const TradeTokens = () => {
         'false' +
         '&allowPartialFill=' +
         'false';
+    console.log('Swap Tx prep url:', url);
     return fetch(url, {
       method: 'GET',
     })
@@ -192,6 +196,7 @@ export const TradeTokens = () => {
       .then((res) => {
         setDialog('Swap Tx prepped!');
         setButtonText('Prepped Swap Tx!');
+        console.log('Unsigned Swap Tx:', res);
         return res;
       })
       .catch((error) => {
@@ -201,9 +206,10 @@ export const TradeTokens = () => {
       });
   };
 
-  const signTransaction = (transactionData, title) => {
+  const signTransaction = (unsignedTx, title) => {
     setDialog('Please use MetaMask to approve this ' + title + ' transaction.');
-    return provider.eth.signTransaction(transactionData).catch((error) => {
+    console.log('Tx to sign:', unsignedTx);
+    return provider.eth.signTransaction(unsignedTx).catch((error) => {
       setDialog('Tx signature error: ', error.message);
       setButtonText('Retry');
       console.log('Tx signature error:', error);
@@ -213,16 +219,19 @@ export const TradeTokens = () => {
   const broadcastTx = (signedTx, title) => {
     setDialog('Sending ' + title + ' to the blockchain...');
     setButtonText('Sending...');
+    console.log('Signed Tx for broadcast:', signedTx);
     return provider.eth
       .sendSignedTransaction(signedTx)
       .then((raw) => {
         setDialog('Waiting for ' + title + ' to be mined...');
         setButtonText('Mining...');
+        console.log('Waiting for Tx receipt...');
         return provider.waitForTransaction(raw.hash);
       })
       .then((mined) => {
         setDialog('Retrieving Tx receipt...');
         setButtonText('Receipt...');
+        console.log('Received receipt:', mined);
         return provider.getTransactionReceipt(mined.hash);
       })
       .catch((error) => {
