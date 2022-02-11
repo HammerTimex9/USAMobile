@@ -80,12 +80,13 @@ export const TradeTokens = () => {
     })
       .then((res) => res.json())
       .then((res) => {
-        setDialog(
+        const outputString =
           token.symbol.toUpperCase() +
-            ' allowance is ' +
-            res.allowance / 10 ** token.decimals +
-            '.'
-        );
+          ' allowance is ' +
+          res.allowance / 10 ** token.decimals +
+          '.';
+        setDialog(outputString);
+        console.log('allowance check:', outputString);
         setButtonText('Allowance found!');
         return res.allowance;
       })
@@ -98,14 +99,26 @@ export const TradeTokens = () => {
   }
 
   function compareAllowance() {
-    if (allowance < txAmount)
+    const offset = 10 ** fromToken.decimals;
+    const allowanceTokens = allowance / offset;
+    const txAmountTokens = txAmount / offset;
+    const comparison = allowanceTokens < txAmountTokens;
+    console.log(
+      'allowance: ' +
+        allowanceTokens +
+        ' ?>= txAmount: ' +
+        txAmountTokens +
+        ' = ' +
+        comparison
+    );
+    if (comparison)
       throw new Error({
         name: 'InsufficientAllowance',
         message:
           'On-chain allowance of ' +
-          allowance / 10 ** fromToken.decimals +
+          allowanceTokens +
           ' is not enough to trade ' +
-          txAmount / 10 ** fromToken.decimals +
+          txAmountTokens +
           ' ' +
           fromToken.symbol.toUpperCase() +
           ' with.',
