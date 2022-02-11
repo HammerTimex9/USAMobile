@@ -134,9 +134,14 @@ export const TradeTokens = () => {
         ' for trade.'
     );
     setButtonText('Prepping Unlock...');
-    return fetch(setAllowanceAPI, {
-      tokenAddress: token.address,
-      amount: txAmount,
+    const url =
+      setAllowanceAPI +
+      '?fromTokenAddress=' +
+      (fromToken?.address || NATIVE_ADDRESS) +
+      '&amount=' +
+      txAmount.toString();
+    return fetch(url, {
+      method: 'GET',
     })
       .then((res) => res.json())
       .then((res) => {
@@ -162,16 +167,26 @@ export const TradeTokens = () => {
         '.'
     );
     setButtonText('Prepping Swap...');
-    return fetch(generateSwapAPI, {
-      fromTokenAddress: fromToken?.address || NATIVE_ADDRESS,
-      toTokenAddress: toToken?.address || NATIVE_ADDRESS,
-      amount: txAmount,
-      fromAddress: userAddress,
-      referrer: REFERRER_ADDRESS,
-      fee: REFERRER_FEE,
-      slippage: 1,
-      disableEstimate: false,
-      allowPartialFill: false,
+    const url =
+      generateSwapAPI + '?fromTokenAddress=' + fromToken?.address ||
+      NATIVE_ADDRESS + '&toTokenAddress=' + toToken?.address ||
+      NATIVE_ADDRESS +
+        '&amount=' +
+        txAmount +
+        '&fromAddress=' +
+        userAddress +
+        '&referrer=' +
+        REFERRER_ADDRESS +
+        '&fee=' +
+        REFERRER_FEE +
+        '&slippage=' +
+        '1' +
+        '&disableEstimate=' +
+        'false' +
+        '&allowPartialFill=' +
+        'false';
+    return fetch(url, {
+      method: 'GET',
     })
       .then((res) => res.json())
       .then((res) => {
