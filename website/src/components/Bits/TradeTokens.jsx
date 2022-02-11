@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { ethers } from 'ethers';
 import { useMoralis } from 'react-moralis';
 
 import { useActions } from '../../contexts/actionsContext';
@@ -25,7 +24,6 @@ export const TradeTokens = () => {
   const { isAuthenticated, Moralis, user } = useMoralis();
   const { network } = useNetwork();
   const [provider, setProvider] = useState({});
-  const [signer, setSigner] = useState({});
 
   const [buttonText, setButtonText] = useState('Trade Tokens.');
   const [trading, setTrading] = useState(false);
@@ -64,25 +62,18 @@ export const TradeTokens = () => {
   }
 
   function checkNetworkId() {
-    provider.eth.getChainId().then((iD) => {
+    provider?.eth.getChainId().then((iD) => {
       console.log('networkId:', iD);
+      if (iD !== 137) {
+        // TODO: redirect to switch network
+        console.log('networkId error: not on Polygon!');
+      }
       return iD;
     });
   }
 
-  function setupSigner() {
-    try {
-      const s = new ethers.providers.Web3Provider(provider).getSigner();
-      setSigner(s);
-      console.log('signer:', s);
-    } catch (e) {
-      console.log('setupSigner error:', e);
-    }
-  }
-
   function retrieveAllowance(token) {
     setDialog('Checking your token trading allowance...');
-    setButtonText('Checking Allowance...');
     const onChainAllowance = fetch(checkAllowanceAPI, {
       tokenAddress: token.address,
       walletAddress: userAddress,
@@ -184,7 +175,7 @@ export const TradeTokens = () => {
 
   const signTransaction = (transactionData, title) => {
     setDialog('Please use MetaMask to approve this ' + title + ' transaction.');
-    return signer.signTransaction(transactionData).catch((error) => {
+    return provider.eth.signTransaction(transactionData).catch((error) => {
       setDialog('Tx signature error: ', error.message);
       setButtonText('Retry');
       console.log('Tx signature error:', error);
@@ -194,8 +185,8 @@ export const TradeTokens = () => {
   const broadcastTx = (signedTx, title) => {
     setDialog('Sending ' + title + ' to the blockchain...');
     setButtonText('Sending...');
-    return provider
-      .sendTransaction(signedTx)
+    return provider.eth
+      .sendSignedTransaction(signedTx)
       .then((raw) => {
         setDialog('Waiting for ' + title + ' to be mined...');
         setButtonText('Mining...');
@@ -221,7 +212,6 @@ export const TradeTokens = () => {
     setTrading(true);
     setupProvider()
       .then(() => checkNetworkId())
-      .then(() => setupSigner())
       .then(() => prepAllowanceTx(fromToken, txAmount))
       .then((allowanceTx) =>
         signTransaction(allowanceTx, 'unlock trading allowance')
