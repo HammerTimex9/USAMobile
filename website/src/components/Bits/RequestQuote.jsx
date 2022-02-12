@@ -49,16 +49,22 @@ export const RequestQuote = () => {
       .then((response) => {
         setFetching(false);
         const now = new Date();
-        setQuote(response);
-        setDialog(
-          'Quote valid as of: ' +
-            now.toLocaleTimeString('en-US') +
-            '.  Press "Do it!" to execute trade.'
-        );
+        if (response.statusCode === 200) {
+          setQuote(response);
+          setDialog(
+            'Quote valid as of: ' +
+              now.toLocaleTimeString('en-US') +
+              '.  Press "Do it!" to execute trade.'
+          );
+        } else {
+          throw response;
+        }
       })
       .catch((error) => {
+        setDialog('A network error occurred: ' + error.error);
         setQuote(null);
         setFetching(false);
+        console.log('Quote fetch error: ', error);
       });
   };
 

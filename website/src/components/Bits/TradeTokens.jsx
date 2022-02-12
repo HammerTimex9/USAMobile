@@ -73,89 +73,113 @@ export const TradeTokens = () => {
   }
 
   function retrieveAllowance(token) {
-    setDialog('Checking your token trading allowance...');
-    const onChainAllowance = fetch(checkAllowanceAPI, {
-      tokenAddress: token.address,
-      walletAddress: userAddress,
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        const outputString =
-          token.symbol.toUpperCase() +
-          ' allowance is ' +
-          res.allowance / 10 ** token.decimals +
-          '.';
-        setDialog(outputString);
-        console.log('allowance check:', outputString);
-        setButtonText('Allowance found!');
-        return res.allowance;
+    if ((token?.address !== undefined) & (token?.address !== NATIVE_ADDRESS)) {
+      setDialog('Checking your token trading allowance...');
+      const url =
+        checkAllowanceAPI +
+        '?tokenAddress=' +
+        token.address +
+        '&walletAddress=' +
+        userAddress;
+      console.log('Checking with: ', url);
+      const onChainAllowance = fetch(url, {
+        method: 'GET',
       })
-      .catch((error) => {
-        setDialog('Allowance check error: ' + error.message);
-        setButtonText('Retry');
-        console.log('Allowance check error:', error);
-      });
-    setAllowance(onChainAllowance);
+        .then((res) => res.json())
+        .then((res) => {
+          const outputString =
+            token.symbol.toUpperCase() +
+            ' allowance is ' +
+            res.allowance / 10 ** token.decimals +
+            '.';
+          setDialog(outputString);
+          console.log('allowance check:', outputString);
+          setButtonText('Allowance found!');
+          return res.allowance;
+        })
+        .catch((error) => {
+          setDialog('Allowance check error: ' + error.message);
+          setButtonText('Retry');
+          console.log('Allowance check error:', error);
+        });
+      setAllowance(onChainAllowance);
+    } else {
+      setDialog(`No allowance to check on ${token?.symbol}.`);
+      setButtonText('Skip Allowance Check...');
+      console.log('Skipping allowance check for token: ', token);
+      setAllowance(Infinity);
+    }
   }
 
   function compareAllowance() {
-    const offset = 10 ** fromToken.decimals;
-    const allowanceTokens = allowance / offset;
-    const txAmountTokens = txAmount / offset;
-    const comparison = allowanceTokens < txAmountTokens;
-    console.log(
-      'allowance: ' +
-        allowanceTokens +
-        ' ?>= txAmount: ' +
-        txAmountTokens +
-        ' = ' +
-        comparison
-    );
-    if (comparison)
-      throw new Error({
-        name: 'InsufficientAllowance',
-        message:
-          'On-chain allowance of ' +
+    if (fromToken.address) {
+      const offset = 10 ** fromToken.decimals;
+      const allowanceTokens = allowance / offset;
+      const txAmountTokens = txAmount / offset;
+      const comparison = allowanceTokens < txAmountTokens;
+      console.log(
+        'allowance: ' +
           allowanceTokens +
-          ' is not enough to trade ' +
+          ' ?>= txAmount: ' +
           txAmountTokens +
-          ' ' +
-          fromToken.symbol.toUpperCase() +
-          ' with.',
-      });
+          ' = ' +
+          comparison
+      );
+      if (comparison)
+        throw new Error({
+          name: 'InsufficientAllowance',
+          message:
+            'On-chain allowance of ' +
+            allowanceTokens +
+            ' is not enough to trade ' +
+            txAmountTokens +
+            ' ' +
+            fromToken.symbol.toUpperCase() +
+            ' with.',
+        });
+    } else {
+      console.log('Native token granted infinite allowance.');
+    }
   }
 
   const prepAllowanceTx = (token, txAmount) => {
-    const outputText =
-      'Preparing to unlock' +
-      txAmount / 10 ** token.decimals +
-      ' ' +
-      token.symbol.toUpperCase() +
-      ' for trade.';
-    setDialog(outputText);
-    setButtonText('Prepping Unlock...');
-    const url =
-      setAllowanceAPI +
-      '?fromTokenAddress=' +
-      (fromToken?.address || NATIVE_ADDRESS) +
-      '&amount=' +
-      txAmount.toString();
-    console.log('url 4 unlock:', url);
-    return fetch(url, {
-      method: 'GET',
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        setDialog('Allowance unlock Tx prepped!');
-        setButtonText('Prepped Allowance Tx!');
-        console.log('Allowance Unlock Tx: ', res);
-        return res;
+    if (token.address & (token.address !== NATIVE_ADDRESS)) {
+      const outputText =
+        'Preparing to unlock' +
+        txAmount / 10 ** token.decimals +
+        ' ' +
+        token.symbol.toUpperCase() +
+        ' for trade.';
+      setDialog(outputText);
+      setButtonText('Prepping Unlock...');
+      const url =
+        setAllowanceAPI +
+        '?tokenAddress=' +
+        fromToken.address +
+        '&amount=' +
+        txAmount.toString();
+      console.log('url 4 unlock:', url);
+      return fetch(url, {
+        method: 'GET',
       })
-      .catch((error) => {
-        setDialog('Allowance prep error: ', error.message);
-        setButtonText('Retry');
-        console.log('Allowance prep error:', error);
-      });
+        .then((res) => res.json())
+        .then((res) => {
+          setDialog('Allowance unlock Tx prepped!');
+          setButtonText('Prepped Allowance Tx!');
+          console.log('Allowance Unlock Tx: ', res);
+          return res;
+        })
+        .catch((error) => {
+          setDialog('Allowance prep error: ', error.message);
+          setButtonText('Retry');
+          console.log('Allowance prep error:', error);
+        });
+    } else {
+      setDialog('Native token does not need an allowance unlock.');
+      setButtonText('Native...');
+      console.log('Native token does not need a trading allowance.');
+      return undefined;
+    }
   };
 
   const prepSwapTx = (fromToken, toToken, txAmount) => {
@@ -178,12 +202,12 @@ export const TradeTokens = () => {
         txAmount +
         '&fromAddress=' +
         userAddress +
-        '&referrer=' +
+        '&slippage=' +
+        '1' +
+        '&referrerAddress=' +
         REFERRER_ADDRESS +
         '&fee=' +
         REFERRER_FEE +
-        '&slippage=' +
-        '1' +
         '&disableEstimate=' +
         'false' +
         '&allowPartialFill=' +
@@ -207,13 +231,21 @@ export const TradeTokens = () => {
   };
 
   const signTransaction = (unsignedTx, title) => {
-    setDialog('Please use MetaMask to approve this ' + title + ' transaction.');
-    console.log('Tx to sign:', unsignedTx);
-    return provider.eth.signTransaction(unsignedTx).catch((error) => {
-      setDialog('Tx signature error: ', error.message);
-      setButtonText('Retry');
-      console.log('Tx signature error:', error);
-    });
+    if (unsignedTx) {
+      setDialog(
+        'Please use MetaMask to approve this ' + title + ' transaction.'
+      );
+      console.log('Tx to sign:', unsignedTx);
+      return provider.eth.signTransaction(unsignedTx).catch((error) => {
+        setDialog('Tx signature error: ', error.message);
+        setButtonText('Retry');
+        console.log('Tx signature error:', error);
+      });
+    } else {
+      setDialog('Skipping signature for blank ' + title + ' transaction.');
+      setButtonText('Skipping Tx sign...');
+      console.log('Skipping Tx signature for ' + title);
+    }
   };
 
   const broadcastTx = (signedTx, title) => {
@@ -250,19 +282,19 @@ export const TradeTokens = () => {
     setupProvider()
       .then(() => checkNetworkId())
       .then(() => prepAllowanceTx(fromToken, txAmount))
-      .then((allowanceTx) =>
-        signTransaction(allowanceTx, 'unlock trading allowance')
-      )
-      .then((signedAllowanceTx) =>
-        broadcastTx(signedAllowanceTx, 'signed trading allowance transaction')
-      )
+      // .then((allowanceTx) =>
+      //   signTransaction(allowanceTx, 'unlock trading allowance')
+      // )
+      // .then((signedAllowanceTx) =>
+      //   broadcastTx(signedAllowanceTx, 'signed trading allowance transaction')
+      // )
       .then(() => retrieveAllowance())
       .then(() => compareAllowance())
       .then(() => prepSwapTx(fromToken, toToken, txAmount))
-      .then((swapTx) => signTransaction(swapTx, 'swap'))
-      .then((signedSwapTx) =>
-        broadcastTx(signedSwapTx, 'signed swap transaction')
-      )
+      // .then((swapTx) => signTransaction(swapTx, 'swap'))
+      // .then((signedSwapTx) =>
+      //   broadcastTx(signedSwapTx, 'signed swap transaction')
+      // )
       .then((swapReceipt) => displaySwapReceipt(swapReceipt))
       .catch((error) => {
         setDialog('A swap process error occured: ', error);

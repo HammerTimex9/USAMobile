@@ -13,7 +13,7 @@ export const QuoteProvider = (props) => {
         quoteValid: !!quote,
         fromToken: quote?.fromToken,
         fromTokenAmount: quote?.fromTokenAmount,
-        protocols: quote ? quote.protocols[0] : null,
+        protocols: quote ? quote?.protocols[0] : null,
         toToken: quote?.toToken,
         toTokenAmount: quote?.toTokenAmount,
         estimatedGas: quote?.estimatedGas,
