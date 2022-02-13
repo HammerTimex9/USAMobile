@@ -316,9 +316,7 @@ export const TradeTokens = () => {
               loading={trading}
               onClick={handleClick}
               className={
-                allowance < txAmount
-                  ? 'allowance-button disable'
-                  : 'allowance-button'
+                allowance < txAmount ? 'quote-button disable' : 'quote-button'
               }
             >
               {buttonText}
