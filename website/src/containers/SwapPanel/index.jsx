@@ -4,22 +4,26 @@ import { Box, Typography } from '@mui/material';
 import { useActions } from '../../contexts/actionsContext';
 import { useQuote } from '../../contexts/quoteContext';
 
-import { FromSelect } from '../Bits/FromSelect';
-import { AmountSelect } from '../Bits/AmountSelect';
+import { FromSelect } from '../../components/Bits/FromSelect';
+import { AmountSelect } from '../../components/Bits/AmountSelect';
 
 // Swap mode.
-import { ToSelect } from '../Bits/ToSelect';
-import { RequestQuote } from '../Bits/RequestQuote';
-import { QuotePanel } from '../Scrapbox/QuotePanel';
-import YouWillGet from '../Bits/Youwillget';
+import { ToSelect } from '../../components/Bits/ToSelect';
+import { RequestQuote } from '../../components/Bits/RequestQuote';
+import { RequestQuoteFromIvan } from '../../components/Bits/RequestQuoteFromIvan';
+import { QuotePanel } from '../QuotePanel';
+import YouWillGet from '../../components/Bits/Youwillget';
 
 export const SwapPanel = () => {
+  const useIvan = true;
   const { fromToken, txAmount, toToken } = useActions();
   const { quoteValid, setQuote, toTokenAmount } = useQuote();
+
   useEffect(() => {
     setQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
+
   const getToTokenAmount = () => {
     if (toTokenAmount && fromToken && toToken) {
       if (toToken && toToken.decimals) {
@@ -31,6 +35,7 @@ export const SwapPanel = () => {
       return 0;
     }
   };
+
   return (
     <Box>
       <Box className="select-amount">
@@ -53,7 +58,7 @@ export const SwapPanel = () => {
         </Typography>
       )}
       {quoteValid && <QuotePanel />}
-      <RequestQuote />
+      {useIvan ? <RequestQuoteFromIvan /> : <RequestQuote />}
     </Box>
   );
 };

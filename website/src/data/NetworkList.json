@@ -1,14 +1,32 @@
 {
   "1": {
     "id": 1,
-    "name": "eth",
+    "name": "ethereum",
     "symbol": "ETH",
+    "decimals": 18
+  },
+  "56": {
+    "id": 56,
+    "name": "binance smart chain",
+    "symbol": "BNB",
     "decimals": 18
   },
   "137": {
     "id": 137,
     "name": "polygon",
     "symbol": "MATIC",
+    "decimals": 18
+  },
+  "250": {
+    "id": 250,
+    "name": "fantom",
+    "symbol": "FTM",
+    "decimals": 18
+  },
+  "43114": {
+    "id": 43114,
+    "name": "avalanche",
+    "symbol": "AVAX",
     "decimals": 18
   }
 }
