@@ -194,7 +194,7 @@ export const TradeTokensWithIvan = () => {
           setButtonText('Redo trade.');
           console.log('Swap transaction canceled in MetaMask.com.');
         } else {
-          setDialog('A swap error occured: ', error);
+          setDialog('A swap error occured: ', error.message);
           console.log('swap error:', error);
           setButtonText('Retry.');
         }
