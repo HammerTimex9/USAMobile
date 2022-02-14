@@ -11,7 +11,7 @@ import { useQuote } from '../../contexts/quoteContext';
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
-export const TradeTokens = () => {
+export const TradeTokensWithIvan = () => {
   const { fromToken, toToken, txAmount } = useActions();
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
@@ -35,40 +35,40 @@ export const TradeTokens = () => {
     }
   }, [isAuthenticated, setDialog, user?.attributes]);
 
-  function getAllowance() {
-    if (
-      (fromToken?.address !== undefined) &
-      (fromToken?.address !== NATIVE_ADDRESS)
-    ) {
-      setDialog('Checking your token trading allowance...');
-      return Moralis.Plugins.oneInch
-        .hasAllowance({
-          chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
-          fromTokenAddress: fromToken.address, // The token you want to swap
-          fromAddress: userAddress, // Your wallet address
-          amount: txAmount,
-        })
-        .then((res) => {
-          const outputString =
-            fromToken.symbol.toUpperCase() +
-            ' allowance is ' +
-            res / 10 ** fromToken.decimals +
-            '.';
-          setDialog(outputString);
-          setButtonText('Allowance found!');
-          console.log('allowance check:', outputString);
-          return res;
-        })
-        .catch((error) => {
-          setDialog('Allowance check error: ' + error.message);
-          setButtonText('Retry');
-          console.log('Allowance check error:', error);
-        });
-    } else {
-      setDialog(`No allowance to check on ${fromToken?.symbol}.`);
-      setButtonText('Skip Allowance Check...');
-      console.log('Skipping allowance check for token: ', fromToken);
-      setAllowance(Infinity);
+  async function getAllowance() {
+    if (fromToken?.address === undefined) {
+      console.log('Attempted to get allowance without a token address.');
+      return undefined;
+    }
+    if (fromToken?.address !== NATIVE_ADDRESS) {
+      console.log('Attempted to get allowance without a token address.');
+      return undefined;
+    }
+    setDialog('Checking your token trading allowance...');
+    setButtonText('Checking Allowance...');
+    try {
+      const allowanceReturn = await Moralis.Plugins.oneInch.hasAllowance({
+        chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
+        fromTokenAddress: fromToken.address, // The token you want to swap
+        fromAddress: userAddress, // Your wallet address
+        amount: txAmount, // No decimals
+      });
+      const outputString =
+        fromToken.symbol.toUpperCase() +
+        ' allowance is ' +
+        allowanceReturn / 10 ** fromToken.decimals +
+        '.';
+      setDialog(outputString);
+      setButtonText('Allowance found!');
+      console.log('allowance check:', outputString);
+      setAllowance(allowanceReturn);
+      return allowanceReturn;
+    } catch (error) {
+      setDialog('Allowance check error: ', error);
+      setButtonText('Retry.');
+      console.log('getAllowance error: ', error);
+      setTrading(false);
+      return undefined;
     }
   }
 
@@ -100,10 +100,11 @@ export const TradeTokens = () => {
         setDialog('approveInfinity error: ', error.message);
         setButtonText('Retry');
         console.log('approveInfinity error', error);
+        setTrading(false);
       });
   };
 
-  function compareAllowance(allowance) {
+  async function compareAllowance(allowance) {
     if (fromToken.address & (fromToken.address !== NATIVE_ADDRESS)) {
       const offset = 10 ** fromToken.decimals;
       const allowanceTokens = allowance / offset;
@@ -129,7 +130,7 @@ export const TradeTokens = () => {
         setDialog(needMore);
         setButtonText('Unlock more...');
         console.log(needMore);
-        approveInfinity();
+        await approveInfinity();
       }
     } else {
       const nativeMessage = 'Native token does not have an allowance lock.';
@@ -144,7 +145,7 @@ export const TradeTokens = () => {
       'Swapping ' +
       txAmount / 10 ** fromToken.decimals +
       ' ' +
-      fromToken.symbol.toUppperCase() +
+      fromToken.symbol +
       ' for ~' +
       toTokenAmount / 10 ** toToken.decimals +
       ' on ' +
@@ -152,16 +153,19 @@ export const TradeTokens = () => {
       '.  Please sign in MetaMask.';
     setDialog(outputText);
     console.log(outputText);
+    console.log('fromToken: ', fromToken);
     setButtonText('Swapping...');
+    const params = {
+      chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
+      fromTokenAddress: fromToken.address || NATIVE_ADDRESS, // The token you want to swap
+      toTokenAddress: toToken.address || NATIVE_ADDRESS, // The token you want to receive
+      amount: txAmount,
+      fromAddress: userAddress, // Your wallet address
+      slippage: 1,
+    };
+    console.log('swap params:', params);
     return Moralis.Plugins.oneInch
-      .swap({
-        chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
-        fromTokenAddress: fromToken.address, // The token you want to swap
-        toTokenAddress: toToken.address, // The token you want to receive
-        amount: txAmount,
-        fromAddress: userAddress, // Your wallet address
-        slippage: 1,
-      })
+      .swap(params)
       .then((receipt) => {
         const replyText = 'Trade complete.';
         setDialog(replyText);
@@ -170,9 +174,18 @@ export const TradeTokens = () => {
         return receipt;
       })
       .catch((error) => {
-        setDialog('A swap error occured: ', error);
-        console.log('swap error:', error);
-        setButtonText('Retry.');
+        if (error.code === 4001) {
+          setDialog(
+            'Transaction canceled in MetaMask.  No funds swapped.  No fees charged.  Adjust trade and try again.'
+          );
+          setButtonText('Redo trade.');
+          console.log('Swap transaction canceled in MetaMask.com.');
+        } else {
+          setDialog('A swap error occured: ', error);
+          console.log('swap error:', error);
+          setButtonText('Retry.');
+        }
+        setTrading(false);
       });
   };
 
@@ -182,9 +195,9 @@ export const TradeTokens = () => {
 
   function handleClick() {
     setTrading(true);
-    getAllowance()
-      .then((allowance) => compareAllowance(allowance))
-      .then(() => swap())
+    const allowance = getAllowance();
+    compareAllowance(allowance);
+    swap()
       .then((swapReceipt) => displaySwapReceipt(swapReceipt))
       .catch((error) => {
         setDialog('A swap process error occured: ', error);

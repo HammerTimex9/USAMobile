@@ -28,10 +28,10 @@ export const RequestQuoteFromIvan = () => {
     );
     Moralis.Plugins.oneInch
       .quote({
-        chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
+        chain: network?.name, // The blockchain you want to use (eth/bsc/polygon)
         fromTokenAddress: fromToken?.address || NATIVE_ADDRESS, // The token you want to swap
         toTokenAddress: toToken?.address || NATIVE_ADDRESS, // The token you want to receive
-        amount: txAmount.toString(), // Don't forget in raw tokens, don't divide decimals out.
+        amount: txAmount?.toString(), // Don't forget in raw tokens, don't divide decimals out.
       })
       .then((response) => {
         console.log("Ivan's quote response: ", response);
