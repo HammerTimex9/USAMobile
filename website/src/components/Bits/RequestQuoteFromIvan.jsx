@@ -22,25 +22,29 @@ export const RequestQuoteFromIvan = () => {
 
   const handleClick = () => {
     setFetching(true);
-    setDialog(
-      `Estimating rates to swap ${txAmount / 10 ** fromToken?.decimals} of
-       ${fromToken?.symbol} to ${toToken?.symbol} ... `
-    );
+    const noticeString = `Estimating rates to swap ${
+      txAmount / 10 ** fromToken?.decimals
+    } of
+    ${fromToken?.symbol} to ${toToken?.symbol} ... `;
+    setDialog(noticeString);
+    // console.log('fromToken: ', fromToken);
+    const params = {
+      chain: network?.name, // The blockchain you want to use (eth/bsc/polygon)
+      fromTokenAddress: fromToken?.token_address || NATIVE_ADDRESS, // The token you want to swap
+      toTokenAddress: toToken?.address || NATIVE_ADDRESS, // The token you want to receive
+      amount: txAmount?.toString(), // Don't forget in raw tokens, don't divide decimals out.
+    };
+    // console.log('RequestQuoteFromIvan::handleClick() params: ', params);
     Moralis.Plugins.oneInch
-      .quote({
-        chain: network?.name, // The blockchain you want to use (eth/bsc/polygon)
-        fromTokenAddress: fromToken?.address || NATIVE_ADDRESS, // The token you want to swap
-        toTokenAddress: toToken?.address || NATIVE_ADDRESS, // The token you want to receive
-        amount: txAmount?.toString(), // Don't forget in raw tokens, don't divide decimals out.
-      })
+      .quote(params)
       .then((response) => {
-        console.log("Ivan's quote response: ", response);
+        // console.log("Ivan's quote response: ", response);
         setQuote(response);
         const now = new Date();
         setDialog(
           'Quote valid as of: ' +
             now.toLocaleTimeString('en-US') +
-            '.  Press "Do it!" to execute trade.'
+            '.  Press the trading button to execute this trade.'
         );
         setFetching(false);
       })

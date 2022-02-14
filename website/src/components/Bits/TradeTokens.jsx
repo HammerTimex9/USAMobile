@@ -155,7 +155,7 @@ export const TradeTokens = () => {
       const url =
         setAllowanceAPI +
         '?tokenAddress=' +
-        fromToken.address +
+        fromToken.token_address +
         '&amount=' +
         txAmount.toString();
       console.log('url 4 unlock:', url);
@@ -195,7 +195,7 @@ export const TradeTokens = () => {
     setButtonText('Prepping Swap...');
     console.log(outputText);
     const url =
-      generateSwapAPI + '?fromTokenAddress=' + fromToken?.address ||
+      generateSwapAPI + '?fromTokenAddress=' + fromToken?.token_address ||
       NATIVE_ADDRESS + '&toTokenAddress=' + toToken?.address ||
       NATIVE_ADDRESS +
         '&amount=' +
@@ -282,19 +282,19 @@ export const TradeTokens = () => {
     setupProvider()
       .then(() => checkNetworkId())
       .then(() => prepAllowanceTx(fromToken, txAmount))
-      // .then((allowanceTx) =>
-      //   signTransaction(allowanceTx, 'unlock trading allowance')
-      // )
-      // .then((signedAllowanceTx) =>
-      //   broadcastTx(signedAllowanceTx, 'signed trading allowance transaction')
-      // )
+      .then((allowanceTx) =>
+        signTransaction(allowanceTx, 'unlock trading allowance')
+      )
+      .then((signedAllowanceTx) =>
+        broadcastTx(signedAllowanceTx, 'signed trading allowance transaction')
+      )
       .then(() => retrieveAllowance())
       .then(() => compareAllowance())
       .then(() => prepSwapTx(fromToken, toToken, txAmount))
-      // .then((swapTx) => signTransaction(swapTx, 'swap'))
-      // .then((signedSwapTx) =>
-      //   broadcastTx(signedSwapTx, 'signed swap transaction')
-      // )
+      .then((swapTx) => signTransaction(swapTx, 'swap'))
+      .then((signedSwapTx) =>
+        broadcastTx(signedSwapTx, 'signed swap transaction')
+      )
       .then((swapReceipt) => displaySwapReceipt(swapReceipt))
       .catch((error) => {
         setDialog('A swap process error occured: ', error);

@@ -18,10 +18,12 @@ export const SwapPanel = () => {
   const useIvan = true;
   const { fromToken, txAmount, toToken } = useActions();
   const { quoteValid, setQuote, toTokenAmount } = useQuote();
+
   useEffect(() => {
     setQuote();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromToken, txAmount]);
+
   const getToTokenAmount = () => {
     if (toTokenAmount && fromToken && toToken) {
       if (toToken && toToken.decimals) {
@@ -33,6 +35,7 @@ export const SwapPanel = () => {
       return 0;
     }
   };
+
   return (
     <Box>
       <Box className="select-amount">

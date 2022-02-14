@@ -18,12 +18,12 @@ export const useTokenTransfers = (props) => {
             .filter((t) => t.address === props.tokenAddress)
             .map((Tx) => {
               const output = { ...Tx };
-              switch (address) {
-                case Tx.from_address:
+              switch (address.toLowerCase()) {
+                case Tx.from_address.toLowerCase():
                   output.counterparty = Tx.to_address;
                   output.amount = -1 * parseFloat(Tx.value);
                   break;
-                case Tx.to_address:
+                case Tx.to_address.toLowerCase():
                   output.counterparty = Tx.from_address;
                   output.amount = 1 * parseFloat(Tx.value);
                   break;

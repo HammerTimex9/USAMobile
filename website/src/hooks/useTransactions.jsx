@@ -18,13 +18,13 @@ export const useTransactions = (props) => {
         .then((userTrans) => {
           let newTxs = userTrans.result.map((Tx) => {
             const output = { ...Tx };
-            switch (address) {
+            switch (address.toLowerCase()) {
               case Tx.from_address:
-                output.counterparty = Tx.to_address;
+                output.counterparty = Tx.to_address.toLowerCase();
                 output.amount = -1 * parseFloat(Tx.value);
                 break;
               case Tx.to_address:
-                output.counterparty = Tx.from_address;
+                output.counterparty = Tx.from_address.toLowerCase();
                 output.amount = 1 * parseFloat(Tx.value);
                 break;
               case undefined:

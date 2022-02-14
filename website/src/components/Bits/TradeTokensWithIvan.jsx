@@ -49,7 +49,7 @@ export const TradeTokensWithIvan = () => {
     try {
       const allowanceReturn = await Moralis.Plugins.oneInch.hasAllowance({
         chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
-        fromTokenAddress: fromToken.address, // The token you want to swap
+        fromTokenAddress: fromToken.token_address, // The token you want to swap
         fromAddress: userAddress, // Your wallet address
         amount: txAmount, // No decimals
       });
@@ -105,7 +105,10 @@ export const TradeTokensWithIvan = () => {
   };
 
   async function compareAllowance(allowance) {
-    if (fromToken.address & (fromToken.address !== NATIVE_ADDRESS)) {
+    if (
+      fromToken.token_address &
+      (fromToken.token_address !== NATIVE_ADDRESS)
+    ) {
       const offset = 10 ** fromToken.decimals;
       const allowanceTokens = allowance / offset;
       const txAmountTokens = txAmount / offset;
@@ -145,15 +148,18 @@ export const TradeTokensWithIvan = () => {
       'Swapping ' +
       txAmount / 10 ** fromToken.decimals +
       ' ' +
-      fromToken.symbol +
+      fromToken?.symbol +
       ' for ~' +
-      toTokenAmount / 10 ** toToken.decimals +
+      (toTokenAmount / 10 ** toToken.decimals).toFixed(3) +
+      ' ' +
+      toToken?.symbol +
       ' on ' +
       network.name +
-      '.  Please sign in MetaMask.';
+      '.  Please sign this Tx in MetaMask.';
     setDialog(outputText);
     console.log(outputText);
     console.log('fromToken: ', fromToken);
+    console.log('toToken: ', toToken);
     setButtonText('Swapping...');
     const params = {
       chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
@@ -167,7 +173,11 @@ export const TradeTokensWithIvan = () => {
     return Moralis.Plugins.oneInch
       .swap(params)
       .then((receipt) => {
-        const replyText = 'Trade complete.';
+        const replyText =
+          'Burned ' +
+          receipt.cumulativeGasUsed +
+          ' gas from Matic.  Trade complete!' +
+          '  Adjust settings and trade again!';
         setDialog(replyText);
         console.log('swap receipt:', receipt);
         setButtonText('Trade Again!');
@@ -176,7 +186,10 @@ export const TradeTokensWithIvan = () => {
       .catch((error) => {
         if (error.code === 4001) {
           setDialog(
-            'Transaction canceled in MetaMask.  No funds swapped.  No fees charged.  Adjust trade and try again.'
+            'Transaction canceled in MetaMask.  ' +
+              'No funds swapped.  ' +
+              'No fees charged.  ' +
+              'Adjust trade and try again.'
           );
           setButtonText('Redo trade.');
           console.log('Swap transaction canceled in MetaMask.com.');
@@ -213,7 +226,7 @@ export const TradeTokensWithIvan = () => {
         <Tooltip title="Execute trade transactions.">
           <span>
             <LoadingButton
-              disabled={txAmount <= 0}
+              disabled={false}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={trading}
