@@ -237,9 +237,7 @@ export const TradeTokensWithIvan = () => {
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={trading}
               onClick={handleClick}
-              className={
-                allowance < txAmount ? 'quote-button disable' : 'quote-button'
-              }
+              className={allowance < txAmount ? 'quote-button' : 'quote-button'}
             >
               {buttonText}
             </LoadingButton>
