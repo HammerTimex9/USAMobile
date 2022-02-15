@@ -10,6 +10,8 @@ import { useNetwork } from '../../contexts/networkContext';
 import { useQuote } from '../../contexts/quoteContext';
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const REFERRER_ADDRESS = process.env.REACT_APP_ONEINCH_REFERRER_ADDRESS;
+const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
 export const TradeTokensWithIvan = () => {
   const { fromToken, toToken, txAmount } = useActions();
@@ -17,7 +19,7 @@ export const TradeTokensWithIvan = () => {
   const { colorMode } = useColorMode();
   const { isAuthenticated, Moralis, user } = useMoralis();
   const { network } = useNetwork();
-  const { toTokenAmount } = useQuote();
+  const { toTokenAmount, estimatedGas } = useQuote();
 
   const [buttonText, setButtonText] = useState('Trade Tokens.');
   const [trading, setTrading] = useState(false);
@@ -168,6 +170,10 @@ export const TradeTokensWithIvan = () => {
       amount: txAmount,
       fromAddress: userAddress, // Your wallet address
       slippage: 1,
+      gasPrice: 2 * estimatedGas,
+      gasLimit: 4 * estimatedGas,
+      referrerAddress: REFERRER_ADDRESS,
+      fee: REFERRER_FEE,
     };
     console.log('swap params:', params);
     return Moralis.Plugins.oneInch
@@ -194,7 +200,7 @@ export const TradeTokensWithIvan = () => {
           setButtonText('Redo trade.');
           console.log('Swap transaction canceled in MetaMask.com.');
         } else {
-          setDialog('A swap error occured: ', error.message);
+          setDialog('A swap error occured: ', error);
           console.log('swap error:', error);
           setButtonText('Retry.');
         }
@@ -231,9 +237,7 @@ export const TradeTokensWithIvan = () => {
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={trading}
               onClick={handleClick}
-              className={
-                allowance < txAmount ? 'quote-button disable' : 'quote-button'
-              }
+              className={allowance < txAmount ? 'quote-button' : 'quote-button'}
             >
               {buttonText}
             </LoadingButton>

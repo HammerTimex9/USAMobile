@@ -38,7 +38,7 @@ export const RequestQuoteFromIvan = () => {
     Moralis.Plugins.oneInch
       .quote(params)
       .then((response) => {
-        // console.log("Ivan's quote response: ", response);
+        console.log("Ivan's quote response: ", response);
         setQuote(response);
         const now = new Date();
         setDialog(
