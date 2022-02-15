@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 
 import { Box } from '@mui/material';
 
-import { AddressPanel } from '../Blocks/AddressPanel';
+import { AddressPanel } from '../../containers/AddressPanel';
 import { Heading } from '../UW/Heading';
 import { useExperts } from '../../contexts/expertsContext';
 

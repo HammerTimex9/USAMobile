@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { useMoralis } from 'react-moralis';
 
 import { useActions } from '../../contexts/actionsContext';
 import { useExperts } from '../../contexts/expertsContext';
@@ -9,11 +10,9 @@ import { useColorMode } from '../../contexts/colorModeContext';
 import { useNetwork } from '../../contexts/networkContext';
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-const ONEINCH4_API = 'https://api.1inch.io/v4.0';
-const ENDPOINT = '/quote';
-const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
-export const RequestQuote = () => {
+export const RequestQuoteFromIvan = () => {
+  const { Moralis } = useMoralis();
   const { fromToken, toToken, txAmount } = useActions();
   const { setQuote, quoteValid } = useQuote();
   const { setDialog } = useExperts();
@@ -23,55 +22,44 @@ export const RequestQuote = () => {
 
   const handleClick = () => {
     setFetching(true);
-    setDialog(
-      `Estimating rates to swap ${txAmount / 10 ** fromToken?.decimals} of
-       ${fromToken?.symbol} to ${toToken?.symbol} ... `
-    );
-    const baseURL = ONEINCH4_API + '/' + network.id.toString();
-    const url =
-      baseURL +
-      ENDPOINT +
-      '?fromTokenAddress=' +
-      (fromToken?.address || NATIVE_ADDRESS) +
-      '&toTokenAddress=' +
-      (toToken?.address || NATIVE_ADDRESS) +
-      '&fee=' +
-      REFERRER_FEE.toString() +
-      '&amount=' +
-      txAmount.toString();
-
-    fetch(url, {
-      method: 'GET',
-    })
+    const noticeString = `Estimating rates to swap ${
+      txAmount / 10 ** fromToken?.decimals
+    } of
+    ${fromToken?.symbol} to ${toToken?.symbol} ... `;
+    setDialog(noticeString);
+    // console.log('fromToken: ', fromToken);
+    const params = {
+      chain: network?.name, // The blockchain you want to use (eth/bsc/polygon)
+      fromTokenAddress: fromToken?.token_address || NATIVE_ADDRESS, // The token you want to swap
+      toTokenAddress: toToken?.address || NATIVE_ADDRESS, // The token you want to receive
+      amount: txAmount?.toString(), // Don't forget in raw tokens, don't divide decimals out.
+    };
+    // console.log('RequestQuoteFromIvan::handleClick() params: ', params);
+    Moralis.Plugins.oneInch
+      .quote(params)
       .then((response) => {
-        return response.json();
-      })
-      .then((response) => {
-        setFetching(false);
+        console.log("Ivan's quote response: ", response);
+        setQuote(response);
         const now = new Date();
-        if (response.statusCode === 200) {
-          setQuote(response);
-          setDialog(
-            'Quote valid as of: ' +
-              now.toLocaleTimeString('en-US') +
-              '.  Press "Do it!" to execute trade.'
-          );
-        } else {
-          throw response;
-        }
+        setDialog(
+          'Quote valid as of: ' +
+            now.toLocaleTimeString('en-US') +
+            '.  Press the trading button to execute this trade.'
+        );
+        setFetching(false);
       })
       .catch((error) => {
-        setDialog('A network error occurred: ' + error.error);
+        console.log('Moralis quote fetch error: ', error);
         setQuote(null);
+        setDialog('A Moralis error occurred: ' + error.error);
         setFetching(false);
-        console.log('Quote fetch error: ', error);
       });
   };
 
   return (
     <Box style={{ marginTop: 20 }}>
       <FormControl id="sendstart" fullWidth>
-        <Tooltip title="Preview token transmission.">
+        <Tooltip title="Preview transaction results.">
           <span>
             <LoadingButton
               disabled={!txAmount || !toToken?.symbol}

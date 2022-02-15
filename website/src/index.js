@@ -8,19 +8,12 @@ import { NetworkProvider } from './contexts/networkContext';
 import { PortfolioProvider } from './contexts/portfolioContext';
 import { ActionsProvider } from './contexts/actionsContext';
 import { QuoteProvider } from './contexts/quoteContext';
+import { AllowanceProvider } from './contexts/allowanceContext';
 import App from './containers/App';
 import reportWebVitals from './components/Support/reportWebVitals';
 
 const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID;
 const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL;
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <MoralisProvider appId={appId} serverUrl={serverUrl}>
-//       <App />
-//     </MoralisProvider>
-//   </React.StrictMode>,
-//   document.getElementById('root')
-// );
 
 ReactDOM.render(
   <React.StrictMode>
@@ -31,7 +24,9 @@ ReactDOM.render(
             <PortfolioProvider>
               <ActionsProvider>
                 <QuoteProvider>
-                  <App />
+                  <AllowanceProvider>
+                    <App />
+                  </AllowanceProvider>
                 </QuoteProvider>
               </ActionsProvider>
             </PortfolioProvider>

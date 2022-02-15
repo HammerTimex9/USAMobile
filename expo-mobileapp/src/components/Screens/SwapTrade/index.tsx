@@ -1,16 +1,15 @@
-import React, { useEffect } from "react";
-import { View, Text } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
+import React from "react";
+import { Text, View } from "react-native";
 
 import { useExperts } from '../../../contexts/expertsContext';
-
 import SwapPanel from '../../Blocks/SwapPanel';
 import ExpertStage from '../ExpertStage';
 
 import styles from './styles';
 
-/* eslint-disable-next-line */
-interface IProps { } // Interfaces
+// eslint-disable-next-line @typescript-eslint/ban-types
+type IProps = { }; // Interfaces
 
 
 const SwapTrade: React.FC<IProps> = () => {
@@ -19,7 +18,6 @@ const SwapTrade: React.FC<IProps> = () => {
     React.useCallback(() => {
       setActionMode('swap');
       setDialog('Select a from token first, then enter an amount to start a trade.');
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
 
