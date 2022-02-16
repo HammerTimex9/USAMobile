@@ -9,6 +9,7 @@ import Login from './login';
 import Register from './register';
 import ResetPassworod from './reset-password';
 import OnBoadrding from './onboarding';
+import NoSafari from './NoSafari';
 import Main from '../components/App';
 import './App.scss';
 
@@ -27,12 +28,17 @@ const OnBoadrdingRoute = ({ component: Component, ...rest }) => {
   const { hasPolygon } = useNetwork();
   const hasMetamask = window.ethereum?.isMetaMask;
   const hasAddress = !!user?.get('ethAddress');
+  const idString = navigator.userAgent;
+  const isSafari =
+    (idString.indexOf('Chrome') < 0) & (idString.indexOf('Safari') > 0);
 
   return (
     <Route
       {...rest}
       render={() =>
-        !isAuthenticated ? (
+        isSafari ? (
+          <NoSafari />
+        ) : !isAuthenticated ? (
           <Redirect to="/login" />
         ) : hasMetamask && hasAddress && hasPolygon ? (
           <Redirect to="/" />

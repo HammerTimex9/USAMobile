@@ -1,40 +1,20 @@
 import React, { useEffect } from 'react';
-import { useMoralis } from 'react-moralis';
 import { Stack, Button } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 import { useExperts } from '../../contexts/expertsContext';
 import Logo from '../../components/Screens/TopNavBar/Logo';
 import { LightSwitch } from '../../components/Bits/LightSwitch';
-import { ExpertStage } from '../../components//Screens/ExpertStage';
-import { OnBoardingButton } from '../../components/Bits/OnBoardingButton';
+import { ExpertStage } from '../../components/Screens/ExpertStage';
 
-const Onboarding = () => {
-  const { user, logout } = useMoralis();
+const NoSafari = () => {
   const { setDialog } = useExperts();
-  const hasMetamask = window.ethereum?.isMetaMask;
-  const hasAddress = !!user?.get('ethAddress');
 
   useEffect(() => {
-    if (!hasMetamask) {
-      setDialog(
-        'Hello, Please click the Sign Up button if you are a new user. If you are a current user please press the Continue button.'
-      );
-    } else if (!hasAddress) {
-      setDialog(
-        "Let's equip you to explore the cryptocurrency universe. Press below for instructions"
-      );
-    } else {
-      setDialog(
-        "Let's complete your equipment for exploring the cryptocurrency universe"
-      );
-    }
-  }, [hasAddress, hasMetamask, setDialog]);
-
-  const onboardNewUser = () => {
-    logout();
-    window.open('https://www.usawallet.org/USA-Wallet-Onboarding', '_blank');
-  };
+    setDialog(
+      'USA Wallet does not support Safari.  Please use Google Chrome, FireFox, or Brave Browser.'
+    );
+  }, [setDialog]);
 
   return (
     <Stack alignItems="center" spacing={3} py={3}>
@@ -65,15 +45,28 @@ const Onboarding = () => {
         <ExpertStage />
         <Button
           variant="uw"
-          onClick={onboardNewUser}
+          onClick={window.open('https://www.google.com/chrome/', '_blank')}
           endIcon={<ArrowForwardIcon />}
         >
-          Sign Up
+          Google Chrome
         </Button>
-        <OnBoardingButton text="Continue" endIcon={<ArrowForwardIcon />} />
+        <Button
+          variant="uw"
+          onClick={window.open('https://www.mozilla.org/', '_blank')}
+          endIcon={<ArrowForwardIcon />}
+        >
+          Mozilla FireFox
+        </Button>
+        <Button
+          variant="uw"
+          onClick={window.open('https://brave.com/', '_blank')}
+          endIcon={<ArrowForwardIcon />}
+        >
+          Brave Browser
+        </Button>
       </Stack>
     </Stack>
   );
 };
 
-export default Onboarding;
+export default NoSafari;

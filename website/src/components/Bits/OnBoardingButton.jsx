@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useMoralis } from 'react-moralis';
 import MetaMaskOnboarding from '@metamask/onboarding';
 import { Button } from '@mui/material';
@@ -8,19 +8,20 @@ import { useExperts } from '../../contexts/expertsContext';
 
 const ONBOARD_TEXT = 'Click here to install MetaMask!';
 
-export function OnBoardingButton() {
+export function OnBoardingButton(props) {
   const { user } = useMoralis();
-  const [buttonText] = React.useState(ONBOARD_TEXT);
-  const [isDisabled, setDisabled] = React.useState(false);
-  const onboarding = React.useRef();
+  const [buttonText] = useState(props.text || ONBOARD_TEXT);
+  const [isDisabled, setDisabled] = useState(false);
+  const onboarding = useRef();
   const { setDialog } = useExperts();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!onboarding.current) {
       onboarding.current = new MetaMaskOnboarding();
     }
   }, []);
-  React.useEffect(() => {
+
+  useEffect(() => {
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       if (user?.attributes.ethAddress || window.ethereum.selectedAddress) {
         onboarding.current.stopOnboarding();
@@ -45,7 +46,12 @@ export function OnBoardingButton() {
     return null;
   }
   return (
-    <Button variant="uw" onClick={onClick} startIcon={<MetaMask />}>
+    <Button
+      variant="uw"
+      onClick={onClick}
+      startIcon={<MetaMask />}
+      endIcon={props.endIcon}
+    >
       {buttonText}
     </Button>
   );
