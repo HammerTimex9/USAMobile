@@ -18,6 +18,7 @@ const Portfolio = lazy(() => import('./Screens/Portfolio'));
 const SwapTrade = lazy(() => import('./Screens/SwapTrade'));
 const BuySell = lazy(() => import('./Screens/BuySell'));
 const SendReceive = lazy(() => import('./Screens/SendReceive'));
+const NoSafari = lazy(() => import('../containers/NoSafari'));
 
 const CryptoRoute = ({ component: Component, emptyPositions, ...rest }) => {
   return (
@@ -103,6 +104,9 @@ const Main = () => {
                   component={SendReceive}
                   emptyPositions={emptyPositions}
                 />
+                <Route exact path="/NoSafari">
+                  <NoSafari />
+                </Route>
                 <Redirect to="/" />
               </Switch>
             </Suspense>
