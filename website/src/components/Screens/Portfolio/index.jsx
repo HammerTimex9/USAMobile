@@ -78,7 +78,9 @@ const Portfolio = () => {
       character: 'unclesam',
       dialog:
         token?.shortDescription ||
-        'Select a currency to view transaction histories.',
+        'Select a currency to view ' +
+          token?.symbol +
+          ' transaction histories.',
     });
   }, [hoverdToken, setExpert]);
 
