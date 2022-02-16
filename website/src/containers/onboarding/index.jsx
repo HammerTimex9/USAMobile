@@ -7,6 +7,7 @@ import { useExperts } from '../../contexts/expertsContext';
 import Logo from '../../components/Screens/TopNavBar/Logo';
 import { LightSwitch } from '../../components/Bits/LightSwitch';
 import { ExpertStage } from '../../components//Screens/ExpertStage';
+import { OnBoardingButton } from '../../components/Bits/OnBoardingButton';
 
 const Onboarding = () => {
   const { user, logout } = useMoralis();
@@ -17,7 +18,7 @@ const Onboarding = () => {
   useEffect(() => {
     if (!hasMetamask) {
       setDialog(
-        "We've not equipped this browser to explore the cryptocurrency universe. Press below for instructions"
+        'Hello, Please click the Sign Up button if you are a new user. If you are a current user please press the Continue button.'
       );
     } else if (!hasAddress) {
       setDialog(
@@ -30,7 +31,7 @@ const Onboarding = () => {
     }
   }, [hasAddress, hasMetamask, setDialog]);
 
-  const handleContinueClick = () => {
+  const onboardNewUser = () => {
     logout();
     window.open('https://www.usawallet.org/USA-Wallet-Onboarding', '_blank');
   };
@@ -64,11 +65,12 @@ const Onboarding = () => {
         <ExpertStage />
         <Button
           variant="uw"
-          onClick={handleContinueClick}
+          onClick={onboardNewUser}
           endIcon={<ArrowForwardIcon />}
         >
-          Press here to continue
+          Sign Up
         </Button>
+        <OnBoardingButton text="Continue" endIcon={<ArrowForwardIcon />} />
       </Stack>
     </Stack>
   );
