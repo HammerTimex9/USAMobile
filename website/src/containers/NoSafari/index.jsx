@@ -12,7 +12,7 @@ const NoSafari = () => {
 
   useEffect(() => {
     setDialog(
-      'USA Wallet does not support Safari.  Please use Google Chrome, FireFox, or Brave Browser.'
+      'USA Wallet does not support Safari.  Please use Google Chrome or FireFox.'
     );
   }, [setDialog]);
 
@@ -56,13 +56,6 @@ const NoSafari = () => {
           endIcon={<ArrowForwardIcon />}
         >
           Mozilla FireFox
-        </Button>
-        <Button
-          variant="uw"
-          onClick={window.open('https://brave.com/', '_blank')}
-          endIcon={<ArrowForwardIcon />}
-        >
-          Brave Browser
         </Button>
       </Stack>
     </Stack>

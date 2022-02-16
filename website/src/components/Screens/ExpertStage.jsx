@@ -1,5 +1,6 @@
-import { Box } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
 import { styled } from '@mui/system';
+import { PhoneIcon } from '@chakra-ui/icons';
 
 import { useExperts } from '../../contexts/expertsContext';
 import { useNetwork } from '../../contexts/networkContext';
@@ -51,17 +52,41 @@ const Panel = styled(Box)(({ character, pose }) => ({
   },
 }));
 
+const Smashy = styled(Button)(() => ({
+  position: 'relative',
+  disply: 'flex',
+  alignItems: 'center',
+  width: 150,
+  height: 30,
+  padding: '20px',
+  marginLeft: '120px',
+  background: 'var(--fade-out-bg)',
+  boxShadow: 'var(--box-shadow)',
+  borderRadius: 40,
+  overflow: 'hidden',
+}));
+
+const handleClick = () => {
+  window.open('tel:8882116906');
+};
+
 export const ExpertStage = () => {
   const { isEnableExpert, character, pose, dialog } = useExperts();
   const { isPolygon } = useNetwork();
 
   if (isEnableExpert || !isPolygon) {
     return (
-      <Panel character={character} pose={pose}>
-        <Box className="text">
-          <span>{dialog}</span>
-        </Box>
-      </Panel>
+      <Stack>
+        <Panel character={character} pose={pose}>
+          <Box className="text">
+            <span>{dialog}</span>
+          </Box>
+        </Panel>
+        <br />
+        <Smashy onClick={handleClick}>
+          <PhoneIcon />. Call for help.
+        </Smashy>
+      </Stack>
     );
   } else {
     return null;
