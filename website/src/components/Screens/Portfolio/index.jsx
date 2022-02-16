@@ -42,8 +42,8 @@ const HeaderCell = styled('div')({
 });
 
 const Portfolio = () => {
-  const { setExpert } = useExperts();
-  const { positions } = usePositions();
+  const { setDialog, setExpert } = useExperts();
+  const { totalValue, positions } = usePositions();
   const [selectedSymbol, setSelectedSymbol] = React.useState(null);
   const [hoverdToken, setHoverdToken] = React.useState();
   const onModalClose = React.useCallback(() => setSelectedSymbol(), []);
@@ -73,6 +73,7 @@ const Portfolio = () => {
 
   useEffect(() => {
     const token = tokenList.find((t) => t.symbol === hoverdToken?.symbol);
+    console.log(token);
     setExpert({
       character: 'unclesam',
       dialog:
@@ -80,6 +81,12 @@ const Portfolio = () => {
         'Select a currency to view transaction histories.',
     });
   }, [hoverdToken, setExpert]);
+
+  useEffect(() => {
+    setDialog(
+      'Your current portfolio value is $' + totalValue.toFixed(2) + ' USD'
+    );
+  }, [setDialog, totalValue]);
 
   return (
     <Box sx={{ width: '100%', maxWidth: '450px' }}>
