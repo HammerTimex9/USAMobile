@@ -1,7 +1,7 @@
 import { Box, Stack } from '@mui/material';
 
 import { FromSelect } from '../Bits/FromSelect';
-import { AmountInput } from '../Bits/AmountInput';
+import { AmountSelect } from '../Bits/AmountSelect';
 import { StartSend } from '../Bits/StartSend';
 // Send mode.
 import { ToAddress } from '../Bits/ToAddress';
@@ -32,7 +32,7 @@ export const SendPanel = ({ changeLocalMode }) => {
       >
         <FromSelect sx={{ width: '100%', minWidth: 420 }} />
         <>
-          <AmountInput />
+          <AmountSelect />
           <ToAddress />
           <Stack sx={{ width: '100%' }} direction="row" spacing={1}>
             <StartSend changeLocalMode={changeLocalMode} />

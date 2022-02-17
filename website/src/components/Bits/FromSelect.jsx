@@ -55,18 +55,21 @@ export const FromSelect = ({ sx = {} }) => {
   };
 
   return (
-    <Box sx={[{ width: 195, textAlign: 'start' }, sx]}>
-      <label>From</label>
-      <Select
-        options={positions}
-        onChange={handleChange}
-        isSearchable={false}
-        placeholder="Select a token to act with."
-        className="react-select-container"
-        classNamePrefix="react-select"
-        value={positions.find((o) => o.symbol === symbol)}
-        getOptionLabel={(o) => o.symbol}
-      />
-    </Box>
+    <div>
+      <Box sx={[{ width: 195, textAlign: 'start' }, sx]}>
+        <label>From</label>
+        <Select
+          options={positions}
+          onChange={handleChange}
+          isSearchable={false}
+          placeholder="Token to give."
+          className="react-select-container"
+          classNamePrefix="react-select"
+          value={positions.find((o) => o.symbol === symbol)}
+          getOptionLabel={(o) => o.symbol}
+        />
+      </Box>
+      <label> .</label>
+    </div>
   );
 };
