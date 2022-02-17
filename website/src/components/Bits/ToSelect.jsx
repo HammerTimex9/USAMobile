@@ -96,7 +96,7 @@ export const ToSelect = () => {
       <Select
         options={tokens}
         onChange={handleChange}
-        placeholder="Select a token to receive."
+        placeholder="Token to receive."
         className="react-select-container"
         classNamePrefix="react-select"
         value={tokens.find((o) => o.symbol === symbol)}

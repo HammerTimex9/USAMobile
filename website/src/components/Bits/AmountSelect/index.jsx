@@ -50,6 +50,8 @@ export const AmountSelect = ({ type }) => {
         'Now using ' +
           ((100 * amount) / tokens).toFixed(0) +
           '% of your ' +
+          tokens.toPrecision(3) +
+          ' ' +
           symbol +
           ' in this action.  ' +
           'Press one of the action buttons ' +
@@ -80,6 +82,11 @@ export const AmountSelect = ({ type }) => {
     }
   };
 
+  const setByQuarters = (gain) => {
+    setAmount(gain * tokens);
+    setValue((gain * tokens).toPrecision(3));
+  };
+
   return (
     <div className="amount-select">
       <div className="amount-select-field">
@@ -105,6 +112,13 @@ export const AmountSelect = ({ type }) => {
       {amount > tokens && (
         <div className="amount-select-error">Insufficient funds.</div>
       )}
+      <label marginleft="30px" onClick={() => setByQuarters(0.25)}>
+        {' '}
+        25%{' '}
+      </label>
+      <label onClick={() => setByQuarters(0.5)}> 50% </label>
+      <label onClick={() => setByQuarters(0.75)}> 75% </label>
+      <label onClick={() => setByQuarters(1)}> Max </label>
     </div>
   );
 };
