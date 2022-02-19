@@ -8,7 +8,7 @@ import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButt
 import { useNetwork } from '../../contexts/networkContext';
 import { AddNetworkButton } from '../../components/Bits/AddNetworkButton';
 
-const useIvan = true;
+const useIvan = false;
 
 export const QuotePanel = () => {
   const { hasPolygon } = useNetwork();

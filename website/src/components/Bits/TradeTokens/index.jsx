@@ -1,30 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Box, FormControl, Tooltip } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { useMoralis } from 'react-moralis';
 
-import { useActions } from '../../contexts/actionsContext';
-import { useExperts } from '../../contexts/expertsContext';
-import { useColorMode } from '../../contexts/colorModeContext';
-import { useNetwork } from '../../contexts/networkContext';
-import { useQuote } from '../../contexts/quoteContext';
+import { useActions } from '../../../contexts/actionsContext';
+import { useExperts } from '../../../contexts/expertsContext';
+import { useColorMode } from '../../../contexts/colorModeContext';
+import { useNetwork } from '../../../contexts/networkContext';
+
+import { usePolygonNetwork } from '../../../hooks/usePolygonNetwork';
+import MetaMaskOnboarding from '@metamask/onboarding';
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const ONEINCH_API = 'https://api.1inch.io/v4.0/';
+const GENERATE_SWAP_ENDPOINT = '/swap';
 const REFERRER_ADDRESS = process.env.REACT_APP_ONEINCH_REFERRER_ADDRESS;
 const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
-export const TradeTokensWithIvan = () => {
+export const TradeTokens = () => {
   const { fromToken, toToken, txAmount } = useActions();
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
+
   const { isAuthenticated, Moralis, user } = useMoralis();
   const { network } = useNetwork();
-  const { toTokenAmount, estimatedGas } = useQuote();
+  const { switchNetworkToPolygon } = usePolygonNetwork();
+  const [provider, setProvider] = useState({});
+  const onboarding = useRef();
 
-  const [buttonText, setButtonText] = useState('Trade Tokens.');
+  const [buttonText, setButtonText] = useState('Trade Tokens');
   const [trading, setTrading] = useState(false);
   const [allowance, setAllowance] = useState('0');
   const [userAddress, setUserAddress] = useState('');
+
+  const generateSwapAPI =
+    ONEINCH_API + network.id.toString() + GENERATE_SWAP_ENDPOINT;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -37,13 +47,35 @@ export const TradeTokensWithIvan = () => {
     }
   }, [isAuthenticated, setDialog, user?.attributes]);
 
+  useEffect(() => {
+    if (!onboarding.current) {
+      onboarding.current = new MetaMaskOnboarding();
+    }
+  }, []);
+
+  async function setupProvider() {
+    if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+      console.log('MetaMask not detected! Onboarding MetaMask...');
+      onboarding.current.startOnboarding();
+    }
+    const p = await Moralis.enableWeb3();
+    setProvider(p);
+    console.log('provider:', p);
+    return p;
+  }
+
+  async function assurePolygon(provider) {
+    while (provider?.eth.getChainId() !== 137) await switchNetworkToPolygon();
+    return provider?.eth.getChainId();
+  }
+
   async function getAllowance() {
     if (fromToken?.address === undefined) {
       console.log('Attempted to get allowance without a token address.');
       return undefined;
     }
     if (fromToken?.address !== NATIVE_ADDRESS) {
-      console.log('Attempted to get allowance without a token address.');
+      console.log('Attempted to get allowance on a native token.');
       return undefined;
     }
     setDialog('Checking your token trading allowance...');
@@ -145,66 +177,94 @@ export const TradeTokensWithIvan = () => {
     }
   }
 
-  const swap = () => {
+  const prepSwapTx = () => {
     const outputText =
-      'Swapping ' +
+      'Preparing transaction to swap ' +
       txAmount / 10 ** fromToken.decimals +
       ' ' +
-      fromToken?.symbol +
-      ' for ~' +
-      (toTokenAmount / 10 ** toToken.decimals).toFixed(3) +
-      ' ' +
-      toToken?.symbol +
-      ' on ' +
-      network.name +
-      '.  Please sign this Tx in MetaMask.';
+      fromToken?.symbol.toUppperCase() +
+      ' for ' +
+      toToken?.symbol.toUpperCase() +
+      '.';
     setDialog(outputText);
+    setButtonText('Prepping Swap...');
     console.log(outputText);
-    console.log('fromToken: ', fromToken);
-    console.log('toToken: ', toToken);
-    setButtonText('Swapping...');
-    const params = {
-      chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
-      fromTokenAddress: fromToken.address || NATIVE_ADDRESS, // The token you want to swap
-      toTokenAddress: toToken.address || NATIVE_ADDRESS, // The token you want to receive
-      amount: txAmount,
-      fromAddress: userAddress, // Your wallet address
-      slippage: 1,
-      gasPrice: 2 * estimatedGas,
-      gasLimit: 4 * estimatedGas,
-      referrerAddress: REFERRER_ADDRESS,
-      fee: REFERRER_FEE,
-    };
-    console.log('swap params:', params);
-    return Moralis.Plugins.oneInch
-      .swap(params)
-      .then((receipt) => {
-        const replyText =
-          'Burned ' +
-          receipt.cumulativeGasUsed +
-          ' gas from Matic.  Trade complete!' +
-          '  Adjust settings and trade again!';
-        setDialog(replyText);
-        console.log('swap receipt:', receipt);
-        setButtonText('Trade Again!');
-        return receipt;
+    const url =
+      generateSwapAPI + '?fromTokenAddress=' + fromToken?.token_address ||
+      NATIVE_ADDRESS + '&toTokenAddress=' + toToken?.address ||
+      NATIVE_ADDRESS +
+        '&amount=' +
+        txAmount +
+        '&fromAddress=' +
+        userAddress +
+        '&slippage=' +
+        '1' +
+        '&referrerAddress=' +
+        REFERRER_ADDRESS +
+        '&fee=' +
+        REFERRER_FEE +
+        '&disableEstimate=' +
+        'false' +
+        '&allowPartialFill=' +
+        'false';
+    console.log('Swap Tx prep url:', url);
+    return fetch(url, {
+      method: 'GET',
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        setDialog('Swap Tx prepped!');
+        setButtonText('Prepped Swap Tx!');
+        console.log('Unsigned Swap Tx:', res);
+        return res;
       })
       .catch((error) => {
-        if (error.code === 4001) {
-          setDialog(
-            'Transaction canceled in MetaMask.  ' +
-              'No funds swapped.  ' +
-              'No fees charged.  ' +
-              'Adjust trade and try again.'
-          );
-          setButtonText('Redo trade.');
-          console.log('Swap transaction canceled in MetaMask.com.');
-        } else {
-          setDialog('A swap error occured: ', error);
-          console.log('swap error:', error);
-          setButtonText('Retry.');
-        }
-        setTrading(false);
+        setDialog('Swap prep error: ', error.message);
+        setButtonText('Retry');
+        console.log('Swap prep error:', error);
+      });
+  };
+
+  const signTransaction = (unsignedTx, title) => {
+    if (unsignedTx) {
+      setDialog(
+        'Please use MetaMask to approve this ' + title + ' transaction.'
+      );
+      console.log('Tx to sign:', unsignedTx);
+      return provider.eth.signTransaction(unsignedTx).catch((error) => {
+        setDialog('Tx signature error: ', error.message);
+        setButtonText('Retry');
+        console.log('Tx signature error:', error);
+      });
+    } else {
+      setDialog('Skipping signature for blank ' + title + ' transaction.');
+      setButtonText('Skipping Tx sign...');
+      console.log('Skipping Tx signature for ' + title);
+    }
+  };
+
+  const broadcastTx = (signedTx, title) => {
+    setDialog('Sending ' + title + ' to the blockchain...');
+    setButtonText('Sending...');
+    console.log('Signed Tx for broadcast:', signedTx);
+    return provider.eth
+      .sendSignedTransaction(signedTx)
+      .then((raw) => {
+        setDialog('Waiting for ' + title + ' to be mined...');
+        setButtonText('Mining...');
+        console.log('Waiting for Tx receipt...');
+        return provider.waitForTransaction(raw.hash);
+      })
+      .then((mined) => {
+        setDialog('Retrieving Tx receipt...');
+        setButtonText('Receipt...');
+        console.log('Received receipt:', mined);
+        return provider.getTransactionReceipt(mined.hash);
+      })
+      .catch((error) => {
+        setDialog('Tx send error: ', error.message);
+        setButtonText('Retry');
+        console.log('Tx send error:', error);
       });
   };
 
@@ -212,11 +272,16 @@ export const TradeTokensWithIvan = () => {
     console.log('Swap Transfer 1Inch receipt:', receipt);
   }
 
-  function handleClick() {
+  const handleClick = () => {
     setTrading(true);
     const allowance = getAllowance();
     compareAllowance(allowance);
-    swap()
+    setupProvider().then((p) => assurePolygon(p));
+    prepSwapTx()
+      .then((swapTx) => signTransaction(swapTx, 'swap'))
+      .then((signedSwapTx) =>
+        broadcastTx(signedSwapTx, 'signed swap transaction')
+      )
       .then((swapReceipt) => displaySwapReceipt(swapReceipt))
       .catch((error) => {
         setDialog('A swap process error occured: ', error);
@@ -224,15 +289,15 @@ export const TradeTokensWithIvan = () => {
         console.log('swap process error:', error);
         setTrading(false);
       });
-  }
+  };
 
   return (
     <Box style={{ marginTop: 20 }}>
       <FormControl id="allowance" fullWidth>
-        <Tooltip title="Execute trade transactions.">
+        <Tooltip title="Manage token trading allowance.">
           <span>
             <LoadingButton
-              disabled={false}
+              disabled={txAmount <= 0}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={trading}
