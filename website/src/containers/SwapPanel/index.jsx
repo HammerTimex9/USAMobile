@@ -10,12 +10,10 @@ import { AmountSelect } from '../../components/Bits/AmountSelect';
 // Swap mode.
 import { ToSelect } from '../../components/Bits/ToSelect';
 import { RequestQuote } from '../../components/Bits/RequestQuote';
-import { RequestQuoteFromIvan } from '../../components/Bits/RequestQuoteFromIvan';
 import { QuotePanel } from '../QuotePanel';
 import YouWillGet from '../../components/Bits/Youwillget';
 
 export const SwapPanel = () => {
-  const useIvan = false;
   const { fromToken, txAmount, toToken } = useActions();
   const { quoteValid, setQuote, toTokenAmount } = useQuote();
 
@@ -58,7 +56,7 @@ export const SwapPanel = () => {
         </Typography>
       )}
       {quoteValid && <QuotePanel />}
-      {useIvan ? <RequestQuoteFromIvan /> : <RequestQuote />}
+      <RequestQuote />
     </Box>
   );
 };

@@ -22,36 +22,35 @@ export const TradeTokens = () => {
   const { setDialog } = useExperts();
   const { colorMode } = useColorMode();
 
-  const { isAuthenticated, Moralis, user } = useMoralis();
+  const { Moralis } = useMoralis();
   const { network } = useNetwork();
   const { switchNetworkToPolygon } = usePolygonNetwork();
   const [provider, setProvider] = useState({});
+  const [user, setUser] = useState({});
   const onboarding = useRef();
 
   const [buttonText, setButtonText] = useState('Trade Tokens');
   const [trading, setTrading] = useState(false);
   const [allowance, setAllowance] = useState('0');
-  const [userAddress, setUserAddress] = useState('');
 
   const generateSwapAPI =
     ONEINCH_API + network.id.toString() + GENERATE_SWAP_ENDPOINT;
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      try {
-        setUserAddress(user?.attributes['ethAddress']);
-      } catch (error) {
-        setDialog('Authentication error: ', error.message);
-        console.log('TradeTokens authentication error:', error);
-      }
-    }
-  }, [isAuthenticated, setDialog, user?.attributes]);
+  console.log('REFERRER_ADDRESS:', REFERRER_ADDRESS);
+  console.log('REFERRER_FEE: ', REFERRER_FEE);
 
   useEffect(() => {
     if (!onboarding.current) {
       onboarding.current = new MetaMaskOnboarding();
     }
   }, []);
+
+  useEffect(() => {
+    Moralis.User.currentAsync().then(function (u) {
+      console.log('user:', u);
+      setUser(u);
+    });
+  }, [Moralis.User]);
 
   async function setupProvider() {
     if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
@@ -84,7 +83,7 @@ export const TradeTokens = () => {
       const allowanceReturn = await Moralis.Plugins.oneInch.hasAllowance({
         chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
         fromTokenAddress: fromToken.token_address, // The token you want to swap
-        fromAddress: userAddress, // Your wallet address
+        fromAddress: user?.attributes['ethAddress'], // Your wallet address
         amount: txAmount, // No decimals
       });
       const outputString =
@@ -120,7 +119,7 @@ export const TradeTokens = () => {
       .approve({
         chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
         tokenAddress: fromToken.address, // The token you want to swap
-        fromAddress: userAddress, // Your wallet address
+        fromAddress: user?.attributes['ethAddress'], // Your wallet address
       })
       .then((res) => {
         const replyText =
@@ -182,31 +181,30 @@ export const TradeTokens = () => {
       'Preparing transaction to swap ' +
       txAmount / 10 ** fromToken.decimals +
       ' ' +
-      fromToken?.symbol.toUppperCase() +
+      fromToken?.symbol +
       ' for ' +
-      toToken?.symbol.toUpperCase() +
+      toToken?.symbol +
       '.';
     setDialog(outputText);
     setButtonText('Prepping Swap...');
     console.log(outputText);
+    console.log('fromToken:', fromToken);
+    console.log('user:', user);
     const url =
-      generateSwapAPI + '?fromTokenAddress=' + fromToken?.token_address ||
-      NATIVE_ADDRESS + '&toTokenAddress=' + toToken?.address ||
-      NATIVE_ADDRESS +
-        '&amount=' +
-        txAmount +
-        '&fromAddress=' +
-        userAddress +
-        '&slippage=' +
-        '1' +
-        '&referrerAddress=' +
-        REFERRER_ADDRESS +
-        '&fee=' +
-        REFERRER_FEE +
-        '&disableEstimate=' +
-        'false' +
-        '&allowPartialFill=' +
-        'false';
+      generateSwapAPI +
+      '?fromTokenAddress=' +
+      (fromToken?.token_address || NATIVE_ADDRESS) +
+      '&toTokenAddress=' +
+      (toToken?.address || NATIVE_ADDRESS) +
+      '&amount=' +
+      txAmount +
+      '&fromAddress=' +
+      user?.attributes['ethAddress'] +
+      '&slippage=1&referrerAddress=' +
+      REFERRER_ADDRESS +
+      '&fee=' +
+      REFERRER_FEE +
+      '&disableEstimate=false&allowPartialFill=false';
     console.log('Swap Tx prep url:', url);
     return fetch(url, {
       method: 'GET',
@@ -222,6 +220,7 @@ export const TradeTokens = () => {
         setDialog('Swap prep error: ', error.message);
         setButtonText('Retry');
         console.log('Swap prep error:', error);
+        return undefined;
       });
   };
 
@@ -273,7 +272,7 @@ export const TradeTokens = () => {
   }
 
   const handleClick = () => {
-    setTrading(true);
+    // setTrading(true);
     const allowance = getAllowance();
     compareAllowance(allowance);
     setupProvider().then((p) => assurePolygon(p));
