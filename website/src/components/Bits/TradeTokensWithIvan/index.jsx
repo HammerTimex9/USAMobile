@@ -43,7 +43,7 @@ export const TradeTokensWithIvan = () => {
       console.log('Attempted to get allowance without a token address.');
       return undefined;
     }
-    if (fromToken?.address !== NATIVE_ADDRESS) {
+    if (fromToken?.address === NATIVE_ADDRESS) {
       console.log('Attempted to get allowance on a native token.');
       return undefined;
     }

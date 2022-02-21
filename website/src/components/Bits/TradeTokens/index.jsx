@@ -36,9 +36,6 @@ export const TradeTokens = () => {
   const generateSwapAPI =
     ONEINCH_API + network.id.toString() + GENERATE_SWAP_ENDPOINT;
 
-  console.log('REFERRER_ADDRESS:', REFERRER_ADDRESS);
-  console.log('REFERRER_FEE: ', REFERRER_FEE);
-
   useEffect(() => {
     if (!onboarding.current) {
       onboarding.current = new MetaMaskOnboarding();
@@ -64,8 +61,11 @@ export const TradeTokens = () => {
   }
 
   async function assurePolygon(provider) {
-    while (provider?.eth.getChainId() !== 137) await switchNetworkToPolygon();
-    return provider?.eth.getChainId();
+    if (provider?.eth.getChainId() !== 137) {
+      return await switchNetworkToPolygon();
+    } else {
+      return true;
+    }
   }
 
   async function getAllowance() {
@@ -74,9 +74,8 @@ export const TradeTokens = () => {
       console.log('fromToken:', fromToken);
       return undefined;
     }
-    if (fromToken?.token_address !== NATIVE_ADDRESS) {
+    if (fromToken?.token_address === NATIVE_ADDRESS) {
       console.log('Attempted to get allowance on a native token.');
-      console.log('fromToken:', fromToken);
       return undefined;
     }
     setDialog('Checking your token trading allowance...');
@@ -140,42 +139,47 @@ export const TradeTokens = () => {
   };
 
   async function compareAllowance(allowance) {
-    if (
-      fromToken?.token_address &
-      (fromToken?.token_address !== NATIVE_ADDRESS)
-    ) {
-      const offset = 10 ** fromToken.decimals;
-      const allowanceTokens = allowance / offset;
-      const txAmountTokens = txAmount / offset;
-      const comparison = allowanceTokens < txAmountTokens;
-      console.log(
-        'allowance: ' +
-          allowanceTokens +
-          ' ?>= txAmount: ' +
-          txAmountTokens +
-          ' = ' +
-          comparison
-      );
-      if (comparison) {
-        const needMore =
-          'On-chain allowance of ' +
-          allowanceTokens +
-          ' is not enough to trade ' +
-          txAmountTokens +
-          ' ' +
-          fromToken.symbol.toUpperCase() +
-          ' with.';
-        setDialog(needMore);
-        setButtonText('Unlock more...');
-        console.log(needMore);
-        await approveInfinity();
-      }
-    } else {
-      const nativeMessage = 'Native token does not have an allowance lock.';
-      setDialog(nativeMessage);
-      console.log(nativeMessage);
-      console.log('fromToken:', fromToken);
-      setButtonText('No lock...');
+    if (fromToken?.token_address === undefined) {
+      const message =
+        'Attempted to compare allowance without a fromToken address.';
+      setDialog(message);
+      setButtonText('Address error.');
+      console.log(message, fromToken);
+      return false;
+    }
+    if (fromToken?.token_address === NATIVE_ADDRESS) {
+      const message = 'Attempted to compare allowance on a native token.';
+      setDialog(message);
+      setButtonText('Native allowance?');
+      console.log(message, fromToken);
+      return true;
+    }
+
+    const offset = 10 ** fromToken.decimals;
+    const allowanceTokens = allowance / offset;
+    const txAmountTokens = txAmount / offset;
+    const comparison = allowanceTokens < txAmountTokens;
+    console.log(
+      'allowance: ' +
+        allowanceTokens +
+        ' ?>= txAmount: ' +
+        txAmountTokens +
+        ' = ' +
+        comparison
+    );
+    if (comparison) {
+      const needMore =
+        'On-chain allowance of ' +
+        allowanceTokens +
+        ' is not enough to trade ' +
+        txAmountTokens +
+        ' ' +
+        fromToken.symbol.toUpperCase() +
+        ' with.';
+      setDialog(needMore);
+      setButtonText('Unlock more...');
+      console.log(needMore);
+      return await approveInfinity();
     }
   }
 
@@ -275,31 +279,39 @@ export const TradeTokens = () => {
   }
 
   const handleClick = () => {
-    // setTrading(true);
-    const allowance = getAllowance();
-    compareAllowance(allowance);
-    setupProvider().then((p) => assurePolygon(p));
-    prepSwapTx()
-      .then((swapTx) => signTransaction(swapTx, 'swap'))
-      .then((signedSwapTx) =>
-        broadcastTx(signedSwapTx, 'signed swap transaction')
-      )
-      .then((swapReceipt) => displaySwapReceipt(swapReceipt))
+    setTrading(true);
+    Promise.all([
+      setupProvider().then(() => assurePolygon()),
+      getAllowance().then((a) => compareAllowance(a)),
+    ])
+      .then(() => {
+        prepSwapTx()
+          .then((swapTx) => signTransaction(swapTx, 'swap'))
+          .then((signedSwapTx) =>
+            broadcastTx(signedSwapTx, 'signed swap transaction')
+          )
+          .then((swapReceipt) => displaySwapReceipt(swapReceipt))
+          .catch((error) => {
+            setDialog('A swap process error occured: ', error);
+            setButtonText('Retry');
+            console.log('swap process error:', error);
+          });
+      })
       .catch((error) => {
-        setDialog('A swap process error occured: ', error);
-        setButtonText('Retry');
-        console.log('swap process error:', error);
-        setTrading(false);
+        setDialog('A Tx setup error occured: ', error);
+        setButtonText('Restart');
+        console.log('Setup error: ', error);
       });
+    setTrading(false);
   };
 
   return (
     <Box style={{ marginTop: 20 }}>
       <FormControl id="allowance" fullWidth>
-        <Tooltip title="Manage token trading allowance.">
+        <Tooltip title="Execute trade transactions.">
           <span>
             <LoadingButton
-              disabled={txAmount <= 0}
+              disabled={false}
               variant={colorMode === 'light' ? 'outlined' : 'contained'}
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={trading}
