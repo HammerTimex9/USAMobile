@@ -8,8 +8,6 @@ import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButt
 import { useNetwork } from '../../contexts/networkContext';
 import { AddNetworkButton } from '../../components/Bits/AddNetworkButton';
 
-const useIvan = false;
-
 export const QuotePanel = () => {
   const { hasPolygon } = useNetwork();
   const { setDialog } = useExperts();
@@ -24,6 +22,8 @@ export const QuotePanel = () => {
       setDialog('Press the Trade Tokens button to execute trades.');
     }
   }, [hasMetaMask, hasPolygon, setDialog]);
+
+  const useIvan = false;
 
   return (
     <Stack

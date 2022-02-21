@@ -49,7 +49,7 @@ export const TradeTokens = () => {
     });
   }, [Moralis.User]);
 
-  async function setupProvider() {
+  const setupProvider = async () => {
     if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
       console.log('MetaMask not detected! Onboarding MetaMask...');
       onboarding.current.startOnboarding();
@@ -58,17 +58,16 @@ export const TradeTokens = () => {
     setProvider(p);
     console.log('provider:', p);
     return p;
-  }
+  };
 
-  async function assurePolygon(provider) {
+  const assurePolygon = async (provider) => {
     if (provider?.eth.getChainId() !== 137) {
       return await switchNetworkToPolygon();
-    } else {
-      return true;
     }
-  }
+    return provider;
+  };
 
-  async function getAllowance() {
+  const getAllowance = async () => {
     if (fromToken?.token_address === undefined) {
       console.log('Attempted to get allowance without a token address.');
       console.log('fromToken:', fromToken);
@@ -104,18 +103,18 @@ export const TradeTokens = () => {
       setTrading(false);
       return undefined;
     }
-  }
+  };
 
   const approveInfinity = () => {
     const outputText =
       'Unlocking ' +
-      fromToken.symbol.toUppperCase() +
+      fromToken.symbol +
       ' on ' +
       network.name +
       ' to trade. Please sign in MetaMask.';
     setDialog(outputText);
     console.log(outputText);
-    setButtonText('Unlocking ' + fromToken.symbol.toUpperCase() + '...');
+    setButtonText('Unlocking ' + fromToken.symbol + '...');
     return Moralis.Plugins.oneInch
       .approve({
         chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
@@ -139,51 +138,40 @@ export const TradeTokens = () => {
   };
 
   async function compareAllowance(allowance) {
-    if (fromToken?.token_address === undefined) {
-      const message =
-        'Attempted to compare allowance without a fromToken address.';
-      setDialog(message);
-      setButtonText('Address error.');
-      console.log(message, fromToken);
-      return false;
-    }
-    if (fromToken?.token_address === NATIVE_ADDRESS) {
-      const message = 'Attempted to compare allowance on a native token.';
-      setDialog(message);
-      setButtonText('Native allowance?');
-      console.log(message, fromToken);
+    if (fromToken.token_address) {
+      const outputMessage = 'No address to check allowance lock.';
+      setDialog(outputMessage);
+      setButtonText('No fromToken address...');
+      console.log(outputMessage);
       return true;
     }
-
+    if (fromToken.token_address === NATIVE_ADDRESS) {
+      const outputMessage = 'Native token does not have an allowance lock.';
+      setDialog(outputMessage);
+      setButtonText('No lock on native...');
+      console.log(outputMessage);
+      return true;
+    }
     const offset = 10 ** fromToken.decimals;
     const allowanceTokens = allowance / offset;
     const txAmountTokens = txAmount / offset;
     const comparison = allowanceTokens < txAmountTokens;
-    console.log(
-      'allowance: ' +
-        allowanceTokens +
-        ' ?>= txAmount: ' +
-        txAmountTokens +
-        ' = ' +
-        comparison
-    );
-    if (comparison) {
-      const needMore =
-        'On-chain allowance of ' +
-        allowanceTokens +
-        ' is not enough to trade ' +
-        txAmountTokens +
-        ' ' +
-        fromToken.symbol.toUpperCase() +
-        ' with.';
-      setDialog(needMore);
-      setButtonText('Unlock more...');
-      console.log(needMore);
-      return await approveInfinity();
-    }
+    const doneMessage =
+      'On-chain allowance of ' +
+      allowanceTokens +
+      (comparison ? 'is' : 'is not') +
+      ' enough to trade ' +
+      txAmountTokens +
+      ' ' +
+      fromToken.symbol +
+      ' with.';
+    setButtonText(comparison ? 'Tokens unlocked!' : 'Need more allowance...');
+    setDialog(doneMessage);
+    console.log(doneMessage);
+    return comparison;
   }
 
-  const prepSwapTx = () => {
+  const prepSwapTx = async () => {
     const outputText =
       'Preparing transaction to swap ' +
       txAmount / 10 ** fromToken.decimals +
@@ -213,7 +201,7 @@ export const TradeTokens = () => {
       REFERRER_FEE +
       '&disableEstimate=false&allowPartialFill=false';
     console.log('Swap Tx prep url:', url);
-    return fetch(url, {
+    return await fetch(url, {
       method: 'GET',
     })
       .then((res) => res.json())
@@ -231,13 +219,13 @@ export const TradeTokens = () => {
       });
   };
 
-  const signTransaction = (unsignedTx, title) => {
+  const signTransaction = async (unsignedTx, title) => {
     if (unsignedTx) {
       setDialog(
         'Please use MetaMask to approve this ' + title + ' transaction.'
       );
       console.log('Tx to sign:', unsignedTx);
-      return provider.eth.signTransaction(unsignedTx).catch((error) => {
+      return await provider.eth.signTransaction(unsignedTx).catch((error) => {
         setDialog('Tx signature error: ', error.message);
         setButtonText('Retry');
         console.log('Tx signature error:', error);
@@ -249,11 +237,11 @@ export const TradeTokens = () => {
     }
   };
 
-  const broadcastTx = (signedTx, title) => {
+  const broadcastTx = async (signedTx, title) => {
     setDialog('Sending ' + title + ' to the blockchain...');
     setButtonText('Sending...');
     console.log('Signed Tx for broadcast:', signedTx);
-    return provider.eth
+    return await provider.eth
       .sendSignedTransaction(signedTx)
       .then((raw) => {
         setDialog('Waiting for ' + title + ' to be mined...');
@@ -280,27 +268,23 @@ export const TradeTokens = () => {
 
   const handleClick = () => {
     setTrading(true);
-    Promise.all([
-      setupProvider().then(() => assurePolygon()),
-      getAllowance().then((a) => compareAllowance(a)),
-    ])
-      .then(() => {
-        prepSwapTx()
-          .then((swapTx) => signTransaction(swapTx, 'swap'))
-          .then((signedSwapTx) =>
-            broadcastTx(signedSwapTx, 'signed swap transaction')
-          )
-          .then((swapReceipt) => displaySwapReceipt(swapReceipt))
-          .catch((error) => {
-            setDialog('A swap process error occured: ', error);
-            setButtonText('Retry');
-            console.log('swap process error:', error);
-          });
+    getAllowance()
+      .then((allowance) => compareAllowance(allowance))
+      .then((needMore) => {
+        needMore ? approveInfinity() : console.log('Moving on...');
       })
+      .then(() => setupProvider())
+      .then((p) => assurePolygon(p))
+      .then(() => prepSwapTx())
+      .then((swapTx) => signTransaction(swapTx, 'swap'))
+      .then((signedSwapTx) =>
+        broadcastTx(signedSwapTx, 'signed swap transaction')
+      )
+      .then((swapReceipt) => displaySwapReceipt(swapReceipt))
       .catch((error) => {
-        setDialog('A Tx setup error occured: ', error);
-        setButtonText('Restart');
-        console.log('Setup error: ', error);
+        setDialog('A swap process error occured: ', error);
+        setButtonText('Retry');
+        console.log('swap process error:', error);
       });
     setTrading(false);
   };

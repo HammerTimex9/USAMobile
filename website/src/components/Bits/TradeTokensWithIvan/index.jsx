@@ -39,11 +39,11 @@ export const TradeTokensWithIvan = () => {
   }, [isAuthenticated, setDialog, user?.attributes]);
 
   async function getAllowance() {
-    if (fromToken?.address === undefined) {
+    if (fromToken?.token_address === undefined) {
       console.log('Attempted to get allowance without a token address.');
       return undefined;
     }
-    if (fromToken?.address === NATIVE_ADDRESS) {
+    if (fromToken?.token_address === NATIVE_ADDRESS) {
       console.log('Attempted to get allowance on a native token.');
       return undefined;
     }
