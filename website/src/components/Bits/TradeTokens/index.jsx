@@ -69,12 +69,14 @@ export const TradeTokens = () => {
   }
 
   async function getAllowance() {
-    if (fromToken?.address === undefined) {
+    if (fromToken?.token_address === undefined) {
       console.log('Attempted to get allowance without a token address.');
+      console.log('fromToken:', fromToken);
       return undefined;
     }
-    if (fromToken?.address !== NATIVE_ADDRESS) {
+    if (fromToken?.token_address !== NATIVE_ADDRESS) {
       console.log('Attempted to get allowance on a native token.');
+      console.log('fromToken:', fromToken);
       return undefined;
     }
     setDialog('Checking your token trading allowance...');
@@ -139,8 +141,8 @@ export const TradeTokens = () => {
 
   async function compareAllowance(allowance) {
     if (
-      fromToken.token_address &
-      (fromToken.token_address !== NATIVE_ADDRESS)
+      fromToken?.token_address &
+      (fromToken?.token_address !== NATIVE_ADDRESS)
     ) {
       const offset = 10 ** fromToken.decimals;
       const allowanceTokens = allowance / offset;
@@ -172,6 +174,7 @@ export const TradeTokens = () => {
       const nativeMessage = 'Native token does not have an allowance lock.';
       setDialog(nativeMessage);
       console.log(nativeMessage);
+      console.log('fromToken:', fromToken);
       setButtonText('No lock...');
     }
   }
