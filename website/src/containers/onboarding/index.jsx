@@ -7,7 +7,8 @@ import { useExperts } from '../../contexts/expertsContext';
 import Logo from '../../components/Screens/TopNavBar/Logo';
 import { LightSwitch } from '../../components/Bits/LightSwitch';
 import { ExpertStage } from '../../components//Screens/ExpertStage';
-import { OnBoardingButton } from '../../components/Bits/OnBoardingButton';
+import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButton';
+import { AddNetworkButton } from '../../components/Bits/AddNetworkButton';
 
 const Onboarding = () => {
   const { user, logout } = useMoralis();
@@ -70,7 +71,14 @@ const Onboarding = () => {
         >
           Sign Up
         </Button>
-        <OnBoardingButton text="Continue" endIcon={<ArrowForwardIcon />} />
+        {hasMetamask ? (
+          <AddNetworkButton />
+        ) : (
+          <InstallMetaMaskButton
+            text="Continue"
+            endIcon={<ArrowForwardIcon />}
+          />
+        )}
       </Stack>
     </Stack>
   );
