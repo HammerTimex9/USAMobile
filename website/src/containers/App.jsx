@@ -8,13 +8,13 @@ import { useNetwork } from '../contexts/networkContext';
 import Login from './login';
 import Register from './register';
 import ResetPassworod from './reset-password';
-import OnBoadrding from './onboarding';
 import NoSafari from './NoSafari';
 import Main from '../components/App';
 import './App.scss';
 
 const PublicRoute = ({ component: Component, ...rest }) => {
   const { isAuthenticated } = useMoralis();
+
   return (
     <Route
       {...rest}
@@ -23,64 +23,25 @@ const PublicRoute = ({ component: Component, ...rest }) => {
   );
 };
 
-const OnBoadrdingRoute = ({ component: Component, ...rest }) => {
-  const { isAuthenticated, user } = useMoralis();
-  const { hasPolygon } = useNetwork();
-  const hasMetaMask = window.ethereum?.isMetaMask;
-  const hasMoralisAddress = !!user?.attributes.accounts;
+const PrivateRoute = ({ component: Component, ...rest }) => {
+  const { isAuthenticated } = useMoralis();
   const idString = navigator.userAgent;
   const isSafari =
     (idString.indexOf('Chrome') < 0) & (idString.indexOf('Safari') > 0);
-  const isBrave = idString.indexOf('Brave');
 
-  console.groupCollapsed('App.jsx::OnboardingRoute');
-  console.log('hasMetaMask:', hasMetaMask);
-  console.log('hasMoralisAddress:', hasMoralisAddress);
-  console.log('hasPolygon:', hasPolygon);
-  console.log('idString:', idString);
-  console.log('isSafari:', isSafari);
-  console.log('isBrave:', isBrave);
-  console.groupEnd();
+  // console.groupCollapsed('Apps.jsx::PrivateRoute()');
+  // console.log('isAuthenticated:', isAuthenticated);
+  // console.log('isSafari:', isSafari);
+  // console.groupEnd();
 
   return (
     <Route
       {...rest}
       render={() =>
         isSafari ? (
-          <NoSafari />
+          <Redirect to="/nosafari" />
         ) : !isAuthenticated ? (
-          <Redirect to="/login" />
-        ) : hasMetaMask && hasMoralisAddress && hasPolygon ? (
-          <Redirect to="/" />
-        ) : (
-          <OnBoadrding />
-        )
-      }
-    />
-  );
-};
-
-const PrivateRoute = ({ component: Component, ...rest }) => {
-  const { isAuthenticated, user } = useMoralis();
-  const { hasPolygon } = useNetwork();
-  const hasMetaMask = window.ethereum?.isMetaMask;
-  const hasMoralisAddress = !!user?.attributes.accounts;
-
-  console.groupCollapsed('Apps.jsx::PrivateRoute()');
-  console.log('isAuthenticated:', isAuthenticated);
-  console.log('hasMetaMask:', hasMetaMask);
-  console.log('hasMoralisAddress:', hasMoralisAddress);
-  console.log('user:', user);
-  console.groupEnd();
-
-  return (
-    <Route
-      {...rest}
-      render={() =>
-        !isAuthenticated ? (
-          <Redirect to="/login" />
-        ) : !hasMetaMask || !hasMoralisAddress || !hasPolygon ? (
-          <Redirect to="/onboarding" />
+          <Redirect to="/register" />
         ) : (
           <Component />
         )
@@ -90,23 +51,20 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
 };
 
 const Routers = () => {
-  const { isInitialized, isAuthenticated, user } = useMoralis();
+  const { isInitialized, isAuthenticated } = useMoralis();
   const hasMetaMask = window.ethereum?.isMetaMask;
-  const hasMoralisAddress = !!user?.attributes.accounts;
   const { hasPolygon } = useNetwork();
 
-  console.groupCollapsed('App.jsx::Routers()');
-  console.log('isInitialized:', isInitialized);
-  console.log('isAuthenticated:', isAuthenticated);
-  console.log('hasMetaMask:', hasMetaMask);
-  console.log('hasMoralisAddress:', hasMoralisAddress);
-  console.log('hasPolygon:', hasPolygon);
-  console.log('user.attributes:', user?.attributes);
-  console.groupEnd();
+  // console.groupCollapsed('App.jsx::Routers()');
+  // console.log('isInitialized:', isInitialized);
+  // console.log('isAuthenticated:', isAuthenticated);
+  // console.log('hasMetaMask:', hasMetaMask);
+  // console.log('hasPolygon:', hasPolygon);
+  // console.groupEnd();
 
   if (
     !isInitialized ||
-    (isAuthenticated && hasMetaMask && hasMoralisAddress && hasPolygon === null)
+    (isAuthenticated && hasMetaMask && hasPolygon === null)
   ) {
     return (
       <CircularProgress
@@ -126,7 +84,7 @@ const Routers = () => {
         <PublicRoute exact path="/login" component={Login} />
         <PublicRoute exact path="/register" component={Register} />
         <PublicRoute exact path="/reset-password" component={ResetPassworod} />
-        <OnBoadrdingRoute exact path="/onboarding" />
+        <PublicRoute exact path="/nosafari" component={NoSafari} />
         <PrivateRoute path="/" component={Main} />
       </Switch>
     </BrowserRouter>

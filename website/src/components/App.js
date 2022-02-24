@@ -37,7 +37,6 @@ const Main = () => {
   const { setExpert } = useExperts();
   const { isLoading } = usePositions();
   const { isPolygon } = useNetwork();
-  // const address = user?.attributes?.ethAddress;
   const hasMetamask = window.ethereum?.isMetaMask;
 
   const { switchNetworkToPolygon } = usePolygonNetwork();
@@ -53,11 +52,11 @@ const Main = () => {
 
   useEffect(() => {
     // To Debug OnBaording Issue
-    console.groupCollapsed('AppUseEffect:');
-    console.log('hasMetamask:', hasMetamask);
-    console.log('isPolygon:', isPolygon);
-    console.log('isAuthenticated:', isAuthenticated);
-    console.groupEnd();
+    // console.groupCollapsed('AppUseEffect:');
+    // console.log('hasMetamask:', hasMetamask);
+    // console.log('isPolygon:', isPolygon);
+    // console.log('isAuthenticated:', isAuthenticated);
+    // console.groupEnd();
 
     if (isAuthenticated && !isPolygon && hasMetamask && isWeb3Enabled) {
       switchNetworkToPolygon();
