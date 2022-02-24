@@ -25,7 +25,7 @@ export const TradeTokens = () => {
   const { network } = useNetwork();
   const [provider, setProvider] = useState({});
 
-  const [buttonText, setButtonText] = useState('Trade Tokens.');
+  const [buttonText, setButtonText] = useState('Trade Tokens');
   const [trading, setTrading] = useState(false);
   const [allowance, setAllowance] = useState('0');
   const [userAddress, setUserAddress] = useState('');
