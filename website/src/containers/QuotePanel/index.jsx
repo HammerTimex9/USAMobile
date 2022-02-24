@@ -1,11 +1,30 @@
-import React from 'react';
+/* eslint-disable prettier/prettier */
+import { useEffect } from 'react';
 import { Stack } from '@mui/material';
-// import { TradeTokens } from '../../components/Bits/TradeTokens';
+import { useExperts } from '../../contexts/expertsContext';
+import { TradeTokens } from '../../components/Bits/TradeTokens';
 import { TradeTokensWithIvan } from '../../components/Bits/TradeTokensWithIvan';
+import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButton';
+import { useNetwork } from '../../contexts/networkContext';
+import { AddNetworkButton } from '../../components/Bits/AddNetworkButton';
 
-// const useIvan = true;
+const useIvan = true;
 
 export const QuotePanel = () => {
+  const { hasPolygon } = useNetwork();
+  const { setDialog } = useExperts();
+  const hasMetaMask = window.ethereum?.isMetaMask;
+
+  useEffect(() => {
+    if (!hasMetaMask) {
+      setDialog('Set up MetaMask on this browser to enable trading.');
+    } else if (!hasPolygon) {
+      setDialog('Install Polygon into MetaMask to enable discount trading.');
+    } else {
+      setDialog('Press the Trade Tokens button to execute trades.');
+    }
+  }, [hasMetaMask, hasPolygon, setDialog]);
+
   return (
     <Stack
       sx={{
@@ -20,8 +39,19 @@ export const QuotePanel = () => {
       spacing={2}
     >
       <Stack direction="row">
-        {/* {useIvan ? <TradeTokensWithIvan /> : <TradeTokens />} */}
-        <TradeTokensWithIvan />
+        {hasMetaMask ? (
+          hasPolygon ? (
+            useIvan ? (
+              <TradeTokensWithIvan />
+            ) : (
+              <TradeTokens />
+            )
+          ) : (
+            <AddNetworkButton />
+          )
+        ) : (
+          <InstallMetaMaskButton />
+        )}
       </Stack>
     </Stack>
   );
