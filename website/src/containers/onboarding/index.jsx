@@ -7,29 +7,34 @@ import { useExperts } from '../../contexts/expertsContext';
 import Logo from '../../components/Screens/TopNavBar/Logo';
 import { LightSwitch } from '../../components/Bits/LightSwitch';
 import { ExpertStage } from '../../components//Screens/ExpertStage';
-import { OnBoardingButton } from '../../components/Bits/OnBoardingButton';
+import { useNetwork } from '../../contexts/networkContext';
+import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButton';
+import { AddNetworkButton } from '../../components/Bits/AddNetworkButton';
 
 const Onboarding = () => {
   const { user, logout } = useMoralis();
+  const { hasPolygon } = useNetwork();
   const { setDialog } = useExperts();
   const hasMetamask = window.ethereum?.isMetaMask;
-  const hasAddress = !!user?.get('ethAddress');
+  const hasMoralisAddress = !!user?.attributes.accounts;
 
   useEffect(() => {
     if (!hasMetamask) {
       setDialog(
-        'Hello, Please click the Sign Up button if you are a new user. If you are a current user please press the Continue button.'
+        'Please click the Sign Up button if you are a new user. If you are a current user please press the Continue button.'
       );
-    } else if (!hasAddress) {
+    } else if (!hasMoralisAddress) {
       setDialog(
-        "Let's equip you to explore the cryptocurrency universe. Press below for instructions"
+        "We've not seen this address before.  Let's equip you to explore the cryptocurrency universe. Press below for instructions"
+      );
+    } else if (!hasPolygon) {
+      setDialog(
+        'Please use the infinity button below to add Polygon to your MetaMask.'
       );
     } else {
-      setDialog(
-        "Let's complete your equipment for exploring the cryptocurrency universe"
-      );
+      setDialog('Please unlock your MetaMask to continue.');
     }
-  }, [hasAddress, hasMetamask, setDialog]);
+  }, [hasMoralisAddress, hasMetamask, setDialog, hasPolygon]);
 
   const onboardNewUser = () => {
     logout();
@@ -63,14 +68,22 @@ const Onboarding = () => {
         }}
       >
         <ExpertStage />
-        <Button
-          variant="uw"
-          onClick={onboardNewUser}
-          endIcon={<ArrowForwardIcon />}
-        >
-          Sign Up
-        </Button>
-        <OnBoardingButton text="Continue" endIcon={<ArrowForwardIcon />} />
+        {!hasMoralisAddress ? (
+          <Button
+            variant="uw"
+            onClick={onboardNewUser}
+            endIcon={<ArrowForwardIcon />}
+          >
+            Sign Up
+          </Button>
+        ) : null}
+        {!hasMetamask ? (
+          <InstallMetaMaskButton
+            text="Continue"
+            endIcon={<ArrowForwardIcon />}
+          />
+        ) : null}
+        {!hasPolygon ? <AddNetworkButton /> : null}
       </Stack>
     </Stack>
   );

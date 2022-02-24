@@ -79,7 +79,7 @@ const Portfolio = () => {
       dialog:
         token?.shortDescription ||
         'Select a currency to view ' +
-          token?.symbol +
+          (token ? token.symbol : null) +
           ' transaction histories.',
     });
   }, [hoverdToken, setExpert]);

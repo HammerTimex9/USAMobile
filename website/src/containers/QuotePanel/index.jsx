@@ -1,9 +1,9 @@
 import React from 'react';
 import { Stack } from '@mui/material';
-import { TradeTokens } from '../../components/Bits/TradeTokens';
+// import { TradeTokens } from '../../components/Bits/TradeTokens';
 import { TradeTokensWithIvan } from '../../components/Bits/TradeTokensWithIvan';
 
-const useIvan = true;
+// const useIvan = true;
 
 export const QuotePanel = () => {
   return (
@@ -20,7 +20,8 @@ export const QuotePanel = () => {
       spacing={2}
     >
       <Stack direction="row">
-        {useIvan ? <TradeTokensWithIvan /> : <TradeTokens />}
+        {/* {useIvan ? <TradeTokensWithIvan /> : <TradeTokens />} */}
+        <TradeTokensWithIvan />
       </Stack>
     </Stack>
   );

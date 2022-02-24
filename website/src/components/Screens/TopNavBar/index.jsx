@@ -7,7 +7,7 @@ import { LightSwitch } from '../../Bits/LightSwitch';
 import { AuthButton } from '../../Bits/AuthButton';
 import { ProfileAvatar } from '../../Bits/ProfileAvatar';
 import { AddNetworkButton } from '../../Bits/AddNetworkButton';
-import { OnBoardingButton } from '../../Bits/OnBoardingButton';
+import { InstallMetaMaskButton } from '../../Bits/InstallMetaMaskButton';
 import { useNetwork } from '../../../contexts/networkContext';
 import Logo from './Logo';
 
@@ -31,7 +31,7 @@ export const TopNavBar = () => {
         <LightSwitch />
         {isAuthenticated && hasMetamask && !isPolygon && <AddNetworkButton />}
         <AuthButton />
-        {isAuthenticated && <OnBoardingButton />}
+        {isAuthenticated && <InstallMetaMaskButton />}
         {isAuthenticated && <ProfileAvatar />}
       </Stack>
     </Stack>
