@@ -6,9 +6,10 @@ import { useExperts } from '../contexts/expertsContext';
 
 const CHAIN_ID = 137;
 const CHAIN_NAME = 'Polygon Mainnet';
-const CURRENCY_NAME = 'MATIC';
+const CURRENCY_NAME = 'Matic';
 const CURRENCY_SYMBOL = 'MATIC';
-const RPC_URL = 'https://polygon-rpc.com/';
+const RPC_URL =
+  'https://speedy-nodes-nyc.moralis.io/df08fdd9ffc987fa73735432/polygon/mainnet';
 const BLOCK_EXPLORER_URL = 'https://polygonscan.com/';
 
 export const usePolygonNetwork = () => {

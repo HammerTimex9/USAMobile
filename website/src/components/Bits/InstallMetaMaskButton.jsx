@@ -8,7 +8,7 @@ import { useExperts } from '../../contexts/expertsContext';
 
 const ONBOARD_TEXT = 'Click here to install MetaMask!';
 
-export function OnBoardingButton(props) {
+export function InstallMetaMaskButton(props) {
   const { user } = useMoralis();
   const [buttonText] = useState(props.text || ONBOARD_TEXT);
   const [isDisabled, setDisabled] = useState(false);
