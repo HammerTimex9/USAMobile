@@ -14,6 +14,10 @@ export const QuotePanel = () => {
   const hasMetaMask = window.ethereum?.isMetaMask;
 
   useEffect(() => {
+    console.groupCollapsed('QuotePanel::useEffect()');
+    console.log('hasMetaMask:', hasMetaMask);
+    console.log('hasPolygon:', hasPolygon);
+    console.groupEnd();
     if (!hasMetaMask) {
       setDialog('Set up MetaMask on this browser to enable trading.');
     } else if (!hasPolygon) {

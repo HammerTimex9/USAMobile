@@ -105,7 +105,7 @@ export const TradeTokens = () => {
     }
   };
 
-  const approveInfinity = () => {
+  async function approveInfinity() {
     const outputText =
       'Unlocking ' +
       fromToken.symbol +
@@ -115,30 +115,28 @@ export const TradeTokens = () => {
     setDialog(outputText);
     console.log(outputText);
     setButtonText('Unlocking ' + fromToken.symbol + '...');
-    return Moralis.Plugins.oneInch
-      .approve({
-        chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
-        tokenAddress: fromToken.address, // The token you want to swap
-        fromAddress: user?.attributes['ethAddress'], // Your wallet address
-      })
-      .then((res) => {
-        const replyText =
-          fromToken.symbol + ' on ' + network.name + ' unlocked!';
-        setDialog(replyText);
-        console.log(replyText);
-        setButtonText(fromToken.symbol + ' unlocked!');
-        return res;
-      })
-      .catch((error) => {
-        setDialog('approveInfinity error: ', error.message);
-        setButtonText('Retry');
-        console.log('approveInfinity error', error);
-        setTrading(false);
-      });
-  };
+    const props = {
+      chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
+      tokenAddress: fromToken.token_address, // The token you want to swap
+      fromAddress: user?.attributes['ethAddress'], // Your wallet address
+    };
+    console.log('props:', props);
+    try {
+      await Moralis.Plugins.oneInch.approve(props);
+      const replyText = fromToken.symbol + ' on ' + network.name + ' unlocked!';
+      setDialog(replyText);
+      console.log(replyText);
+      setButtonText(fromToken.symbol + ' unlocked!');
+    } catch (error) {
+      setDialog('approveInfinity error: ', error.message);
+      setButtonText('Retry');
+      console.log('approveInfinity error', error);
+      setTrading(false);
+    }
+  }
 
   async function compareAllowance(allowance) {
-    if (fromToken.token_address) {
+    if (!fromToken.token_address) {
       const outputMessage = 'No address to check allowance lock.';
       setDialog(outputMessage);
       setButtonText('No fromToken address...');
@@ -155,11 +153,11 @@ export const TradeTokens = () => {
     const offset = 10 ** fromToken.decimals;
     const allowanceTokens = allowance / offset;
     const txAmountTokens = txAmount / offset;
-    const comparison = allowanceTokens < txAmountTokens;
+    const comparison = allowanceTokens >= txAmountTokens;
     const doneMessage =
       'On-chain allowance of ' +
       allowanceTokens +
-      (comparison ? 'is' : 'is not') +
+      (comparison ? ' is' : ' is not') +
       ' enough to trade ' +
       txAmountTokens +
       ' ' +
@@ -270,8 +268,8 @@ export const TradeTokens = () => {
     setTrading(true);
     getAllowance()
       .then((allowance) => compareAllowance(allowance))
-      .then((needMore) => {
-        needMore ? approveInfinity() : console.log('Moving on...');
+      .then((haveEnough) => {
+        haveEnough ? console.log('Moving on...') : approveInfinity();
       })
       .then(() => setupProvider())
       .then((p) => assurePolygon(p))
