@@ -32,6 +32,7 @@ const Register = () => {
         variant="standard"
         label="Email"
         type="email"
+        autoComplete="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         sx={{ mb: 5 }}
@@ -40,6 +41,7 @@ const Register = () => {
         variant="standard"
         label="Password"
         type="password"
+        autoComplete="current-password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         sx={{ mb: '74px' }}

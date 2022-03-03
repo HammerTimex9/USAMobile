@@ -19,6 +19,7 @@ export const AddNetworkButton = () => {
     <Tooltip title="Add Polygon Network to MetaMask">
       <IconButton variant="uw" onClick={addPolygonNetwork}>
         <AllInclusiveIcon style={{ fontSize: '1em' }} />
+        Add Polygon network to MetaMask
       </IconButton>
     </Tooltip>
   );
