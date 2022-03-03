@@ -249,6 +249,7 @@ export const TradeTokens = () => {
         'Please use MetaMask to approve this ' + title + ' transaction.'
       );
       setButtonText('Tx to sign...');
+      unsignedTx.tx.gas = unsignedTx.tx.gas.toString();
       console.log('Tx to sign:', unsignedTx.tx);
       return await window.ethereum
         .request({
