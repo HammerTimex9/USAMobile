@@ -15,9 +15,9 @@ import { QuotePanel } from '../QuotePanel';
 import YouWillGet from '../../components/Bits/Youwillget';
 
 export const SwapPanel = () => {
-  const useIvan = true;
   const { fromToken, txAmount, toToken } = useActions();
   const { quoteValid, setQuote, toTokenAmount } = useQuote();
+  const useIvan = true;
 
   useEffect(() => {
     setQuote();

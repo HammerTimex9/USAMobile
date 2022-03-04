@@ -23,42 +23,44 @@ export const RequestQuote = () => {
 
   const handleClick = () => {
     setFetching(true);
-    setDialog(
-      `Estimating rates to swap ${txAmount / 10 ** fromToken?.decimals} of
-       ${fromToken?.symbol} to ${toToken?.symbol} ... `
-    );
+    const message =
+      'Estimating rates to swap ' +
+      (txAmount / 10 ** fromToken?.decimals).toPrecision(3) +
+      ' of ' +
+      fromToken?.symbol +
+      ' to ' +
+      toToken?.symbol +
+      ' ... ';
+    setDialog(message);
     const baseURL = ONEINCH4_API + '/' + network.id.toString();
     const url =
       baseURL +
       ENDPOINT +
       '?fromTokenAddress=' +
-      (fromToken?.address || NATIVE_ADDRESS) +
+      (fromToken?.token_address || NATIVE_ADDRESS) +
       '&toTokenAddress=' +
       (toToken?.address || NATIVE_ADDRESS) +
       '&fee=' +
       REFERRER_FEE.toString() +
       '&amount=' +
       txAmount.toString();
-
     fetch(url, {
       method: 'GET',
     })
       .then((response) => {
+        if (response.status !== 200) throw response;
         return response.json();
       })
       .then((response) => {
         setFetching(false);
         const now = new Date();
-        if (response.statusCode === 200) {
-          setQuote(response);
-          setDialog(
-            'Quote valid as of: ' +
-              now.toLocaleTimeString('en-US') +
-              '.  Press "Do it!" to execute trade.'
-          );
-        } else {
-          throw response;
-        }
+        setQuote(response);
+        setDialog(
+          'Quote valid as of: ' +
+            now.toLocaleTimeString('en-US') +
+            '.  Press "Do it!" to execute trade.'
+        );
+        console.log('Quote from 1Inch:', response);
       })
       .catch((error) => {
         setDialog('A network error occurred: ' + error.error);
