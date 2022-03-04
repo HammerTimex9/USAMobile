@@ -8,14 +8,16 @@ import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButt
 import { useNetwork } from '../../contexts/networkContext';
 import { AddNetworkButton } from '../../components/Bits/AddNetworkButton';
 
-const useIvan = true;
-
 export const QuotePanel = () => {
   const { hasPolygon } = useNetwork();
   const { setDialog } = useExperts();
   const hasMetaMask = window.ethereum?.isMetaMask;
 
   useEffect(() => {
+    console.groupCollapsed('QuotePanel::useEffect()');
+    console.log('hasMetaMask:', hasMetaMask);
+    console.log('hasPolygon:', hasPolygon);
+    console.groupEnd();
     if (!hasMetaMask) {
       setDialog('Set up MetaMask on this browser to enable trading.');
     } else if (!hasPolygon) {
@@ -24,6 +26,8 @@ export const QuotePanel = () => {
       setDialog('Press the Trade Tokens button to execute trades.');
     }
   }, [hasMetaMask, hasPolygon, setDialog]);
+
+  const useIvan = true;
 
   return (
     <Stack
@@ -47,7 +51,10 @@ export const QuotePanel = () => {
               <TradeTokens />
             )
           ) : (
-            <AddNetworkButton />
+            <>
+              <AddNetworkButton />
+              Add Polygon Network
+            </>
           )
         ) : (
           <InstallMetaMaskButton />

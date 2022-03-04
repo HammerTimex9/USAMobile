@@ -19,7 +19,7 @@ const SwapTrade = () => {
   useEffect(() => {
     if (isAuthenticated) {
       if (!isPolygon) {
-        setDialog('Check your Metamast and Accept Polygon Switch.');
+        setDialog('Check your MetaMask and Accept Polygon Switch.');
         switchNetworkToPolygon();
       }
     }

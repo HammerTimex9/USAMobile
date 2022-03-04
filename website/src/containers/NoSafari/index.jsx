@@ -12,7 +12,7 @@ const NoSafari = () => {
 
   useEffect(() => {
     setDialog(
-      'USA Wallet does not support Safari.  Please use Google Chrome or FireFox.'
+      'USA Wallet does not support Safari or Brave Browser.  Please use Google Chrome or FireFox.'
     );
   }, [setDialog]);
 
