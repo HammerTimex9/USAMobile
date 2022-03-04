@@ -107,7 +107,7 @@ export const TradeTokensWithIvan = () => {
       const replyText = fromToken.symbol + ' on ' + network.name + ' unlocked!';
       setDialog(replyText);
       console.log(replyText);
-      setButtonText(fromToken.symbol + ' unlocked.');
+      setButtonText(fromToken.symbol + ' unlocked!.');
       setMode('trade');
     } catch (error) {
       switch (error.code) {

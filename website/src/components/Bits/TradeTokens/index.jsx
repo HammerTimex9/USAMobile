@@ -26,14 +26,13 @@ export const TradeTokens = () => {
   const { Moralis } = useMoralis();
   const { network } = useNetwork();
   const { switchNetworkToPolygon } = usePolygonNetwork();
-  // const [provider, setProvider] = useState({});
+  const [provider, setProvider] = useState({});
   const [user, setUser] = useState({});
   const onboarding = useRef();
 
   const [buttonText, setButtonText] = useState('Trade Tokens');
   const [trading, setTrading] = useState(false);
   const [mode, setMode] = useState('allowance');
-  const [allowance, setAllowance] = useState('0');
 
   const generateSwapAPI =
     ONEINCH_API + network.id.toString() + GENERATE_SWAP_ENDPOINT;
@@ -56,10 +55,11 @@ export const TradeTokens = () => {
   }, [mode]);
 
   const setupProvider = async () => {
-    const provider = await detectEthereumProvider();
-    if (provider) {
-      console.log('provider:', provider);
-      return provider;
+    const p = await detectEthereumProvider();
+    if (p) {
+      setProvider(p);
+      console.log('provider:', p);
+      return p;
     } else {
       console.log('MetaMask not detected! Onboarding MetaMask...');
       onboarding.current.startOnboarding();
@@ -88,10 +88,12 @@ export const TradeTokens = () => {
     if (fromToken?.token_address === undefined) {
       console.log('Attempted to get allowance without a token address.');
       console.log('fromToken:', fromToken);
+      setMode('trade');
       return undefined;
     }
     if (fromToken?.token_address === NATIVE_ADDRESS) {
       console.log('Attempted to get allowance on a native token.');
+      setMode('trade');
       return undefined;
     }
     setDialog('Checking your token trading allowance...');
@@ -103,27 +105,26 @@ export const TradeTokens = () => {
       amount: txAmount, // No decimals
     };
     console.log('params: ', params);
-    try {
-      const allowanceReturn = await Moralis.Plugins.oneInch.hasAllowance(
-        params
-      );
-      const outputString =
-        'Your ' +
-        fromToken.symbol.toUpperCase() +
-        ' allowance is ' +
-        allowanceReturn;
-      setDialog(outputString);
-      setButtonText('Allowance found!');
-      console.log('allowance check:', outputString);
-      setAllowance(allowanceReturn);
-      return allowanceReturn;
-    } catch (error) {
-      setDialog('Allowance check error: ', error);
-      setButtonText('Retry');
-      console.log('getAllowance error: ', error);
-      setTrading(false);
-      return undefined;
-    }
+    return Moralis.Plugins.oneInch
+      .hasAllowance(params)
+      .then((allowanceReturn) => {
+        const outputString =
+          'Your ' +
+          fromToken.symbol.toUpperCase() +
+          ' allowance is ' +
+          allowanceReturn;
+        setDialog(outputString);
+        setButtonText('Allowance found');
+        console.log('allowance check:', outputString);
+        setMode(allowanceReturn ? 'trade' : 'allowance');
+        return allowanceReturn;
+      })
+      .catch((error) => {
+        setDialog('Allowance check error: ', error);
+        setButtonText('Retry');
+        console.log('getAllowance error: ', error);
+        return undefined;
+      });
   };
 
   async function approveInfinity() {
@@ -148,6 +149,7 @@ export const TradeTokens = () => {
       setDialog(replyText);
       console.log(replyText);
       setButtonText(fromToken.symbol + ' unlocked!');
+      setMode('trade');
     } catch (error) {
       switch (error.code) {
         case 4001:
@@ -170,43 +172,6 @@ export const TradeTokens = () => {
       setTrading(false);
       console.log('Approveal failed. ', error);
     }
-  }
-
-  async function compareAllowance(allowance) {
-    if (!fromToken.token_address) {
-      const outputMessage = 'No address to check allowance lock.';
-      setDialog(outputMessage);
-      setButtonText('No fromToken address');
-      setMode('trade');
-      console.log(outputMessage);
-      return true;
-    }
-    if (fromToken.token_address === NATIVE_ADDRESS) {
-      const outputMessage = 'Native token does not have an allowance lock.';
-      setDialog(outputMessage);
-      setButtonText('No lock on native');
-      setMode('trade');
-      console.log(outputMessage);
-      return true;
-    }
-    const offset = 10 ** fromToken.decimals;
-    const allowanceTokens = allowance / offset;
-    const txAmountTokens = txAmount / offset;
-    const comparison = allowanceTokens >= txAmountTokens;
-    const doneMessage =
-      'On-chain allowance of ' +
-      allowanceTokens +
-      (comparison ? ' is' : ' is not') +
-      ' enough to trade ' +
-      txAmountTokens +
-      ' ' +
-      fromToken.symbol +
-      ' with.';
-    setMode(comparison ? 'trade' : 'allowance');
-    setButtonText(comparison ? 'Tokens unlocked!' : 'Need more allowance');
-    setDialog(doneMessage);
-    console.log(doneMessage);
-    return comparison;
   }
 
   const prepSwapTx = async () => {
@@ -294,30 +259,30 @@ export const TradeTokens = () => {
     }
   };
 
-  // const broadcastTx = async (signedTx, title) => {
-  //   setDialog('Sending ' + title + ' to the blockchain...');
-  //   setButtonText('Sending...');
-  //   console.log('Signed Tx for broadcast:', signedTx);
-  //   return await provider.eth
-  //     .sendSignedTransaction(signedTx)
-  //     .then((raw) => {
-  //       setDialog('Waiting for ' + title + ' to be mined...');
-  //       setButtonText('Mining...');
-  //       console.log('Waiting for Tx receipt...');
-  //       return provider.waitForTransaction(raw.hash);
-  //     })
-  //     .then((mined) => {
-  //       setDialog('Retrieving Tx receipt...');
-  //       setButtonText('Receipt...');
-  //       console.log('Received receipt:', mined);
-  //       return provider.getTransactionReceipt(mined.hash);
-  //     })
-  //     .catch((error) => {
-  //       setDialog('Tx send error: ', error.message);
-  //       setButtonText('Retry');
-  //       console.log('Tx send error:', error);
-  //     });
-  // };
+  const broadcastTx = async (signedTx, title) => {
+    setDialog('Sending ' + title + ' to the blockchain...');
+    setButtonText('Sending...');
+    console.log('Signed Tx for broadcast:', signedTx);
+    return await provider.eth
+      .sendSignedTransaction(signedTx)
+      .then((raw) => {
+        setDialog('Waiting for ' + title + ' to be mined...');
+        setButtonText('Mining...');
+        console.log('Waiting for Tx receipt...');
+        return provider.waitForTransaction(raw.hash);
+      })
+      .then((mined) => {
+        setDialog('Retrieving Tx receipt...');
+        setButtonText('Receipt...');
+        console.log('Received receipt:', mined);
+        return provider.getTransactionReceipt(mined.hash);
+      })
+      .catch((error) => {
+        setDialog('Tx send error: ', error.message);
+        setButtonText('Retry');
+        console.log('Tx send error:', error);
+      });
+  };
 
   function displaySwapReceipt(receipt) {
     console.log('Swap Transfer 1Inch receipt:', receipt);
@@ -328,9 +293,8 @@ export const TradeTokens = () => {
     switch (mode) {
       case 'allowance':
         getAllowance()
-          .then((allowance) => compareAllowance(allowance))
-          .then((haveEnough) => {
-            haveEnough ? console.log('Moving on...') : approveInfinity();
+          .then((allowance) => {
+            allowance ? console.log('Moving on...') : approveInfinity();
           })
           .then(() => setupProvider())
           .then((p) => assurePolygon(p))
@@ -343,9 +307,9 @@ export const TradeTokens = () => {
       case 'trade':
         prepSwapTx()
           .then((swapTx) => signTransaction(swapTx, 'swap'))
-          // .then((signedSwapTx) =>
-          //   broadcastTx(signedSwapTx, 'signed swap transaction')
-          // )
+          .then((signedSwapTx) =>
+            broadcastTx(signedSwapTx, 'signed swap transaction')
+          )
           .then((swapReceipt) => displaySwapReceipt(swapReceipt))
           .catch((error) => {
             setDialog('A swap process error occured: ', error);
@@ -372,7 +336,7 @@ export const TradeTokens = () => {
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={trading}
               onClick={handleClick}
-              className={allowance < txAmount ? 'quote-button' : 'quote-button'}
+              className={'quote-button'}
             >
               {buttonText}
             </LoadingButton>
