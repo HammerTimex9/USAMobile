@@ -22,7 +22,6 @@ export const TradeTokensWithIvan = () => {
 
   const [buttonText, setButtonText] = useState('Trade Tokens.');
   const [trading, setTrading] = useState(false);
-  const [allowance, setAllowance] = useState('0');
   const [userAddress, setUserAddress] = useState('');
   const [mode, setMode] = useState('allowance');
 
@@ -38,45 +37,53 @@ export const TradeTokensWithIvan = () => {
   }, [isAuthenticated, setDialog, user?.attributes]);
 
   useEffect(() => {
-    setButtonText(mode === 'allowance' ? 'Check Allowance' : 'Trade');
+    setButtonText(mode === 'allowance' ? 'Check Allowance.' : 'Trade.');
   }, [mode]);
 
   async function getAllowance() {
     if (fromToken?.token_address === undefined) {
-      console.log('Attempted to get allowance without a token address.');
+      console.log(
+        'Attempted to get allowance from Ivan without a token address.'
+      );
       console.log('fromToken:', fromToken);
+      setMode('trade');
       return undefined;
     }
     if (fromToken?.token_address === NATIVE_ADDRESS) {
-      console.log('Attempted to get allowance on a native token.');
+      console.log('Attempted to get allowance from Ivan on a native token.');
+      setMode('trade');
       return undefined;
     }
-    setDialog('Checking your token trading allowance...');
-    setButtonText('Checking Allowance...');
-    try {
-      const allowanceReturn = await Moralis.Plugins.oneInch.hasAllowance({
-        chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
-        fromTokenAddress: fromToken.token_address, // The token you want to swap
-        fromAddress: userAddress, // Your wallet address
-        amount: txAmount, // No decimals
+    setDialog('Ivan is checking your token trading allowance...');
+    setButtonText('Checking Allowance.');
+    const params = {
+      chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
+      fromTokenAddress: fromToken.token_address, // The token you want to swap
+      fromAddress: userAddress, // Your wallet address
+      amount: txAmount, // No decimals
+    };
+    console.log('params: ', params);
+    return Moralis.Plugins.oneInch
+      .hasAllowance(params)
+      .then((allowanceReturn) => {
+        const outputString =
+          'Your ' +
+          fromToken.symbol.toUpperCase() +
+          ' allowance is ' +
+          allowanceReturn +
+          '.';
+        setDialog(outputString);
+        setButtonText('Allowance found.');
+        console.log('allowance check:', outputString);
+        setMode(allowanceReturn ? 'trade' : 'allowance');
+        return allowanceReturn;
+      })
+      .catch((error) => {
+        setDialog('Allowance check error: ', error);
+        setButtonText('Retry.');
+        console.log('getAllowance error: ', error);
+        return undefined;
       });
-      const outputString =
-        fromToken.symbol.toUpperCase() +
-        ' allowance is ' +
-        allowanceReturn / 10 ** fromToken.decimals +
-        '.';
-      setDialog(outputString);
-      setButtonText('Allowance found!');
-      console.log('allowance check:', outputString);
-      setAllowance(allowanceReturn);
-      return allowanceReturn;
-    } catch (error) {
-      setDialog('Allowance check error: ', error);
-      setButtonText('Retry.');
-      console.log('getAllowance error: ', error);
-      setTrading(false);
-      return undefined;
-    }
   }
 
   async function approveInfinity() {
@@ -88,7 +95,7 @@ export const TradeTokensWithIvan = () => {
       ' to trade. Please sign in MetaMask.';
     setDialog(outputText);
     console.log(outputText);
-    setButtonText('Unlocking ' + fromToken.symbol + '...');
+    setButtonText('Unlocking ' + fromToken.symbol + '.');
     const props = {
       chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
       tokenAddress: fromToken.token_address, // The token you want to swap
@@ -100,7 +107,8 @@ export const TradeTokensWithIvan = () => {
       const replyText = fromToken.symbol + ' on ' + network.name + ' unlocked!';
       setDialog(replyText);
       console.log(replyText);
-      setButtonText(fromToken.symbol + ' unlocked!');
+      setButtonText(fromToken.symbol + ' unlocked.');
+      setMode('trade');
     } catch (error) {
       switch (error.code) {
         case 4001:
@@ -125,43 +133,6 @@ export const TradeTokensWithIvan = () => {
     }
   }
 
-  async function compareAllowance(allowance) {
-    if (!fromToken.token_address) {
-      const outputMessage = 'No address to check allowance lock.';
-      setDialog(outputMessage);
-      setButtonText('No fromToken address...');
-      setMode('trade');
-      console.log(outputMessage);
-      return true;
-    }
-    if (fromToken.token_address === NATIVE_ADDRESS) {
-      const outputMessage = 'Native token does not have an allowance lock.';
-      setDialog(outputMessage);
-      setButtonText('No lock on native...');
-      setMode('trade');
-      console.log(outputMessage);
-      return true;
-    }
-    const offset = 10 ** fromToken.decimals;
-    const allowanceTokens = allowance / offset;
-    const txAmountTokens = txAmount / offset;
-    const comparison = allowanceTokens >= txAmountTokens;
-    const doneMessage =
-      'On-chain allowance of ' +
-      allowanceTokens +
-      (comparison ? ' is' : ' is not') +
-      ' enough to trade ' +
-      txAmountTokens +
-      ' ' +
-      fromToken.symbol +
-      ' with.';
-    setMode(comparison ? 'trade' : 'allowance');
-    setButtonText(comparison ? 'Tokens unlocked!' : 'Need more allowance...');
-    setDialog(doneMessage);
-    console.log(doneMessage);
-    return comparison;
-  }
-
   const swap = () => {
     const outputText =
       'Swapping ' +
@@ -179,7 +150,7 @@ export const TradeTokensWithIvan = () => {
     console.log(outputText);
     console.log('fromToken: ', fromToken);
     console.log('toToken: ', toToken);
-    setButtonText('Swapping...');
+    setButtonText('Swapping.');
     const params = {
       chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
       fromTokenAddress: fromToken.token_address || NATIVE_ADDRESS, // The token you want to swap
@@ -201,7 +172,7 @@ export const TradeTokensWithIvan = () => {
           '  Adjust settings and trade again!';
         setDialog(replyText);
         console.log('swap receipt:', receipt);
-        setButtonText('Trade Again!');
+        setButtonText('Trade Again!.');
         return receipt;
       })
       .catch((error) => {
@@ -234,13 +205,12 @@ export const TradeTokensWithIvan = () => {
     switch (mode) {
       case 'allowance':
         getAllowance()
-          .then((allowance) => compareAllowance(allowance))
-          .then((haveEnough) => {
-            haveEnough ? console.log('Moving on...') : approveInfinity();
+          .then((allowance) => {
+            allowance ? console.log('Moving on...') : approveInfinity();
           })
           .catch((error) => {
             setDialog('An allowance error occured: ', error);
-            setButtonText('Retry');
+            setButtonText('Retry.');
             console.log('swap process error:', error);
           });
         break;
@@ -249,13 +219,16 @@ export const TradeTokensWithIvan = () => {
           .then((swapReceipt) => displaySwapReceipt(swapReceipt))
           .catch((error) => {
             setDialog('A swap process error occured: ', error);
-            setButtonText('Retry');
+            setButtonText('Retry.');
             console.log('swap process error:', error);
-            setTrading(false);
           });
         break;
       default:
+        setDialog('Unknown mode: ' + mode);
+        setButtonText('Retry.');
+        console.log('Unknown mode: ', mode);
     }
+    setTrading(false);
   }
 
   return (
@@ -269,7 +242,7 @@ export const TradeTokensWithIvan = () => {
               sx={{ boxShadow: 'var(--box-shadow)' }}
               loading={trading}
               onClick={handleClick}
-              className={allowance < txAmount ? 'quote-button' : 'quote-button'}
+              className={'quote-button'}
             >
               {buttonText}
             </LoadingButton>

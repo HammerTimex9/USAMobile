@@ -95,19 +95,23 @@ export const TradeTokens = () => {
       return undefined;
     }
     setDialog('Checking your token trading allowance...');
-    setButtonText('Checking Allowance...');
+    setButtonText('Checking Allowance');
+    const params = {
+      chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
+      fromTokenAddress: fromToken.token_address, // The token you want to swap
+      fromAddress: user?.attributes['ethAddress'], // Your wallet address
+      amount: txAmount, // No decimals
+    };
+    console.log('params: ', params);
     try {
-      const allowanceReturn = await Moralis.Plugins.oneInch.hasAllowance({
-        chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
-        fromTokenAddress: fromToken.token_address, // The token you want to swap
-        fromAddress: user?.attributes['ethAddress'], // Your wallet address
-        amount: txAmount, // No decimals
-      });
+      const allowanceReturn = await Moralis.Plugins.oneInch.hasAllowance(
+        params
+      );
       const outputString =
+        'Your ' +
         fromToken.symbol.toUpperCase() +
         ' allowance is ' +
-        allowanceReturn / 10 ** fromToken.decimals +
-        '.';
+        allowanceReturn;
       setDialog(outputString);
       setButtonText('Allowance found!');
       console.log('allowance check:', outputString);
@@ -115,7 +119,7 @@ export const TradeTokens = () => {
       return allowanceReturn;
     } catch (error) {
       setDialog('Allowance check error: ', error);
-      setButtonText('Retry.');
+      setButtonText('Retry');
       console.log('getAllowance error: ', error);
       setTrading(false);
       return undefined;
@@ -131,7 +135,7 @@ export const TradeTokens = () => {
       ' to trade. Please sign in MetaMask.';
     setDialog(outputText);
     console.log(outputText);
-    setButtonText('Unlocking ' + fromToken.symbol + '...');
+    setButtonText('Unlocking ' + fromToken.symbol);
     const props = {
       chain: network.name, // The blockchain you want to use (eth/bsc/polygon)
       tokenAddress: fromToken.token_address, // The token you want to swap
@@ -162,7 +166,7 @@ export const TradeTokens = () => {
               '.  Hit Redo Allowance to try again.'
           );
       }
-      setButtonText('Redo Allowance.');
+      setButtonText('Redo Allowance');
       setTrading(false);
       console.log('Approveal failed. ', error);
     }
@@ -172,7 +176,7 @@ export const TradeTokens = () => {
     if (!fromToken.token_address) {
       const outputMessage = 'No address to check allowance lock.';
       setDialog(outputMessage);
-      setButtonText('No fromToken address...');
+      setButtonText('No fromToken address');
       setMode('trade');
       console.log(outputMessage);
       return true;
@@ -180,7 +184,7 @@ export const TradeTokens = () => {
     if (fromToken.token_address === NATIVE_ADDRESS) {
       const outputMessage = 'Native token does not have an allowance lock.';
       setDialog(outputMessage);
-      setButtonText('No lock on native...');
+      setButtonText('No lock on native');
       setMode('trade');
       console.log(outputMessage);
       return true;
@@ -199,7 +203,7 @@ export const TradeTokens = () => {
       fromToken.symbol +
       ' with.';
     setMode(comparison ? 'trade' : 'allowance');
-    setButtonText(comparison ? 'Tokens unlocked!' : 'Need more allowance...');
+    setButtonText(comparison ? 'Tokens unlocked!' : 'Need more allowance');
     setDialog(doneMessage);
     console.log(doneMessage);
     return comparison;
@@ -215,7 +219,7 @@ export const TradeTokens = () => {
       toToken?.symbol +
       '.';
     setDialog(outputText);
-    setButtonText('Prepping Swap...');
+    setButtonText('Prepping Swap');
     console.log(outputText);
     console.log('fromToken:', fromToken);
     console.log('user:', user);
@@ -257,14 +261,14 @@ export const TradeTokens = () => {
     if (!window.ethereum.isConnected()) {
       setDialog('RPC Provider is not connected.');
       console.log('PRC Provider is not connected.');
-      setButtonText('Reconnect...');
+      setButtonText('Reconnect');
       return undefined;
     }
     if (unsignedTx.tx) {
       setDialog(
         'Please use MetaMask to approve this ' + title + ' transaction.'
       );
-      setButtonText('Tx to sign...');
+      setButtonText('Tx to sign');
       unsignedTx.tx.gas = unsignedTx.tx.gas.toString();
       console.log('Tx to sign:', unsignedTx.tx);
       return await window.ethereum
@@ -285,7 +289,7 @@ export const TradeTokens = () => {
         });
     } else {
       setDialog('Skipping signature for blank ' + title + ' transaction.');
-      setButtonText('Skipping Tx sign...');
+      setButtonText('Skipping Tx sign');
       console.log('Skipping Tx signature for ' + title);
     }
   };
@@ -350,9 +354,9 @@ export const TradeTokens = () => {
           });
         break;
       default:
-        setDialog('Bad mode: ' + mode);
+        setDialog('Unknown mode: ' + mode);
         setButtonText('Retry');
-        console.log('Bad mode: ', mode);
+        console.log('Unknown mode: ', mode);
     }
     setTrading(false);
   };

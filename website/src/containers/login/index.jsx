@@ -38,7 +38,7 @@ const Login = () => {
         variant="standard"
         label="Email"
         type="email"
-        autoComplete="email"
+        autoComplete="current-email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         sx={{ mb: 5 }}
