@@ -145,10 +145,26 @@ export const TradeTokens = () => {
       console.log(replyText);
       setButtonText(fromToken.symbol + ' unlocked!');
     } catch (error) {
-      setDialog('approveInfinity error: ', error);
-      setButtonText('Retry');
-      console.log('approveInfinity error', error);
+      switch (error.code) {
+        case 4001:
+          setDialog(
+            fromToken.symbol +
+              ' trading unlock canceled.  ' +
+              'Choose another token to trade or hit Redo Allowance to continue.'
+          );
+          break;
+        default:
+          setDialog(
+            'A ' +
+              error.code +
+              ' error occured while unlocking ' +
+              fromToken.symbol +
+              '.  Hit Redo Allowance to try again.'
+          );
+      }
+      setButtonText('Redo Allowance.');
       setTrading(false);
+      console.log('Approveal failed. ', error);
     }
   }
 

@@ -27,7 +27,7 @@ export const QuotePanel = () => {
     }
   }, [hasMetaMask, hasPolygon, setDialog]);
 
-  const useIvan = false;
+  const useIvan = true;
 
   return (
     <Stack
