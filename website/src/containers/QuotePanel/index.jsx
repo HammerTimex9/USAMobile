@@ -51,7 +51,10 @@ export const QuotePanel = () => {
               <TradeTokens />
             )
           ) : (
-            <AddNetworkButton />
+            <>
+              <AddNetworkButton />
+              Add Polygon Network
+            </>
           )
         ) : (
           <InstallMetaMaskButton />
