@@ -46,6 +46,15 @@ const Register = () => {
         onChange={(e) => setPassword(e.target.value)}
         sx={{ mb: '74px' }}
       />
+      <TextField
+        variant="standard"
+        label="Confirm Password"
+        type="password"
+        autoComplete="current-password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        sx={{ mb: '74px' }}
+      />
 
       <LoadingButton
         variant="white-round"
