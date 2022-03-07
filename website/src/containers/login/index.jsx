@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import CircularProgress from '@mui/material/CircularProgress';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { styled } from '@mui/system';
@@ -18,6 +22,7 @@ const Login = () => {
   const { isAuthenticating, authError, login } = useMoralis();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState('false');
   const _email = email.trim();
   const disabled = !validateEmail(_email) || !password || isAuthenticating;
 
@@ -26,6 +31,15 @@ const Login = () => {
     if (!disabled) {
       login(_email, password, { usePost: true });
     }
+  };
+
+  const handleToggleVisiblity = (e) => {
+    e.preventDefault();
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
   };
 
   return (
@@ -46,11 +60,24 @@ const Login = () => {
       <TextField
         variant="standard"
         label="Password"
-        type="password"
+        type={passwordVisible === true ? 'text' : 'password'}
         autoComplete="current-password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         sx={{ mb: '15px' }}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="toggle password visibility"
+                onClick={handleToggleVisiblity}
+                onMouseDown={handleMouseDownPassword}
+              >
+                {passwordVisible ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
       />
       <ForgotField>
         <Link to="/reset-password">Forgot Password?</Link>
