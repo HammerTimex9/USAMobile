@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMoralis } from 'react-moralis';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -22,8 +24,6 @@ const Register = () => {
   const disabled = !validateEmail(_email) || !password || isAuthenticating;
 
   useEffect(() => {
-    console.log('passMatchError: ', passMatchError);
-    console.log('authError:', authError);
     let errorMessage = '';
     if (passMatchError.length > 3) {
       errorMessage = passMatchError + ' ';
@@ -32,19 +32,17 @@ const Register = () => {
       errorMessage = errorMessage + authError.message;
     }
     setErrMsg(errorMessage);
+    console.log('passwordVisible:', passwordVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authError, passMatchError]);
 
   const handleRegister = (e) => {
     e.preventDefault();
     if (!disabled) {
-      if (passwordCopy) {
-        if (password === passwordCopy) {
-          signup(_email, password, _email, { usePost: true });
-        } else {
-          setPassMatchError('Passwords do not match.');
-        }
+      if (password === passwordCopy) {
+        signup(_email, password, _email, { usePost: true });
       } else {
-        setPassMatchError('Please confirm your password.');
+        setPassMatchError('Passwords do not match.');
       }
     }
   };
@@ -54,33 +52,56 @@ const Register = () => {
     setPasswordVisible(!passwordVisible);
   };
 
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <AuthLayout title="Register" error={errMsg} onSubmit={handleRegister}>
       <TextField
         variant="standard"
         label="Email"
         type="email"
-        autoComplete="current-email"
+        autoComplete="email"
+        required={true}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         sx={{ mb: 5 }}
       />
+
       <TextField
         variant="standard"
         label="Password"
-        type="password"
-        autoComplete="current-password"
+        type={passwordVisible === true ? 'text' : 'password'}
+        autoComplete="new-password"
+        required={true}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="toggle password visibility"
+                onClick={handleToggleVisiblity}
+                onMouseDown={handleMouseDownPassword}
+              >
+                {passwordVisible ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
         sx={{ mb: '40px' }}
       />
+
       <TextField
         variant="standard"
         label="Confirm Password"
-        type="password"
+        type={passwordVisible === true ? 'text' : 'password'}
         autoComplete="current-password"
+        required={true}
         value={passwordCopy}
         onChange={(e) => setPasswordCopy(e.target.value)}
+        helperText={passMatchError}
         sx={{ mb: '74px' }}
       />
       <LoadingButton
