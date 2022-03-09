@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Stack } from '@mui/material';
 import { useExperts } from '../../contexts/expertsContext';
 import { TradeTokens } from '../../components/Bits/TradeTokens';
+import { TradeButtonProvider } from '../../components/Bits/TradeTokens/TradeButtonContext';
 import { TradeTokensWithIvan } from '../../components/Bits/TradeTokensWithIvan';
 import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButton';
 import { useNetwork } from '../../contexts/networkContext';
@@ -27,7 +28,7 @@ export const QuotePanel = () => {
     }
   }, [hasMetaMask, hasPolygon, setDialog]);
 
-  const useIvan = true;
+  const useIvan = false;
 
   return (
     <Stack
@@ -48,7 +49,9 @@ export const QuotePanel = () => {
             useIvan ? (
               <TradeTokensWithIvan />
             ) : (
-              <TradeTokens />
+              <TradeButtonProvider>
+                <TradeTokens />
+              </TradeButtonProvider>
             )
           ) : (
             <>

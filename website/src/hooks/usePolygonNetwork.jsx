@@ -17,16 +17,23 @@ export const usePolygonNetwork = () => {
   const { setNetworkId, setHasPolygon } = useNetwork();
   const { setDialog } = useExperts();
 
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     if (isWeb3Enabled) {
-  //       if (!isPolygon) {
-  //         switchNetworkToPolygon();
-  //       }
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isWeb3Enabled, isAuthenticated]);
+  const assurePolygon = (provider) => {
+    window.ethereum
+      .request({ method: 'net_version' })
+      .then((networkId) => {
+        if (networkId === '137') {
+          console.log('Network is Polygon.');
+          return networkId;
+        } else {
+          console.log('Not Polygon.  Attempting to switch from ', networkId);
+          return switchNetworkToPolygon();
+        }
+      })
+      .catch((error) => {
+        console.log('networkId error:', error);
+        return undefined;
+      });
+  };
 
   const switchNetworkToPolygon = (action = 'app') => {
     // To Debug issue of Switching Network
@@ -122,5 +129,5 @@ export const usePolygonNetwork = () => {
     }
   };
 
-  return { switchNetworkToPolygon, addPolygonNetwork };
+  return { assurePolygon, switchNetworkToPolygon, addPolygonNetwork };
 };

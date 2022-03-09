@@ -1,6 +1,6 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useMoralis } from 'react-moralis';
-
+import detectEthereumProvider from '@metamask/detect-provider';
 import networkList from '../data/NetworkList.json';
 
 const NetworkContext = React.createContext();
@@ -9,8 +9,10 @@ export const useNetwork = () => useContext(NetworkContext);
 
 export const NetworkProvider = (props) => {
   const { isAuthenticated, isWeb3Enabled, enableWeb3, Moralis } = useMoralis();
-  const [networkId, setNetworkId] = useState();
-  const [hasPolygon, setHasPolygon] = useState();
+  const [provider, setProvider] = useState({});
+  const [networkId, setNetworkId] = useState(0);
+  const [hasPolygon, setHasPolygon] = useState(false);
+  const onboarding = useRef();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -70,9 +72,24 @@ export const NetworkProvider = (props) => {
     });
   }, [Moralis, isAuthenticated]);
 
+  const setupProvider = async () => {
+    const p = await detectEthereumProvider();
+    if (p) {
+      setProvider(p);
+      console.log('provider:', p);
+      return p;
+    } else {
+      console.log('MetaMask not detected! Onboarding MetaMask...');
+      onboarding.current.startOnboarding();
+    }
+  };
+
   return (
     <NetworkContext.Provider
       value={{
+        provider,
+        setProvider,
+        setupProvider,
         setNetworkId,
         network: networkList[networkId],
         isPolygon: networkId === 137,

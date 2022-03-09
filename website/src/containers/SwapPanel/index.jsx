@@ -17,7 +17,7 @@ import YouWillGet from '../../components/Bits/Youwillget';
 export const SwapPanel = () => {
   const { fromToken, txAmount, toToken } = useActions();
   const { quoteValid, setQuote, toTokenAmount } = useQuote();
-  const useIvan = true;
+  const useIvan = false;
 
   useEffect(() => {
     setQuote();
