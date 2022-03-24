@@ -2,7 +2,7 @@ import { useMoralis } from 'react-moralis';
 import { useNetwork } from '../../../contexts/networkContext';
 import { useActions } from '../../../contexts/actionsContext';
 import { useExperts } from '../../../contexts/expertsContext';
-import { useTradeButton } from './TradeButtonContext';
+import { useTradeButton } from './../../../contexts/tradeButtonContext';
 
 const NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 

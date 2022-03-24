@@ -1,6 +1,6 @@
-import { useNetwork } from '../../../../../contexts/networkContext';
+import { useNetwork } from '../../networkContext';
 import { useExperts } from '../../../contexts/expertsContext';
-import { useTradeButton } from './TradeButtonContext';
+import { useTradeButton } from './../../tradeButtonContext';
 import { useActions } from '../../../contexts/actionsContext';
 
 export const useAllowance = () => {

@@ -9,6 +9,7 @@ import { PortfolioProvider } from './contexts/portfolioContext';
 import { ActionsProvider } from './contexts/actionsContext';
 import { QuoteProvider } from './contexts/quoteContext';
 import { AllowanceProvider } from './contexts/allowanceContext';
+import { OneInchProvider } from './contexts/oneInchContext';
 import App from './containers/App';
 import reportWebVitals from './components/Support/reportWebVitals';
 
@@ -25,7 +26,9 @@ ReactDOM.render(
               <ActionsProvider>
                 <QuoteProvider>
                   <AllowanceProvider>
-                    <App />
+                    <OneInchProvider>
+                      <App />
+                    </OneInchProvider>
                   </AllowanceProvider>
                 </QuoteProvider>
               </ActionsProvider>

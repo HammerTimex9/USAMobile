@@ -10,7 +10,7 @@ export const TradeButtonProvider = (props) => {
   const [mode, setMode] = useState('allowance');
 
   useEffect(() => {
-    setButtonText(mode === 'allowance' ? 'Check Allowance' : 'Trade');
+    setButtonText(mode === 'allowance' ? 'Check Allowance' : 'Execute Trade');
   }, [mode]);
 
   return (

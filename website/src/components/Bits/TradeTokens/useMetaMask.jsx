@@ -1,6 +1,6 @@
 import { useExperts } from '../../../contexts/expertsContext';
 import { useNetwork } from '../../../contexts/networkContext';
-import { useTradeButton } from './TradeButtonContext';
+import { useTradeButton } from '../../../contexts/tradeButtonContext';
 
 export const useMetaMask = () => {
   const { provider } = useNetwork();

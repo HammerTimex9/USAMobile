@@ -1,13 +1,13 @@
-import { useNetwork } from '../../../../../contexts/networkContext';
+import { useNetwork } from '../../networkContext';
 import { useExperts } from '../../../contexts/expertsContext';
-import { useTradeButton } from './TradeButtonContext';
+import { useTradeButton } from '../../tradeButtonContext';
 import { useActions } from '../../../contexts/actionsContext';
 
 export const useAllowanceTx = () => {
   const { network } = useNetwork();
   const { setDialog } = useExperts();
   const { setButtonText } = useTradeButton();
-  const { fromToken, txAmount } = useActions();
+  const { fromToken } = useActions();
   const BASEURL = 'https://api.1inch.io/v4.0/';
   const ENDPOINT = '/approve/transaction';
 
@@ -18,13 +18,7 @@ export const useAllowanceTx = () => {
     setButtonText('Prepping Allowance...');
     console.log(outputText);
     const url =
-      BASEURL +
-      network +
-      ENDPOINT +
-      '?tokenAddress=' +
-      fromToken.token_address +
-      '&amount=' +
-      txAmount;
+      BASEURL + network + ENDPOINT + '?tokenAddress=' + fromToken.token_address;
 
     return await fetch(url, {
       method: 'GET',
