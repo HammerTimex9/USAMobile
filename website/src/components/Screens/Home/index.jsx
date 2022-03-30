@@ -17,7 +17,7 @@ const Home = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {false && <NFTList />}
+      <NFTList />
       <TokenList />
     </Box>
   );

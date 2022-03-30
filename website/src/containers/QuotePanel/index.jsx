@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Stack } from '@mui/material';
 import { useExperts } from '../../contexts/expertsContext';
 import { TradeTokens } from '../../components/Bits/TradeTokens';
-import { TradeButtonProvider } from '../../contexts/tradeButtonContext';
+import { TradeButtonProvider } from '../../contexts/TradeButtonContext';
 import { TradeTokensWithIvan } from '../../components/Bits/TradeTokensWithIvan';
 import { InstallMetaMaskButton } from '../../components/Bits/InstallMetaMaskButton';
 import { useNetwork } from '../../contexts/networkContext';

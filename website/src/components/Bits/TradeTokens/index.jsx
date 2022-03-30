@@ -7,7 +7,7 @@ import { useExperts } from '../../../contexts/expertsContext';
 import { useColorMode } from '../../../contexts/colorModeContext';
 import { useNetwork } from '../../../contexts/networkContext';
 import { usePolygonNetwork } from '../../../hooks/usePolygonNetwork';
-import { useTradeButton } from '../../../contexts/tradeButtonContext';
+import { useTradeButton } from '../../../contexts/TradeButtonContext';
 import { useMetaMask } from './useMetaMask';
 import { use1Inch } from '../../../contexts/1Inch/use1Inch';
 import { useActions } from '../../../contexts/actionsContext';

@@ -1,11 +1,11 @@
 import { useNetwork } from '../../networkContext';
 import { useExperts } from '../../../contexts/expertsContext';
-import { useTradeButton } from '../../tradeButtonContext';
+import { useTradeButton } from '../../TradeButtonContext';
 
 export const useSpender = () => {
   const { network } = useNetwork();
   const { setDialog } = useExperts();
-  const { setButtonText } = useTradeButton();
+  const { setButtonText } = useTradeButton() | {};
   const BASEURL = 'https://api.1inch.io/v4.0/';
   const ENDPOINT = '/approve/spender';
 

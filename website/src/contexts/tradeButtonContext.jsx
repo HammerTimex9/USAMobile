@@ -5,8 +5,8 @@ const TradeButtonContext = React.createContext();
 export const useTradeButton = () => useContext(TradeButtonContext);
 
 export const TradeButtonProvider = (props) => {
-  const [trading, setTrading] = useState();
-  const [buttonText, setButtonText] = useState();
+  const [trading, setTrading] = useState(false);
+  const [buttonText, setButtonText] = useState('Execute Trade');
   const [mode, setMode] = useState('allowance');
 
   useEffect(() => {
