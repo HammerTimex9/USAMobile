@@ -1,6 +1,6 @@
 import { useNetwork } from '../../networkContext';
 import { useExperts } from '../../../contexts/expertsContext';
-import { useTradeButton } from '../../TradeButtonContext';
+import { useTradeButton } from '../../../contexts/TradeButtonContext';
 
 export const useSpender = () => {
   const { network } = useNetwork();
