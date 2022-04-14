@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import transakSDK from '@transak/transak-sdk';
 
-import { useExperts } from '../../contexts/expertsContext';
-import { useColorMode } from '../../contexts/colorModeContext';
+import { useExperts } from '../../../contexts/expertsContext';
+import { useColorMode } from '../../../contexts/colorModeContext';
 
-const BuySell = () => {
+const Transak = () => {
   const { setExpert, setDialog } = useExperts();
   const { colorMode } = useColorMode();
   const { Moralis } = useMoralis();
@@ -74,4 +74,4 @@ const BuySell = () => {
   return null;
 };
 
-export default BuySell;
+export default Transak;

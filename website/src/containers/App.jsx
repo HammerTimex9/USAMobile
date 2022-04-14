@@ -41,7 +41,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
         isSafari ? (
           <Redirect to="/nosafari" />
         ) : !isAuthenticated ? (
-          <Redirect to="/register" />
+          <Redirect to="/login" />
         ) : (
           <Component />
         )

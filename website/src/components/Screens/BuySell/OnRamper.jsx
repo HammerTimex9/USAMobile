@@ -3,8 +3,6 @@ import { useEffect } from 'react';
 import { useMoralis } from 'react-moralis';
 import { useExperts } from '../../contexts/expertsContext';
 
-const ONRAMPER_API_FEE = process.env.REACT_APP_ONRAMPER_API_KEY;
-
 const OnRamper = () => {
   const { user } = useMoralis();
   const { setExpert, setDialog } = useExperts();
@@ -27,7 +25,7 @@ const OnRamper = () => {
       }}
     >
       <OnramperWidget
-        API_KEY={ONRAMPER_API_FEE}
+        API_KEY={process.env.REACT_APP_ONRAMPER_API_KEY}
         defaultAddrs={wallets}
         defaultAmount={100}
         defaultCrypto={'MATIC'}
