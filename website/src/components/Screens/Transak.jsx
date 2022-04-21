@@ -5,21 +5,23 @@ import transakSDK from '@transak/transak-sdk';
 import { useExperts } from '../../contexts/expertsContext';
 import { useColorMode } from '../../contexts/colorModeContext';
 
-const BuySell = () => {
+const Transak = () => {
   const { setExpert, setDialog } = useExperts();
   const { colorMode } = useColorMode();
   const { Moralis } = useMoralis();
   const user = Moralis.User.current();
   const ethAddress = user?.attributes.ethAddress;
   const emailAddress = user?.attributes.emailAddress;
+  const apiKey = process.env.REACT_APP_TRANSAK_STAGING_API_KEY;
 
   useEffect(() => {
+    console.log('Transak API key:', apiKey);
     const transak = new transakSDK({
-      apiKey: process.env.REACT_APP_TRANSAK_API_KEY,
+      apiKey: apiKey,
       environment:
         process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'STAGING',
-      defaultCryptoCurrency: 'USDC',
-      cryptoCurrencyList: 'USDC',
+      defaultCryptoCurrency: 'MATIC',
+      cryptoCurrencyList: 'MATIC',
       walletAddress: ethAddress,
       themeColor: colorMode === 'light' ? 'D37277' : '5865C9', // Need to confirm these colors from BOB.
       fiatCurrency: 'USD',
@@ -69,9 +71,9 @@ const BuySell = () => {
     return () => {
       transak.close();
     };
-  }, [ethAddress, emailAddress, setExpert, setDialog, colorMode]);
+  }, [ethAddress, emailAddress, setExpert, setDialog, colorMode, apiKey]);
 
   return null;
 };
 
-export default BuySell;
+export default Transak;
