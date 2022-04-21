@@ -16,8 +16,8 @@ import { BottomFooter } from './Screens/BottomFooter';
 const Home = lazy(() => import('./Screens/Home'));
 const Portfolio = lazy(() => import('./Screens/Portfolio'));
 const SwapTrade = lazy(() => import('./Screens/SwapTrade'));
-//const BuySell = lazy(() => import('./Screens/BuySell'));
-const BuySell = lazy(() => import('./Screens/OnRamper'));
+const BuySell = lazy(() => import('./Screens/Transak'));
+// const BuySell = lazy(() => import('./Screens/OnRamper'));
 const SendReceive = lazy(() => import('./Screens/SendReceive'));
 const NoSafari = lazy(() => import('../containers/NoSafari'));
 
