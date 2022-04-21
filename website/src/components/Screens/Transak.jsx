@@ -12,12 +12,16 @@ const Transak = () => {
   const user = Moralis.User.current();
   const ethAddress = user?.attributes.ethAddress;
   const emailAddress = user?.attributes.emailAddress;
-  const apiKey = process.env.REACT_APP_TRANSAK_STAGING_API_KEY;
+  const staging_apiKey = process.env.REACT_APP_TRANSAK_STAGING_API_KEY;
+  const production_apiKey = process.env.REACT_APP_TRANSAK_API_KEY;
 
   useEffect(() => {
-    console.log('Transak API key:', apiKey);
+    console.log('process.env.NODE_ENV:', process.env.NODE_ENV);
     const transak = new transakSDK({
-      apiKey: apiKey,
+      apiKey:
+        process.env.NODE_ENV === 'production'
+          ? production_apiKey
+          : staging_apiKey,
       environment:
         process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'STAGING',
       defaultCryptoCurrency: 'MATIC',
@@ -71,7 +75,15 @@ const Transak = () => {
     return () => {
       transak.close();
     };
-  }, [ethAddress, emailAddress, setExpert, setDialog, colorMode, apiKey]);
+  }, [
+    ethAddress,
+    emailAddress,
+    setExpert,
+    setDialog,
+    colorMode,
+    staging_apiKey,
+    production_apiKey,
+  ]);
 
   return null;
 };
