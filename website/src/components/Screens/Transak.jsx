@@ -17,6 +17,9 @@ const Transak = () => {
 
   useEffect(() => {
     console.log('process.env.NODE_ENV:', process.env.NODE_ENV);
+    console.log('user:', user);
+    console.log('ethAddress:', ethAddress);
+    console.log('emailAddress:', emailAddress);
     const transak = new transakSDK({
       apiKey:
         process.env.NODE_ENV === 'production'
@@ -83,6 +86,7 @@ const Transak = () => {
     colorMode,
     staging_apiKey,
     production_apiKey,
+    user,
   ]);
 
   return null;
