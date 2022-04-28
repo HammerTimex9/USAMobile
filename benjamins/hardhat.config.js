@@ -13,7 +13,7 @@ require("chai");
 //require("@nomiclabs/hardhat-etherscan");
 //require("solidity-coverage");
 
-let secret = require ("./secret")
+//let secret = require ("./secret")
 
 /*
 let mnemonic = process.env.MNEMONIC
