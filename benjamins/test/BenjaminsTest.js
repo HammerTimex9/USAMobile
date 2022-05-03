@@ -36,9 +36,11 @@ let holdingTime;
 
 let benjaminsContract;
 
+// 6 decimals
 let polygonUSDC;
 const polygonUSDCaddress = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
 
+// 6 decimals
 let polygonAMUSDC;
 const polygonAMUSDCAddress = '0x1a13F4Ca1d028320A707D99520AbFefca3998b7F';
 
@@ -124,16 +126,22 @@ async function getBlockheightNow() {
   return blockHeightNow;
 }
 
+async function balUSDC(userToQuery) {
+  return (await balUSDCinCents(userToQuery) /100);
+}
+
+// xxxx recheck
+async function balAMUSDC(userToQuery) {
+  return (await balAMUSDCinCents(userToQuery) /100);
+}
+
 async function balUSDCinCents(userToQuery) {
   return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonUSDC.balanceOf(userToQuery)));
 }
 
-async function balUSDC(userToQuery) {
-  return (await balUSDCinCents(userToQuery)/100);
-}
-
-async function balAMUSDC(userToQuery) {
-  return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonAMUSDC.balanceOf(userToQuery))/100);;
+// xxxx recheck
+async function balAMUSDCinCents(userToQuery) {
+  return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonAMUSDC.balanceOf(userToQuery)));
 }
 
 async function balUSDCin6decBN(userToQuery) {
@@ -869,7 +877,7 @@ describe("Testing Benjamins", function () {
 
   });
 
-  it("Test 06. Transactions that need approvals revert when without them, as expected", async function () {
+  it("Test 06. Transactions that need approvals revert, when calling without approvals, as expected", async function () {
 
     await countAllCents(); 
 
@@ -920,7 +928,7 @@ describe("Testing Benjamins", function () {
   });
 
   
-  it("Test recount. testUser_1 mints 1100 tokens, burns in next block, no need for waiting time", async function () {   
+  it("Test 07. testUser_1 mints 1100 tokens, burns in next block, no need for waiting time", async function () {   
     
     await countAllCents(); 
 
@@ -944,7 +952,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();     
   });    
   
-  it("Test 07. Should REVERT: testUser_1 tries to burn more tokens than they have", async function () {   
+  it("Test 08. Should REVERT: testUser_1 tries to burn more tokens than they have", async function () {   
     
     await countAllCents(); 
 
@@ -963,7 +971,7 @@ describe("Testing Benjamins", function () {
     await countAllCents(); 
   }); 
 
-  it("Test 08. Token price should go up, following the bonding curve", async function () {  
+  it("Test 09. Token price should go up, following the bonding curve", async function () {  
 
     await countAllCents(); 
 
@@ -1005,7 +1013,7 @@ describe("Testing Benjamins", function () {
   
 
   
-  it("Test 09. account levels are not triggered by minting", async function () {   
+  it("Test 10. account levels are not triggered by minting", async function () {   
 
     // Preparation mint
     await testMinting(200000, deployer, deployer);   
@@ -1036,7 +1044,7 @@ describe("Testing Benjamins", function () {
 
   
   
-  it("Test 10. It is possible to mint tokens to another account", async function () {   
+  it("Test 11. It is possible to mint tokens to another account", async function () {   
 
     await countAllCents();
 
@@ -1064,7 +1072,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
   });  
   
-  it("Test 11. It is possible to burn tokens and reward the USDC to another account", async function () {   
+  it("Test 12. It is possible to burn tokens and reward the USDC to another account", async function () {   
 
     await countAllCents();
 
@@ -1102,7 +1110,7 @@ describe("Testing Benjamins", function () {
   }); 
   
   
-  it("Test 12. It is possible to transfer tokens", async function () {   
+  it("Test 13. It is possible to transfer tokens", async function () {   
 
     await countAllCents();  
 
@@ -1135,8 +1143,8 @@ describe("Testing Benjamins", function () {
 
     await countAllCents();
   });  
-
-  it("Test 13. It is possible to use transferFrom on tokens", async function () {
+  
+  it("Test 14. It is possible to use transferFrom on tokens", async function () {
  
     await countAllCents();
 
@@ -1173,7 +1181,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
   });  
   
-  it("Test 14. There is no holding period on transfering BNJI that are not locked", async function () {   
+  it("Test 15. There is no holding period on transfering BNJI that are not locked", async function () {   
 
     await countAllCents();
 
@@ -1205,7 +1213,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
   });  
   
-  it("Test recount14. Minting, burning, upgrading and downgrading accounts emit events as expected", async function () {   
+  it("Test 16. Minting, burning, upgrading and downgrading accounts emit events as expected", async function () {   
 
     // minting 1000 BNJI to caller     
     const amountToApproveIn6dec_forMint = await calcMintApprovalAndPrep(1000);   
@@ -1217,10 +1225,7 @@ describe("Testing Benjamins", function () {
     await expect( benjaminsContract.connect(testUser_1_Signer).mint(1000))
     .to.emit(benjaminsContract, 'Exchanged')
     .withArgs(true, testUser_1, testUser_1, 1000, beforeFeeCalcInUSDCin6decMint, feeInUSDCin6decMint);  
-
-    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec);
     
-
     // upgrading to account level 1 and confirming event was emitted as expected
     const blockBeforeIncrease = await getBlockheightNow();   
     const lockupTimestampExpected = (blockBeforeIncrease+1) + holdingTime;
@@ -1248,13 +1253,13 @@ describe("Testing Benjamins", function () {
     .to.emit(benjaminsContract, 'Exchanged')
     .withArgs(false, testUser_1, testUser_1, 1000, beforeFeeCalcInUSDCin6decBurn, feeInUSDCin6decBurn);  
 
-    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec); */
+    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec); 
 
 
 
   });  
   
-  it("Test 15. Account upgrades starting from level 0 work as expected", async function () {   
+  it("Test 17. Account upgrades starting from level 0 work as expected", async function () {   
     
     await countAllCents();
 
@@ -1330,7 +1335,7 @@ describe("Testing Benjamins", function () {
   });  
 
   
-  it("Test 16. Account upgrades starting from level 1 work as expected", async function () {   
+  it("Test 18. Account upgrades starting from level 1 work as expected", async function () {   
     
     await countAllCents();
 
@@ -1581,7 +1586,7 @@ describe("Testing Benjamins", function () {
   });
 
 
-  it("Test 23. Account downgrades starting from level 0 are reverted as expected", async function () {   
+  it("Test 21. Account downgrades starting from level 0 are reverted as expected", async function () {   
     await countAllCents();
     
     await addUserAccDataPoints(testUser_1);    
@@ -1601,7 +1606,7 @@ describe("Testing Benjamins", function () {
 
 
   
-  it("Test 24. Account level changes are effective immediately after decreasing the account level", async function () {   
+  it("Test 22. Account level changes are effective immediately after decreasing the account level", async function () {   
 
     await countAllCents();
     
@@ -1638,7 +1643,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
   });  
  
-  it("Test 25. Downgrading accounts is not triggrered by burning", async function () { 
+  it("Test 23. Downgrading accounts is not triggrered by burning", async function () { 
 
     await countAllCents();
     await addUserAccDataPoints(testUser_1);
@@ -1674,7 +1679,7 @@ describe("Testing Benjamins", function () {
     
   });
   
-  it("Test 26. Minting-, burning-, increase- and decrease- functions can't be called with a value of 0", async function () { 
+  it("Test 24. Minting-, burning-, increase- and decrease- functions can't be called with a value of 0", async function () { 
     await countAllCents();
     await addUserAccDataPoints(testUser_1);
     expect(await balBNJI(testUser_1)).to.equal(0); 
@@ -1713,7 +1718,7 @@ describe("Testing Benjamins", function () {
   });
   
    
-  it.only("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
+  it("Test 25. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
     
     await countAllCents();
 
@@ -1740,7 +1745,7 @@ describe("Testing Benjamins", function () {
     await countAllCents();
   });
 
-  it.skip("Test 28. Mixed use example, shows that functions do not hinder each other and work as expected", async function () { 
+  it("Test 26. Mixed use example, shows that functions do not hinder each other and work as expected", async function () { 
 
     await countAllCents();
 
@@ -1813,7 +1818,9 @@ describe("Testing Benjamins", function () {
     const toWithdrawRoundedIn6dec = multiplyFromUSDCcentsTo6dec(roundedToCents);   
         
     await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawRoundedIn6dec);  
-       
+    
+    
+    // xxxx fix here, AMUSDC are tricky
     const balAMUSDCD_feeReceiver_end = await balAMUSDC(feeReceiver);    
     expect(balAMUSDCD_feeReceiver_end).to.equal(balAMUSDCD_feeReceiver_start + (dividefrom6decToUSDCcents(toWithdrawRoundedIn6dec)/100));  
 
@@ -1849,7 +1856,7 @@ describe("Testing Benjamins", function () {
   });
   
     
-  it("Test last0. testing setters and getters", async function () { 
+  it("Test 27. testing setters and getters", async function () { 
 
     const feeReceiver_BeforeChange = await benjaminsContract.getFeeReceiver();
     expect(feeReceiver_BeforeChange).to.equal(feeReceiver);         
@@ -1982,7 +1989,7 @@ describe("Testing Benjamins", function () {
   });
 
     
-  it("Test recountlast0. testing setters and getters, while contract is paused", async function () { 
+  it("Test 28. testing setters and getters, while contract is paused", async function () { 
 
     // owner activates pause()
     await benjaminsContract.connect(deployerSigner).pause(); 
@@ -2110,7 +2117,7 @@ describe("Testing Benjamins", function () {
 
   });
 
-  it("Test last1. Activating pause() should lock public access to chosen functions, but allow owner", async function () { 
+  it("Test 29. Activating pause() should lock public access to chosen functions, but allow owner", async function () { 
     
     await countAllCents();
 
@@ -2354,7 +2361,7 @@ describe("Testing Benjamins", function () {
   });
 
   
-  it("Test last2 Owner can withdraw MATIC tokens that were sent to the contract directly, by mistake", async function () { 
+  it("Test 30. Owner can withdraw MATIC tokens that were sent to the contract directly, by mistake", async function () { 
 
     await countAllCents(); 
 
@@ -2388,7 +2395,7 @@ describe("Testing Benjamins", function () {
     await countAllCents(); 
   });    
 
-  it("Test last3 Owner can use cleanERC20Tips to withdraw ERC20 tokens that were sent to contract by mistake - but not USDC, amUSDC or BNJI", async function () { 
+  it("Test 31. Owner can use cleanERC20Tips to withdraw ERC20 tokens that were sent to contract by mistake - but not USDC, amUSDC or BNJI", async function () { 
   
     await countAllCents(); 
 
@@ -2453,7 +2460,7 @@ describe("Testing Benjamins", function () {
 
   });  
   
-  it("Test last4. Owner can add additional funds to contract's amUSDC balance", async function () { 
+  it("Test 32. Owner can add additional funds to contract's amUSDC balance", async function () { 
     
     // Note: Not using countAllCents here, as some USDC will be converted into amUSDC, which can't be tracked the same way.
 
@@ -2474,5 +2481,5 @@ describe("Testing Benjamins", function () {
 
   });
 
-
+  
 }); 

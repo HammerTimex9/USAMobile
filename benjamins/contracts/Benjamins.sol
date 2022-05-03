@@ -456,12 +456,12 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
   // Returns amount of BNJI needed to get locked up per account level
   function getneededBNJIperLevel() public view whenAvailable returns (uint256 amountNeededBNJIperLevel) {
-    return neededBNJIperLevel;           
+    return neededBNJIperLevel;
   }
 
   // Returns minimum holding time after getting account levels (format is blocks)
   function getHoldingTime() public view whenAvailable returns (uint256 holdingTimeNow) {
-    return holdingTime;           
+    return holdingTime;
   }
 
   // Returns baseFee, format is percent multiplied by 10,000
