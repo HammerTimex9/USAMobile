@@ -452,14 +452,16 @@ async function calcBurnVariables(amountToBurn, isTransfer) {
 }
 
 async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expectedStartingLevel) {
+
+  // temp
+  const blockheightbefore = await getBlockheightNow();
   
   const callingAccSigner = await ethers.provider.getSigner(callingAccAddress);
   const costInBNJI = (amountOfLevelsToGet*neededBNJIperLevel);
 
   const beforeLevelIncrease_BNJIbal_User = await balBNJI(callingAccAddress);
   const beforeLevelIncrease_BNJIbal_Contract = await balBNJI(benjaminsContract.address);  
-
-  const beforeLevelIncrease_AmountOfBlocksToWait = await howLongUntilUnlock(callingAccAddress);
+  
   const beforeLevelIncrease_UsersUnlockTimestamp = await getUnlockTimestamp(callingAccAddress);  
 
   const beforeLevelIncrease_UsersLockedBNJI = await lockedBalanceOf(callingAccAddress);
@@ -482,7 +484,7 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   
   const afterLevelIncrease_LockedBNJIExpected = afterLevelIncrease_UsersAccountLevel * neededBNJIperLevel;
 
-  // updated unlock timestamp and amount of blocks to wait should now be updated, relating to new account level
+  // updated unlock timestamp and amount of blocks to wait should now be updated
   const afterLevelIncrease_AmountOfBlocksToWaitExpected = holdingTime;
   const afterLevelIncrease_UnlockTimestampExpected = blockheightNow + afterLevelIncrease_AmountOfBlocksToWaitExpected;
   
@@ -496,9 +498,9 @@ async function testIncreaseLevel(callingAccAddress, amountOfLevelsToGet, expecte
   // the same amount should now be added to the benjaminsContract's balance of unlocked BNJI
   expect(afterLevelIncrease_BNJIbal_Contract).to.equal(beforeLevelIncrease_BNJIbal_Contract + costInBNJI);  
   
-  // unlock timestamp and amount of blocks to wait should be updated (increased) by when increasing level
+  // unlock timestamp should be updated (increased) when increasing level
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.be.greaterThan(beforeLevelIncrease_UsersUnlockTimestamp);
-  expect(afterLevelIncrease_AmountOfBlocksToWait).to.be.greaterThan(beforeLevelIncrease_AmountOfBlocksToWait);  
+  
   // unlock timestamp and amount of blocks to wait should now be calculated relating to new account level
   expect(afterLevelIncrease_AmountOfBlocksToWait).to.equal(afterLevelIncrease_AmountOfBlocksToWaitExpected);  
   expect(afterLevelIncrease_UsersUnlockTimestamp).to.equal(afterLevelIncrease_UnlockTimestampExpected);  
@@ -1349,7 +1351,7 @@ describe("Testing Benjamins", function () {
     await testIncreaseLevel(testUser_1, 1, 1);  
     
     await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(0); 
+    expect(await balBNJI(testUser_1)).to.equal(1990); 
 
     const expectedUser1Levels    = [0,0, 1, 2];      
     confirmUserDataPoints(testUser_1, expectedUser1Levels);
@@ -1358,47 +1360,43 @@ describe("Testing Benjamins", function () {
 
     // Preparation: testUser_2 gets account level 1  
     await addUserAccDataPoints(testUser_2); 
-
     // minting 3000 BNJI to caller
     await testMinting(3000, testUser_2, testUser_2);   
     await addUserAccDataPoints(testUser_2); 
-    expect(await balBNJI(testUser_2)).to.equal(3000); 
-    
+    expect(await balBNJI(testUser_2)).to.equal(3000);     
     // upgrading to account level 1
     await testIncreaseLevel(testUser_2, 1, 0); 
     await addUserAccDataPoints(testUser_2);   
-    expect(await balBNJI(testUser_2)).to.equal(2000); 
+    expect(await balBNJI(testUser_2)).to.equal(2995); 
     
     // testUser_2 upgrades from account level 1 to 3
     await testIncreaseLevel(testUser_2, 2, 1);  
     await addUserAccDataPoints(testUser_2);   
-    expect(await balBNJI(testUser_2)).to.equal(0); 
+    expect(await balBNJI(testUser_2)).to.equal(2985); 
 
     const expectedUser2Levels    = [0,0, 1, 3];
-        confirmUserDataPoints(testUser_2, expectedUser2Levels);
+    confirmUserDataPoints(testUser_2, expectedUser2Levels);
 
     await countAllCents();
 
     // Preparation: testUser_3 gets account level 1  
     await addUserAccDataPoints(testUser_3); 
-
     // minting 4000 BNJI to caller
     await testMinting(4000, testUser_3, testUser_3);   
     await addUserAccDataPoints(testUser_3); 
-    expect(await balBNJI(testUser_3)).to.equal(4000); 
-    
+    expect(await balBNJI(testUser_3)).to.equal(4000);     
     // upgrading to account level 1
     await testIncreaseLevel(testUser_3, 1, 0); 
     await addUserAccDataPoints(testUser_3);   
-    expect(await balBNJI(testUser_3)).to.equal(3000); 
+    expect(await balBNJI(testUser_3)).to.equal(3995); 
         
-    // testUser_3 cannot upgrade from account level 1 to above 3, reverts
-    await expect( testIncreaseLevel(testUser_3, 3, 1) ).to.be.reverted;  
+    // testUser_3 upgrades from account level 1 to 4
+    await testIncreaseLevel(testUser_3, 3, 1);  
     
     await addUserAccDataPoints(testUser_3);   
-    expect(await balBNJI(testUser_3)).to.equal(3000); 
+    expect(await balBNJI(testUser_3)).to.equal(3980); 
 
-    const expectedUser3Levels    = [0,0, 1, 1];    
+    const expectedUser3Levels    = [0,0, 1, 4];    
     confirmUserDataPoints(testUser_3, expectedUser3Levels);
 
     await countAllCents();
@@ -1427,13 +1425,13 @@ describe("Testing Benjamins", function () {
     // upgrading to account level 2
     await testIncreaseLevel(testUser_1, 1, 1);  
     
-    expect(await balBNJI(testUser_1)).to.equal(1600); 
+    expect(await balBNJI(testUser_1)).to.equal(3590); 
     await addUserAccDataPoints(testUser_1); 
 
     // upgrading to account level 3
     await testIncreaseLevel(testUser_1, 1, 2);  
 
-    expect(await balBNJI(testUser_1)).to.equal(600); 
+    expect(await balBNJI(testUser_1)).to.equal(3585); 
     await addUserAccDataPoints(testUser_1); 
 
     const expectedUser1Levels =     [0,0, 1, 2, 3];   
@@ -1525,7 +1523,7 @@ describe("Testing Benjamins", function () {
     await testIncreaseLevel(testUser_1, 3, 0);  
     
     await addUserAccDataPoints(testUser_1);   
-    expect(await balBNJI(testUser_1)).to.equal(0); 
+    expect(await balBNJI(testUser_1)).to.equal(2985); 
 
     await expect( testDecreaseLevel(testUser_1, 3, 3) ).to.be.revertedWith(
       "Minimum holding time has not passed yet, levels can't be decreased now. You can check howManyBlocksUntilUnlock"
@@ -1665,9 +1663,9 @@ describe("Testing Benjamins", function () {
     // burning 2000 tokens, returns go to caller, no needed holding times
     await testBurning(2000, testUser_1, testUser_1, false);    
     await addUserAccDataPoints(testUser_1);  
-    expect(await balBNJI(testUser_1)).to.equal(0);       
+    expect(await balBNJI(testUser_1)).to.equal(2985);       
     const lockedBNJI_afterBurnUnlocked = bigNumberToNumber( await benjaminsContract.lockedBalanceOf(testUser_1) ); 
-    expect(lockedBNJI_afterBurnUnlocked).to.equal(3000);      
+    expect(lockedBNJI_afterBurnUnlocked).to.equal(15);      
 
     const expectedUser1Levels    = [0,0, 3, 3];
     confirmUserDataPoints(testUser_1, expectedUser1Levels);   
@@ -1715,7 +1713,7 @@ describe("Testing Benjamins", function () {
   });
   
    
-  it.skip("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
+  it.only("Test 28. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
     
     await countAllCents();
 

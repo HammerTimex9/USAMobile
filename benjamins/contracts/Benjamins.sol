@@ -28,7 +28,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   IERC20 public polygonAMUSDC;                  // Aave's amUSDC crypto currency on Polygon
   address public feeReceiver;                   // beneficiary address for collected fees
 
-  uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor  
+  uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor
   uint256 private USDCscaleFactor =    1000000; // 6 decimals scale of USDC crypto currency
   uint256 private USDCcentsScaleFactor = 10000; // 4 decimals scale of USDC crypto currency cents
   uint256 public blocksPerDay;                  // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
@@ -134,7 +134,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
 
     // setting blocksPerDay, curveFactor and baseFeeTimes10k 
-    blocksPerDay =        2; 
+    blocksPerDay =        2; // xxxx switch to correct amount of blocksPerDay
     curveFactor =   8000000;       
     baseFeeTimes10k = 10000;    
 
