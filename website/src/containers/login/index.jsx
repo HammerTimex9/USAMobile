@@ -19,17 +19,31 @@ const ForgotField = styled('div')({
 });
 
 const Login = () => {
-  const { isAuthenticating, authError, login } = useMoralis();
+  const { authenticate, isAuthenticated, isAuthenticating, authError, login } =
+    useMoralis();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState('false');
   const _email = email.trim();
   const disabled = !validateEmail(_email) || !password || isAuthenticating;
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!disabled) {
+      console.log('login:handleLogin() executing login()...');
       login(_email, password, { usePost: true });
+      console.log('login done. Authenticating...'); // BC total hack.
+      if (!isAuthenticated) {
+        authenticate({
+          signingMessage: 'Authenticate your MetaMask to USAWallet.',
+        })
+          .then((user) => {
+            console.log('Authenticated.');
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     }
   };
 
