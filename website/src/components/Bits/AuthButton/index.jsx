@@ -9,7 +9,7 @@ import { WalletSvg } from '../../../assets/icons';
 export const AuthButton = () => {
   const history = useHistory();
   const { authenticate, isAuthenticated, logout } = useMoralis();
-  const [buttonText, setButtonText] = useState('Log Out');
+  const [buttonText, setButtonText] = useState();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,9 +27,11 @@ export const AuthButton = () => {
         let confirmationMessage = 'o/';
         (e || window.event).returnValue = confirmationMessage;
         if (isAuthenticated) {
+          console.log('AuthButton: authenticatd.');
           logout();
         } else {
-          authenticate({ signingMessage: 'Log in using Moralis' })
+          console.log('AuthButton: not authenticated.');
+          authenticate({ signingMessage: 'Authenticate into USA Wallet' })
             .then(function (user) {
               console.log('logged in user:', user);
               console.log('User address:', user.get('ethAddress'));
@@ -43,6 +45,18 @@ export const AuthButton = () => {
     };
   });
 
+  const handleClick = (e) => {
+    console.log('Authentication button clicked.');
+    if (isAuthenticated()) {
+      authenticate().then((user) => {
+        console.log('Authenticated to address:', user.get('ethAddress'));
+      });
+    } else {
+      console.log('...logging user out of Moralis session.');
+      logout();
+    }
+  };
+
   return (
     <Tooltip title="Log out of USA Wallet.">
       <Button
@@ -54,7 +68,7 @@ export const AuthButton = () => {
             <WalletSvg style={{ fontSize: 22 }} />
           )
         }
-        onClick={() => logout()}
+        onClick={() => handleClick}
       >
         {buttonText}
       </Button>

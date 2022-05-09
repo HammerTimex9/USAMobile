@@ -6,6 +6,7 @@ import 'keen-slider/keen-slider.min.css';
 
 import { useNetwork } from '../contexts/networkContext';
 import Login from './login';
+import CryptoLogin from './crypto-login';
 import Register from './register';
 import ResetPassworod from './reset-password';
 import NoSafari from './NoSafari';
@@ -82,6 +83,7 @@ const Routers = () => {
     <BrowserRouter>
       <Switch>
         <PublicRoute exact path="/login" component={Login} />
+        <PublicRoute exact path="/authenticate" component={CryptoLogin} />
         <PublicRoute exact path="/register" component={Register} />
         <PublicRoute exact path="/reset-password" component={ResetPassworod} />
         <PublicRoute exact path="/nosafari" component={NoSafari} />

@@ -7,6 +7,7 @@ import { useMoralis } from 'react-moralis';
 
 import { ReactComponent as MetaMask } from '../../media/icons/metamask.svg';
 import { usePolygonNetwork } from '../../hooks/usePolygonNetwork';
+import { AuthButton } from '../../components/Bits/AuthButton';
 import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 
 const ONBOARD_TEXT = 'Add MetaMask to your browser';
@@ -53,6 +54,7 @@ const CryptoLogin = () => {
         >
           {polygonButtonText}
         </Button>
+        <AuthButton />
       </Stack>
     </Stack>
   );
