@@ -36,6 +36,7 @@ let loopCounterTotal = 0;
 let mintCounterTotal = 0;
 let burnCounterTotal = 0;
 let not5USDCworthCounter = 0;
+let not5USDarray = [];
 
 // estimates of USDC cents spent and returned during runMintOrBurnLoop
 let totalSpentInCents = 0;
@@ -129,16 +130,24 @@ async function getMaticBalance(adress) {
   return balanceInMATIC;
 }
 
-function getRoundedFee(userLevel, principalInUSDCcents){    
-  const feeModifier = (100 * baseFee * (100-levelDiscountsArray[userLevel])) /10000;
-  const feeStarterInCents = ((principalInUSDCcents * feeModifier ) /100);   
-  const feeInCentsRoundedDown = feeStarterInCents - (feeStarterInCents % 1);
-  return feeInCentsRoundedDown  
+function getRoundedFee(principalInUSDCcents){   
+  /* 
+    const feeModifier = (100 * baseFee * (100-levelDiscountsArray[userLevel])) /10000;
+    const feeStarterInCents = ((principalInUSDCcents * feeModifier ) /100);   
+    const feeInCentsRoundedDown = feeStarterInCents - (feeStarterInCents % 1);
+    return feeInCentsRoundedDown      
+  */
+  const unroundedFee = principalInUSDCcents / 100;
+  const roundedFee = unroundedFee - (unroundedFee % 1);
+
+  // 1% fee 
+  return roundedFee;
 }
 
 async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
     
-  const callingAccUSDCBalanceBeforeMintInCents = await balUSDCinCents(callingAccAddress);  
+  const callingAccUSDCBalanceBeforeMintInCents = await balUSDCinCents(callingAccAddress); 
+  console.log('testMinting callingAccUSDCBalanceBeforeMintInCents', callingAccUSDCBalanceBeforeMintInCents); 
   const feeReceiverUSDCBalanceBeforeMintInCents = await balUSDCinCents(feeReceiver); 
     
   // allowing benjaminsContract to handle USDC for ${callingAcc}   
@@ -163,7 +172,7 @@ async function testMinting(amountToMint, callingAccAddress, receivingAddress) {
   const feeReceiverUSDCBalanceAfterMintInCents = await balUSDCinCents(feeReceiver);   
  
   const callingAccMintPricePaidInCents = callingAccUSDCBalanceBeforeMintInCents - callingAccUSDCBalanceAfterMintInCents;
-
+  console.log('callingAccMintPricePaidInCents', callingAccMintPricePaidInCents);
   const feeReceiverUSDCdiffMintInCents = feeReceiverUSDCBalanceAfterMintInCents - feeReceiverUSDCBalanceBeforeMintInCents;     
 
 
@@ -257,21 +266,24 @@ async function calcMintApprovalAndPrep(amountToMint, accountMinting) {
   const amountOfTokensBeforeMint = bigNumberToNumber(await benjaminsContract.totalSupply());
   const amountOfTokensAfterMint = Number (amountOfTokensBeforeMint) + Number (amountToMint);  
 
-  const userLevel = bigNumberToNumber (await benjaminsContract.getUsersDiscountLevel(accountMinting));  
+  //const userLevel = bigNumberToNumber (await benjaminsContract.getUsersDiscountLevel(accountMinting));  
  
   // starting with minting costs, then rounding down to cents
   const mintingCostinUSDC = ((amountOfTokensAfterMint * amountOfTokensAfterMint) - (amountOfTokensBeforeMint * amountOfTokensBeforeMint)) / curveFactor;
   const mintingCostInCents = mintingCostinUSDC * 100;
+  console.log('calcMintApprovalAndPrep mintingCostInCents', mintingCostInCents);
   const mintingCostRoundedDownInCents = mintingCostInCents - (mintingCostInCents % 1);
-
-  const mintFeeInCentsRoundedDown = getRoundedFee(userLevel, mintingCostRoundedDownInCents);  
-  
+  console.log('calcMintApprovalAndPrep mintingCostRoundedDownInCents', mintingCostRoundedDownInCents);
+  const mintFeeInCentsRoundedDown = getRoundedFee(mintingCostRoundedDownInCents);  
+  console.log('calcMintApprovalAndPrep mintFeeInCentsRoundedDown', mintFeeInCentsRoundedDown);
   // results, toPayTotalInUSDC can be displayed to user
   const toPayTotalInCents = mintingCostRoundedDownInCents + mintFeeInCentsRoundedDown; 
   const toPayTotalIn6dec = toPayTotalInCents * 10000;    
 
   tokensShouldExistNowGlobalV = amountOfTokensAfterMint;
   mintPriceTotalInUSDCcentsShouldBeNowGlobalV = toPayTotalInCents;
+  console.log('calcMintApprovalAndPrep mintPriceTotalInUSDCcentsShouldBeNowGlobalV', mintPriceTotalInUSDCcentsShouldBeNowGlobalV);
+  console.log('calcMintApprovalAndPrep toPayTotalInCents', toPayTotalInCents);
   mintFeeInUSDCcentsShouldBeNowGlobalV = mintFeeInCentsRoundedDown;
   mintAllowanceInUSDCCentsShouldBeNowGlobalV = toPayTotalInCents;  
 
@@ -283,13 +295,13 @@ async function calcBurnVariables(amountToBurn, accountBurning, isTransfer=false)
   const amountOfTokensBeforeBurn = bigNumberToNumber(await benjaminsContract.totalSupply());  
   const amountOfTokensAfterBurn = amountOfTokensBeforeBurn - amountToBurn;
  
-  const userLevel = bigNumberToNumber (await benjaminsContract.getUsersDiscountLevel(accountBurning));   
+  //const userLevel = bigNumberToNumber (await benjaminsContract.getUsersDiscountLevel(accountBurning));   
   
   const burnReturnInUSDC = ( (amountOfTokensBeforeBurn * amountOfTokensBeforeBurn) - (amountOfTokensAfterBurn * amountOfTokensAfterBurn) ) / curveFactor;
   const burnReturnInCents = burnReturnInUSDC * 100;
   const burnReturnRoundedDownInCents = burnReturnInCents - (burnReturnInCents % 1);  
   
-  const burnFeeInCentsRoundedDown = getRoundedFee(userLevel, burnReturnRoundedDownInCents); 
+  const burnFeeInCentsRoundedDown = getRoundedFee(burnReturnRoundedDownInCents); 
 
   const toReceiveTotalInCents = burnReturnRoundedDownInCents - burnFeeInCentsRoundedDown;  
   
@@ -371,9 +383,11 @@ async function minimizedMint(){
   const totalSupplyAfterMinting = Math.sqrt((currencyToSpendNow * curveFactor) + (totalSupplyExisting * totalSupplyExisting));
 
   const tokensMintingNow = totalSupplyAfterMinting - totalSupplyExisting;
-
+  console.log(tokensMintingNow,'minimizedMint, trying to mint this amount of BNJIs, not rounded');
+  console.log((500/tokensMintingNow),'this is price per BNJI in cents');
   const roundedToInteger = Math.ceil(tokensMintingNow);
-  //console.log(roundedToInteger,'trying to mint this amount of BNJIs');
+  console.log(roundedToInteger,'minimizedMint, rounded up');
+  console.log(Math.floor(tokensMintingNow),'minimizedMint, rounded down, not used');
   return roundedToInteger;
 
 }
@@ -386,13 +400,17 @@ async function minimizedBurn() {
   const currencyToBePaidOutNow = 5.05;   // this means burning for $5 each time
   const totalSupplyExisting = await benjaminsContract.totalSupply(); 
 
-  if (totalSupplyExisting < 2000) {not5USDCworthCounter += 1};
+  if (totalSupplyExisting < 6234) {
+    not5USDCworthCounter += 1;
+    not5USDarray.push(loopCounterTotal);
+    console.log('XXxxXxXXXXXXXXXXx less than $5 worth of tokens heeeeereeeeeeeeeeee ----------------------------------------------------');
+  };
 
-    const totalSupplyAfterBurning = Math.sqrt( (totalSupplyExisting * totalSupplyExisting) - (currencyToBePaidOutNow * curveFactor) );
+  const totalSupplyAfterBurning = Math.sqrt( (totalSupplyExisting * totalSupplyExisting) - (currencyToBePaidOutNow * curveFactor) );
 
-    const tokensToBurnNow = totalSupplyExisting - totalSupplyAfterBurning;
+  const tokensToBurnNow = totalSupplyExisting - totalSupplyAfterBurning;
 
-    const roundedToInteger = Math.ceil(tokensToBurnNow);
+  const roundedToInteger = Math.ceil(tokensToBurnNow);
   
   return roundedToInteger;
 
@@ -412,6 +430,9 @@ async function runMintOrBurnLoop(loopsToRun, runMint, accNow, testNr, sellAll, b
     // if runMint == true, mint. 
     if (runMint == true) {
       
+
+      console.log(`--------- Starting ${testNr}, operation nr: ${loopCounter} MINT --------- `);
+
       // randomizing amount to mint
       let minAmountMinting = await minimizedMint();       
             
@@ -424,6 +445,8 @@ async function runMintOrBurnLoop(loopsToRun, runMint, accNow, testNr, sellAll, b
       await testMinting(minAmountMinting, accNow, accNow);
 
       totalSpentInCents += mintAllowanceInUSDCCentsWasNowGlobalV;  
+
+      console.log(`--------- End ${testNr}, operation nr: ${loopCounter} MINT --------- `);
 
     }   
       
@@ -455,7 +478,8 @@ async function runMintOrBurnLoop(loopsToRun, runMint, accNow, testNr, sellAll, b
   mintCounterTotal += mintCounter;
   burnCounterTotal += burnCounter;
   
-  console.log(`test ran ${loopCounterTotal} loops so far, of which ${mintCounterTotal} were mints and ${burnCounterTotal} were burns. ${not5USDCworthCounter} time(s), less than $5 of tokens existed`); 
+  console.log(`test ran ${loopCounterTotal} loops so far, of which ${mintCounterTotal} were mints and ${burnCounterTotal} were burns.`);
+  console.log(` ${not5USDCworthCounter} time(s), less than $5 of tokens existed, in loops number: ${not5USDarray}. If only in loop 100, means all tokens were burned correctly in loop 99.`); 
   console.log(`estimate: so far, roughly ${totalSpentInCents/100} USDC were spent by the testusers (excl. deployer) and ${totalReturnedInCents/100} USDC were paid out by the contract in total`);   
 
   const protocolBalanceAfterTestInCents = dividefrom6decToUSDCcents( bigNumberToNumber (await polygonAmUSDC.balanceOf(benjaminsContract.address)) );
@@ -624,7 +648,7 @@ describe("Small Amounts Test", function () {
     //await testMinting(889000, deployer, deployer);
   })      
 
-  it("Preparation and verification: ", async function () {    
+  it.only("Preparation and verification: ", async function () {    
     
     // taking snapshot of all USDC cents in the accounts of testUser_1, feeReceiver and benjaminsContract
     await countAllCents();
@@ -635,7 +659,7 @@ describe("Small Amounts Test", function () {
     
   });  
   
-  it("1.: Small amount test: 100 mints", async function () {        
+  it.only("1.: Small amount test: 100 mints", async function () {        
     await runMintOrBurnLoop(100, true, testUser_1, 'Test 1', false, 0);
     await countAllCents();    
     waitFor(4000);
@@ -690,10 +714,10 @@ describe("Small Amounts Test", function () {
     waitFor(4000);
   });
   
-  it("10.: Small amounts test: 100 burns, last loop burns all remaining tokens", async function () {  
+  it.only("10.: Small amounts test: 100 burns, last loop burns all remaining tokens", async function () {  
     await runMintOrBurnLoop(100, false, testUser_1, 'Test 10', true, 99);
     await countAllCents();
-    expect(await benjaminsContract.getUsersDiscountLevel(testUser_1)).to.equal(0);
+    //expect(await benjaminsContract.getUsersDiscountLevel(testUser_1)).to.equal(0);
     console.log((await balUSDCinCents(testUser_1)/100), 'end balance of testUser_1 in USDC');
     
     const totalSupplyExistingAtEnd = bigNumberToNumber(await benjaminsContract.totalSupply()); 

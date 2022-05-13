@@ -72,10 +72,10 @@ function findUsernameForAddress(addressToLookup){
     }   
   }  
 }; 
-
+/*
 async function getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray) {
   let holdingTimesInDaysWithBNs = [];
-  holdingTimesInDaysWithBNs = await benjaminsContract.connect(deployerSigner).getHoldingTimes();
+  holdingTimesInDaysWithBNs = await benjaminsContract.connect(deployerSigner).getHoldingTime();
   holdingTimesInDays = [];
 
   for (let index = 0; index < holdingTimesInDaysWithBNs.length; index++) {     
@@ -93,7 +93,7 @@ async function getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray) {
     levelDiscountsArray.push(bigNumberToNumber(contractsDiscountArrayWithBNs[index]));
     expect(levelDiscountsArray[index]).to.equal(expectedDiscountsArray[index]); 
   }
-}
+}*/
 
 async function balUSDCinCents(userToQuery) {
   return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonUSDC.balanceOf(userToQuery)));
@@ -549,11 +549,11 @@ describe("Benjamins, testing large amounts", function () {
     // Get neededBNJIperLevel into this testing suite
     neededBNJIperLevel = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getneededBNJIperLevel());
  
-    const expectedHoldingTimesArray  =  [0, 30, 90, 300];
-    await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray);
+    //const expectedHoldingTimesArray  =  [0, 30, 90, 300];
+    //await getContractsHoldingTimesArrayAndConfirmIt(expectedHoldingTimesArray);
 
-    const expectedDiscountsArray = [0, 10, 25,  50]; 
-    await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray);
+    //const expectedDiscountsArray = [0, 10, 25,  50]; 
+    //await getContractsDiscountArrayAndConfirmIt(expectedDiscountsArray);
 
     polygonUSDC = new ethers.Contract(
       polygonUSDCaddress,

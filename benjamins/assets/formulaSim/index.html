@@ -21,14 +21,14 @@
     --------
     formula for burning a specified amount of tokens
     totalSupplyafterBurning = totalSupplyBeforeBurning - amountOfTokensBurningNow
-    totalCurrencyForTokensBurningNow = ( (totalSupplyBeforeBurning ^2) - (totalSupplyafterBurning ^2) ) / 800000
+    totalCurrencyForTokensBurningNow = ( (totalSupplyBeforeBurning ^2) - (totalSupplyafterBurning ^2) ) / 8000000
     --------
     formula for minting for a specified amount of currency (totalPriceForTokensMintingNow) :
-    totalSupplyAfterMinting = SquareRootOf ( (totalPriceForTokensMintingNow * 800000) + (totalSupplyBeforeMinting ^2) )
+    totalSupplyAfterMinting = SquareRootOf ( (totalPriceForTokensMintingNow * 8000000) + (totalSupplyBeforeMinting ^2) )
     tokenAmountMintingNow = totalSupplyAfterMinting - totalSupplyBeforeMinting
     --------
     formula for burning to get a specified amount of currency
-    totalSupplyafterBurning = SquareRootOf ( (totalSupplyBeforeBurning ^2) - (totalCurrencyForTokensBurningNow * 800000) )
+    totalSupplyafterBurning = SquareRootOf ( (totalSupplyBeforeBurning ^2) - (totalCurrencyForTokensBurningNow * 8000000) )
     amountOfTokensBurningNow = totalSupplyBeforeBurning - totalSupplyafterBurning
   
   -->
@@ -117,7 +117,7 @@
       tokensMintingNow = $("#tokensMintingNowInputField").val();
       tokensExistAtEnd = Number(tokensExistAtStart) + Number(tokensMintingNow);
 
-      totalPriceForTokensMintingNow = (((tokensExistAtEnd * tokensExistAtEnd)) - ((tokensExistAtStart * tokensExistAtStart))) / 800000;
+      totalPriceForTokensMintingNow = (((tokensExistAtEnd * tokensExistAtEnd)) - ((tokensExistAtStart * tokensExistAtStart))) / 8000000;
       $(`#showResultHere`).html(`Price before fee (math curve response): ` + totalPriceForTokensMintingNow);
 
 
@@ -155,7 +155,7 @@
       tokensBurningNow = $("#tokensBurningNowInputField").val();
       tokensExistAfterBurning = Number(tokensExistBeforeBurning) - Number(tokensBurningNow);
 
-      totalCurrencyForTokensBurningNow = ((tokensExistBeforeBurning * tokensExistBeforeBurning) - (tokensExistAfterBurning * tokensExistAfterBurning)) / 800000;
+      totalCurrencyForTokensBurningNow = ((tokensExistBeforeBurning * tokensExistBeforeBurning) - (tokensExistAfterBurning * tokensExistAfterBurning)) / 8000000;
       $(`#showBurnReturnHere`).html(`Return before fee (math curve response): ` + totalCurrencyForTokensBurningNow);
 
       $(`#showTokensBeforeBurning`).html(`This many tokens exist before burning: ` + tokensExistBeforeBurning);
@@ -191,7 +191,7 @@
       totalPriceForTokensMintingNow2 = $("#orderTotalPriceInputField").val();
       tokensExistAtStart2 = $("#tokensToStartInputField2").val();
 
-      tokensExistAtEnd2 = Math.sqrt((totalPriceForTokensMintingNow2 * 800000) + (tokensExistAtStart2 * tokensExistAtStart2));
+      tokensExistAtEnd2 = Math.sqrt((totalPriceForTokensMintingNow2 * 8000000) + (tokensExistAtStart2 * tokensExistAtStart2));
 
       tokensMintingNow2 = tokensExistAtEnd2 - tokensExistAtStart2;
 
@@ -218,7 +218,7 @@
       tokensExistBeforeBurning2 = $("#tokExistBeforeBurningInputField2").val();
       totalCurrencyForTokensBurningNow2 = $("#orderTotalReturnInputField").val();
 
-      tokensExistAfterBurning2 = Math.sqrt((tokensExistBeforeBurning2 * tokensExistBeforeBurning2) - (totalCurrencyForTokensBurningNow2 * 800000));
+      tokensExistAfterBurning2 = Math.sqrt((tokensExistBeforeBurning2 * tokensExistBeforeBurning2) - (totalCurrencyForTokensBurningNow2 * 8000000));
       tokensBurningNow2 = Number(tokensExistBeforeBurning2) - Number(tokensExistAfterBurning2);
       $(`#showTokensBurningNow2`).html(`This many tokens you will burn: ` + tokensBurningNow2);
 
