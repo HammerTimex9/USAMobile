@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: NONE
-pragma solidity ^0.8.0;  // TODO: put in fixed version for deployment
+pragma solidity ^0.8.0;  // TODO: put in fixed version for deployment xxxx
 
 // importing interface for Aave's lending pool
 import "./ILendingPool.sol";
@@ -31,7 +31,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
   uint8   private _decimals;                    // storing BNJI decimals, set to 0 in constructor
   uint256 private USDCscaleFactor =    1000000; // 6 decimals scale of USDC crypto currency
   uint256 private USDCcentsScaleFactor = 10000; // 4 decimals scale of USDC crypto currency cents
-  uint256 public blocksPerDay;                  // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing
+  uint256 public blocksPerDay;                  // amount of blocks minted per day on polygon mainnet // TODO: change to 43200, value now is for testing xxxx
   uint256 public curveFactor;                   // inverse slope of the bonding curve
   uint256 public baseFeeTimes10k;               // percent * 10,000 as an integer (for ex. 1% baseFee expressed as 10000)
   uint256 public reserveInUSDCin6dec;           // end user USDC on deposit
@@ -134,7 +134,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
 
     // setting blocksPerDay, curveFactor and baseFeeTimes10k 
-    blocksPerDay =        2; // xxxx switch to correct amount of blocksPerDay
+    blocksPerDay =        2; // xxxx TODO:  switch to correct amount of blocksPerDay
     curveFactor =   8000000;       
     baseFeeTimes10k = 10000;    
 
@@ -484,8 +484,8 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
 
     uint256 amUSDCbalOfContractIn6dec = polygonAMUSDC.balanceOf(address(this));
 
-    // calculating with $100 extra as a redundant mathmatical buffer
-    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value      
+    // calculating with $100 extra as a redundant mathmatical buffer, this amount will never be withdrawable
+    uint256 bufferIn6dec = 100*USDCscaleFactor; //TODO: decide and put in correct value xxxx
     
     if (amUSDCbalOfContractIn6dec > bufferIn6dec) {
       uint256 amUSDCbalBufferedIn6dec = amUSDCbalOfContractIn6dec - bufferIn6dec;          
