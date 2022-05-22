@@ -46,9 +46,9 @@ export const NetworkProvider = (props) => {
       const ethAddress = user?.attributes.ethAddress;
       if (ethAddress) {
         //Used for Debugging
-        // console.log(
-        //   'We have User Eth Address and we are not calling this anymore.'
-        // );
+        console.log(
+          'We have User Eth Address and we are not calling this anymore.'
+        );
         setNetworkId(137); // We are doing this , because we have to select NetworkId to use app.
       } else {
         if (isWeb3Enabled) {

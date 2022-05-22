@@ -12,6 +12,8 @@ const Transak = () => {
   const user = Moralis.User.current();
   const ethAddress = user?.attributes.ethAddress;
   const emailAddress = user?.attributes.emailAddress;
+
+  // Both keys are the same now.
   const staging_apiKey = process.env.REACT_APP_TRANSAK_STAGING_API_KEY;
   const production_apiKey = process.env.REACT_APP_TRANSAK_API_KEY;
 
@@ -30,7 +32,7 @@ const Transak = () => {
       defaultCryptoCurrency: 'MATIC',
       cryptoCurrencyList: 'MATIC',
       walletAddress: ethAddress,
-      themeColor: colorMode === 'light' ? 'D37277' : '5865C9', // Need to confirm these colors from BOB.
+      themeColor: colorMode === 'light' ? 'D37277' : '5865C9', 
       fiatCurrency: 'USD',
       email: emailAddress,
       networks: 'polygon',

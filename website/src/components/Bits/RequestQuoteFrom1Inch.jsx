@@ -13,7 +13,7 @@ const ONEINCH4_API = 'https://api.1inch.io/v4.0';
 const ENDPOINT = '/quote';
 const REFERRER_FEE = process.env.REACT_APP_ONEINCH_REFERRER_FEE;
 
-export const RequestQuote = () => {
+export const RequestQuoteFrom1Inch = () => {
   const { fromToken, toToken, txAmount } = useActions();
   const { setQuote, quoteValid } = useQuote();
   const { setDialog } = useExperts();

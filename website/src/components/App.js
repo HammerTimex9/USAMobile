@@ -17,6 +17,7 @@ const Home = lazy(() => import('./Screens/Home'));
 const Portfolio = lazy(() => import('./Screens/Portfolio'));
 const SwapTrade = lazy(() => import('./Screens/SwapTrade'));
 const BuySell = lazy(() => import('./Screens/Transak'));
+// Does not actually sell Matic for USD:
 // const BuySell = lazy(() => import('./Screens/OnRamper'));
 const SendReceive = lazy(() => import('./Screens/SendReceive'));
 const NoSafari = lazy(() => import('../containers/NoSafari'));

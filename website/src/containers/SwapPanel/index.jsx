@@ -9,7 +9,8 @@ import { AmountSelect } from '../../components/Bits/AmountSelect';
 
 // Swap mode.
 import { ToSelect } from '../../components/Bits/ToSelect';
-import { RequestQuote } from '../../components/Bits/RequestQuote';
+import { RequestQuoteFrom0x } from '../../components/Bits/RequestQuoteFrom0x';
+// import { RequestQuoteFrom1Inch } from '../../components/Bits/RequestQuoteFrom1Inch';
 import { RequestQuoteFromIvan } from '../../components/Bits/RequestQuoteFromIvan';
 import { QuotePanel } from '../QuotePanel';
 import YouWillGet from '../../components/Bits/Youwillget';
@@ -17,7 +18,7 @@ import YouWillGet from '../../components/Bits/Youwillget';
 export const SwapPanel = () => {
   const { fromToken, txAmount, toToken } = useActions();
   const { quoteValid, setQuote, toTokenAmount } = useQuote();
-  const useIvan = true;
+  const useIvan = false;
 
   useEffect(() => {
     setQuote();
@@ -58,7 +59,7 @@ export const SwapPanel = () => {
         </Typography>
       )}
       {quoteValid && <QuotePanel />}
-      {useIvan ? <RequestQuoteFromIvan /> : <RequestQuote />}
+      {useIvan ? <RequestQuoteFromIvan /> : <RequestQuoteFrom0x />}
     </Box>
   );
 };

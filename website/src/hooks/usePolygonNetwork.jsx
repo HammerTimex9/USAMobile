@@ -17,6 +17,7 @@ export const usePolygonNetwork = () => {
   const { setNetworkId, setHasPolygon } = useNetwork();
   const { setDialog } = useExperts();
 
+  // This is being done in the network context useEffect().
   // useEffect(() => {
   //   if (isAuthenticated) {
   //     if (isWeb3Enabled) {
@@ -30,11 +31,11 @@ export const usePolygonNetwork = () => {
 
   const switchNetworkToPolygon = (action = 'app') => {
     // To Debug issue of Switching Network
-    // console.log('switchNetworkToPolygon Called...');
-    // console.groupCollapsed('SwitchNetworkToPolygon:');
-    // console.log('Metamask:', MetaMaskOnboarding.isMetaMaskInstalled());
-    // console.log('isAuthenticated:', isAuthenticated);
-    // console.groupEnd();
+    console.log('switchNetworkToPolygon Called...');
+    console.groupCollapsed('SwitchNetworkToPolygon:');
+    console.log('Metamask:', MetaMaskOnboarding.isMetaMaskInstalled());
+    console.log('isAuthenticated:', isAuthenticated);
+    console.groupEnd();
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
       if (isAuthenticated) {
         if (isWeb3Enabled) {
