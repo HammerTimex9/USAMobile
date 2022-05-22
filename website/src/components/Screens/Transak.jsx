@@ -32,7 +32,7 @@ const Transak = () => {
       defaultCryptoCurrency: 'MATIC',
       cryptoCurrencyList: 'MATIC',
       walletAddress: ethAddress,
-      themeColor: colorMode === 'light' ? 'D37277' : '5865C9', 
+      themeColor: colorMode === 'light' ? 'D37277' : '5865C9',
       fiatCurrency: 'USD',
       email: emailAddress,
       networks: 'polygon',
