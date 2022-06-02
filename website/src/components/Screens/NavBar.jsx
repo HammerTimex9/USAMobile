@@ -19,7 +19,8 @@ const activeTab = (history, path) => {
 
 export const NavBar = () => {
   const history = useHistory();
-  const { user, authenticate, logout, isAuthenticating } = useMoralis();
+  const { user, authenticate, logout, isAuthenticating, isAuthenticated } =
+    useMoralis();
   const { positions } = usePositions();
   const [modal, setModal] = useState(false);
 
@@ -28,6 +29,13 @@ export const NavBar = () => {
   // const isOnlyMatic = positions.length === 1 && positions[0].symbol === 'MATIC';
   const { pathname } = history.location;
   useEffect(() => {
+    console.groupCollapsed('NavBarInit');
+    console.log('user:', user);
+    console.log('isAuthenticating: ', isAuthenticating);
+    console.log('isAuthenticated: ', isAuthenticated);
+    console.log('positions: ', positions);
+    console.log('positions.length: ', positions.length);
+    console.groupEnd();
     if (
       user &&
       !address &&
