@@ -4,7 +4,7 @@ import { Stack } from '@mui/material';
 import { ExpertButton } from '../../Bits/ExpertButton';
 
 import { LightSwitch } from '../../Bits/LightSwitch';
-import { AuthButton } from '../../Bits/AuthButton';
+import { ConnectWallet } from '../../Bits/ConnectWallet';
 import { ProfileAvatar } from '../../Bits/ProfileAvatar';
 import { AddNetworkButton } from '../../Bits/AddNetworkButton';
 import { InstallMetaMaskButton } from '../../Bits/InstallMetaMaskButton';
@@ -30,7 +30,7 @@ export const TopNavBar = () => {
         {isAuthenticated && hasPolygon && <ExpertButton />}
         <LightSwitch />
         {isAuthenticated && hasMetamask && !isPolygon && <AddNetworkButton />}
-        <AuthButton />
+        <ConnectWallet />
         {isAuthenticated && <InstallMetaMaskButton />}
         {isAuthenticated && <ProfileAvatar />}
       </Stack>
