@@ -13,9 +13,9 @@ export const ConnectWallet = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      setButtonText(
-        user ? user.get('ethAddress').slice(0, 6) + '...' : 'logout'
-      );
+      console.log('ConnectWallet::useEffect authenticated user:', user);
+      const address = user.get('ethAddress');
+      setButtonText(address ? address.slice(0, 6) + '...' : 'Adrss. Unkn.');
       setToolTipText('Log Out');
     } else {
       setButtonText('Connect Wallet');
