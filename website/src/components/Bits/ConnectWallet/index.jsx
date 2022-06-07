@@ -6,17 +6,22 @@ import { LogOutSvg } from '../../../assets/icons';
 import { WalletSvg } from '../../../assets/icons';
 
 export const ConnectWallet = () => {
-  const { authenticate, isAuthenticated, isAuthenticating, logout } =
+  const { authenticate, isAuthenticated, isAuthenticating, logout, user } =
     useMoralis();
   const [buttonText, setButtonText] = useState();
+  const [toolTipText, setToolTipText] = useState();
 
   useEffect(() => {
     if (isAuthenticated) {
-      setButtonText('Log Out');
+      setButtonText(
+        user ? user.get('ethAddress').slice(0, 6) + '...' : 'logout'
+      );
+      setToolTipText('Log Out');
     } else {
       setButtonText('Connect Wallet');
+      setToolTipText('Connect MetaMask');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   const logIn = async () => {
     if (!isAuthenticated) {
@@ -44,7 +49,7 @@ export const ConnectWallet = () => {
   };
 
   return (
-    <Tooltip title="MetaMask Connection.">
+    <Tooltip title={toolTipText}>
       <Button
         onClick={handleClick}
         startIcon={
