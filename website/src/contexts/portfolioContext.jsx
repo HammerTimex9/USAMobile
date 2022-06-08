@@ -18,6 +18,7 @@ export const PortfolioProvider = (props) => {
 
   const getPositions = useCallback(() => {
     const options = { chain: network.name, address };
+    console.log('Getting positions...');
     Promise.all([
       Moralis.Web3API.account.getNativeBalance(options),
       Moralis.Web3API.account.getTokenBalances(options),
@@ -106,10 +107,11 @@ export const PortfolioProvider = (props) => {
 
   useEffect(() => {
     if (!address) {
+      console.log('No address detected.');
       setPositions(address === '' ? [] : null);
       setTotalValue(0);
     } else if (!network) {
-      // console.log('network is undefined'); //Used for Debugging
+      console.log('network is undefined'); //Used for Debugging
       setPositions([]);
       setTotalValue(0);
     } else {
