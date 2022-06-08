@@ -9,13 +9,17 @@ export const ConnectWallet = () => {
   const { authenticate, isAuthenticated, isAuthenticating, logout, user } =
     useMoralis();
   const [buttonText, setButtonText] = useState();
-  const [toolTipText, setToolTipText] = useState();
+  const [toolTipText, setToolTipText] = useState('Wallet button.');
 
   useEffect(() => {
     if (isAuthenticated) {
       console.log('ConnectWallet::useEffect authenticated user:', user);
-      const address = user.get('ethAddress');
-      setButtonText(address ? address.slice(0, 6) + '...' : 'Adrss. Unkn.');
+      if (user) {
+        const address = user.get('ethAddress');
+        setButtonText(address ? address.slice(0, 6) + '...' : 'Adrss. Unkn.');
+      } else {
+        setButtonText('No Wallet.');
+      }
       setToolTipText('Log Out');
     } else {
       setButtonText('Connect Wallet');
