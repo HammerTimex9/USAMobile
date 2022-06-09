@@ -47,15 +47,15 @@ export const PortfolioProvider = (props) => {
               {
                 ...network,
                 ...native,
-                price: markets[network.symbol.toLowerCase()].current_price
+                price: markets[network.symbol.toLowerCase()]
                   ? markets[network.symbol.toLowerCase()].current_price
-                  : -1,
+                  : 0,
               },
               ...tokens.map((item) => ({
                 ...item,
-                price: markets[item.symbol.toLowerCase()].current_price
+                price: markets[item.symbol.toLowerCase()]
                   ? markets[item.symbol.toLowerCase()].current_price
-                  : -1,
+                  : 0,
               })),
             ]
               .map((item) => {
