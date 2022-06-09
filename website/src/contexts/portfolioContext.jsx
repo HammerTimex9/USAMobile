@@ -36,6 +36,7 @@ export const PortfolioProvider = (props) => {
           .then((response) => response.json())
           .then((data) => {
             const map = {};
+            console.log('CoinGecko data:', data);
             data.forEach((item) => {
               map[item.symbol.toLowerCase()] = item;
             });
@@ -46,11 +47,15 @@ export const PortfolioProvider = (props) => {
               {
                 ...network,
                 ...native,
-                price: markets[network.symbol.toLowerCase()].current_price,
+                price: markets[network.symbol.toLowerCase()].current_price
+                  ? markets[network.symbol.toLowerCase()].current_price
+                  : -1,
               },
               ...tokens.map((item) => ({
                 ...item,
-                price: markets[item.symbol.toLowerCase()].current_price,
+                price: markets[item.symbol.toLowerCase()].current_price
+                  ? markets[item.symbol.toLowerCase()].current_price
+                  : -1,
               })),
             ]
               .map((item) => {
