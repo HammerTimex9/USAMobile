@@ -158,8 +158,8 @@ export const TradeTokensWithIvan = () => {
       amount: txAmount,
       fromAddress: userAddress, // Your wallet address
       slippage: 1,
-      gasPrice: 2 * estimatedGas,
-      gasLimit: 4 * estimatedGas,
+      gasPrice: 4 * estimatedGas,
+      gasLimit: 6 * estimatedGas,
     };
     console.log('swap params:', params);
     return Moralis.Plugins.oneInch
