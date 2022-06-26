@@ -433,7 +433,7 @@ async function runMintOrBurnLoop(loopsToRun, runMint, accOrderArray, testNr) {
       
       await checkMintingAmountOkay(); // checking if amount is okay
 
-      console.log(`In ${testNr}, operation nr: ${loopCounter} ${accNowName} MINTS this many tokens:`, randomAmountMinting);
+      //console.log(`In ${testNr}, operation nr: ${loopCounter} ${accNowName} MINTS this many tokens:`, randomAmountMinting);
 
       mintCounter++;
       
@@ -453,7 +453,7 @@ async function runMintOrBurnLoop(loopsToRun, runMint, accOrderArray, testNr) {
       calcBurnVariables(burnNow, false); // this returns fee not value
 
       if(burnReturnStillInclFeesInUSDCcentsGlobalV >= 500) {
-        console.log(`In ${testNr}, operation nr: ${loopCounter} ${accNowName} BURNS this many tokens:`, burnNow);        
+        //console.log(`In ${testNr}, operation nr: ${loopCounter} ${accNowName} BURNS this many tokens:`, burnNow);        
        
         await testBurning(burnNow, accNow, accNow);
         

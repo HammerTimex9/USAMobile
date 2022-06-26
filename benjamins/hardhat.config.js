@@ -58,7 +58,7 @@ module.exports = {
   namedAccounts: {
     deployer: `${process.env.DEPLOYER_ACC}`,               
     feeReceiver: `${process.env.FEE_RECEIVER_ACC}`,  // CHANGED FOR TESTING XXXXX
-    accumulatedReceiver: `${process.env.ACCUMULATED_RECEIVER_ACC}`, // CHANGED FOR TESTING XXXXX
+    withdrawReceiver: `${process.env.WITHDRAW_RECEIVER_ACC}`, 
     testUser_0: `${process.env.TEST_USER_0}`,  
     testUser_1: `${process.env.TEST_USER_1}`,
     testUser_2: `${process.env.TEST_USER_2}`,
@@ -78,7 +78,7 @@ module.exports = {
     //excludeContracts: ["mocks/"],
   },
   solidity: {
-    version: "0.8.0",
+    version: "0.8.7",
     settings: {
       optimizer: {
         enabled: true,

@@ -95,6 +95,10 @@ function confirmUserDataPoints(userToCheck, expectedAccountLevelsArray) {
       expect(user4LevelDataArray[index]).to.equal(expectedAccountLevelsArray[index]);      
     }
   }
+  else {
+    console.log("usertocheck was not found ---------------------------------------------------------------------");
+  }
+
   // resetting for next test
   user1LevelDataArray = [];  
   user2LevelDataArray = [];  
@@ -130,7 +134,6 @@ async function balUSDC(userToQuery) {
   return (await balUSDCinCents(userToQuery) /100);
 }
 
-// xxxx recheck
 async function balAMUSDC(userToQuery) {
   return (await balAMUSDCinCents(userToQuery) /100);
 }
@@ -139,7 +142,6 @@ async function balUSDCinCents(userToQuery) {
   return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonUSDC.balanceOf(userToQuery)));
 }
 
-// xxxx recheck
 async function balAMUSDCinCents(userToQuery) {
   return dividefrom6decToUSDCcents(bigNumberToNumber(await polygonAMUSDC.balanceOf(userToQuery)));
 }
@@ -230,10 +232,12 @@ async function checkTestAddresses(amountUSDC, amountMatic, amountBNJI, expectBoo
 async function countAllCents() {
   const centsInAllTestUsers = await checkTestAddresses();
   const feeReceiverCents = await balUSDCinCents(feeReceiver); 
+  const withdrawReceiverCents = await balUSDCinCents( withdrawReceiver); 
   const deployerCents = await balUSDCinCents(deployer);
   const protocolCents = protocolUSDCbalWithoutInterestInCentsGlobalV;    
 
-  const allLiquidCents = centsInAllTestUsers + feeReceiverCents + protocolCents + deployerCents;  
+
+  const allLiquidCents = centsInAllTestUsers + feeReceiverCents + withdrawReceiverCents + protocolCents + deployerCents;  
 
   liquidCentsArray.push(allLiquidCents);  
 
@@ -619,7 +623,11 @@ describe("Testing Benjamins", function () {
   // setting instances of contracts
   beforeEach(async function() {   
 
-    ({ deployer, feeReceiver, accumulatedReceiver, testUser_1, testUser_2, testUser_3, testUser_4, testUser_5 } = await getNamedAccounts());
+    ({ deployer, feeReceiver, withdrawReceiver, testUser_1, testUser_2, testUser_3, testUser_4, testUser_5 } = await getNamedAccounts());
+
+    // xxxx temp
+    //console.log('feeReceiver', feeReceiver);
+    //console.log('withdrawReceiver', withdrawReceiver);
     
     testUserAddressesArray = [];
     totalUSDCcentsEntriesArr = [];
@@ -797,9 +805,7 @@ describe("Testing Benjamins", function () {
     expect(await benjaminsContract.symbol()).to.equal('BNJI');   
 
   });
-  
-  // TODO: Re order and re number
-  
+    
   it("Test 02. testUser_1 should mint 10 BNJI for themself", async function () {  
     await countAllCents();         
     await testMinting(40, testUser_1, testUser_1);      
@@ -1604,7 +1610,6 @@ describe("Testing Benjamins", function () {
 
   });
 
-
   
   it("Test 22. Account level changes are effective immediately after decreasing the account level", async function () {   
 
@@ -1612,31 +1617,28 @@ describe("Testing Benjamins", function () {
     
     await addUserAccDataPoints(testUser_1); 
    
-    // minting 2600 BNJI to caller
-    await testMinting(3600, testUser_1, testUser_1);    
+    // minting 40000 BNJI to caller
+    await testMinting(40000, testUser_1, testUser_1);    
 
-    expect(await balBNJI(testUser_1)).to.equal(3600);   
+    expect(await balBNJI(testUser_1)).to.equal(40000);   
     await addUserAccDataPoints(testUser_1);  
 
-    // upgrading to account level 1
-    await testIncreaseLevel(testUser_1, 1, 0);  
+    // upgrading to account level 8000
+    await testIncreaseLevel(testUser_1, 8000, 0);  
     
-    expect(await balBNJI(testUser_1)).to.equal(3595);   
+    expect(await balBNJI(testUser_1)).to.equal(0);   
     await addUserAccDataPoints(testUser_1);
 
-    // upgrading to account level 2
-    await testIncreaseLevel(testUser_1, 1, 1);  
-    
-    expect(await balBNJI(testUser_1)).to.equal(3590); 
-    await addUserAccDataPoints(testUser_1); 
+    // waiting until timeout period has passed
+    await mintBlocks(holdingTime);
 
-    // upgrading to account level 3
-    await testIncreaseLevel(testUser_1, 1, 2);  
+    // downgrading to account level 0
+    await testDecreaseLevel(testUser_1, 8000, 8000);  
 
-    expect(await balBNJI(testUser_1)).to.equal(3585); 
-    await addUserAccDataPoints(testUser_1); 
+    expect(await balBNJI(testUser_1)).to.equal(40000);  
+    await addUserAccDataPoints(testUser_1);   
 
-    const expectedUser1Levels =     [0,0, 1, 2, 3];    
+    const expectedUser1Levels =     [0,0, 8000, 0];    
       
     confirmUserDataPoints(testUser_1, expectedUser1Levels);       
 
@@ -1718,29 +1720,72 @@ describe("Testing Benjamins", function () {
   });
   
    
-  it("Test 25. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
+  it.only("Test 25. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
     
     await countAllCents();
 
+    const totalSupplyExistingStart = bigNumberToNumber(await benjaminsContract.totalSupply()); 
+    console.log('totalSupplyExistingStart', totalSupplyExistingStart);
+
+    const feeReceiverUSDCBalanceStartInCents = await balUSDCinCents(feeReceiver);  
+    console.log('feeReceiverUSDCBalanceStartInCents', feeReceiverUSDCBalanceStartInCents);
+
+    const usersUSDCStart = bigNumberToNumber(await balUSDC(testUser_5));
+    console.log('usersUSDCStart', usersUSDCStart);
+
+    const usersTokensStart = bigNumberToNumber(await balBNJI(testUser_5));
+    console.log('usersTokensStart', usersTokensStart);
+
+    const reserveStartin6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getReserveIn6dec());
+    console.log('reserveStartin6dec', reserveStartin6dec);
+
     await polygonUSDC.connect(deployerSigner).transfer(testUser_5, (4000000*scale6dec) );
+
+    const usersUSDCSetup = bigNumberToNumber(await balUSDC(testUser_5));
+    console.log('usersUSDCSetup', usersUSDCSetup);
+
+    const reserveSetupin6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getReserveIn6dec());
+    console.log('reserveSetupin6dec', reserveSetupin6dec);
+
     // minting 4,800,000 BNJI to testUser_5
     await testMinting(4800000, testUser_5, testUser_5); 
 
-    const balAMUSDCD_feeReceiver_start = await balAMUSDC(feeReceiver);    
-    expect(balAMUSDCD_feeReceiver_start).to.equal(0);
+    const totalSupplyExistingAfterMint = bigNumberToNumber(await benjaminsContract.totalSupply()); 
+    console.log('totalSupplyExistingAfterMint', totalSupplyExistingAfterMint);
+
+    const usersTokensAfterMint = bigNumberToNumber(await balBNJI(testUser_5));
+    console.log('usersTokensAfterMint', usersTokensAfterMint);
+
+    const usersUSDCAfterMint = bigNumberToNumber(await balUSDC(testUser_5));
+    console.log('usersUSDCAfterMint', usersUSDCAfterMint);
+
+    const reserveAfterMintin6dec = bigNumberToNumber(await benjaminsContract.connect(deployerSigner).getReserveIn6dec());
+    console.log('reserveAfterMintin6dec', reserveAfterMintin6dec);
+
+    const balAMUSDCD_withdrawReceiver_start = await balAMUSDC(withdrawReceiver);    
+    expect(balAMUSDCD_withdrawReceiver_start).to.equal(0);
     
     await passTime(10);
+    await passTime(10);
+    
 
     const checkedGainsIn6dec = await benjaminsContract.connect(deployerSigner).checkGains();
     const checkedGainsInCents = dividefrom6decToUSDCcents(checkedGainsIn6dec);
     const toWithdrawBufferedIn6dec = (multiplyFromUSDCcentsTo6dec(Math.floor(checkedGainsInCents)));
+
+    console.log('checkedGainsInCents', checkedGainsInCents);
+    console.log('toWithdrawBufferedIn6dec', toWithdrawBufferedIn6dec);
    
     if (toWithdrawBufferedIn6dec > 0 ) {     
-      await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawBufferedIn6dec);  
+      await benjaminsContract.connect(deployerSigner).withdrawGains(withdrawReceiver, toWithdrawBufferedIn6dec);  
     }   
 
-    const balAMUSDCD_feeReceiver_end = await balAMUSDC(feeReceiver);    
-    expect(balAMUSDCD_feeReceiver_end).to.equal(balAMUSDCD_feeReceiver_start + (dividefrom6decToUSDCcents(toWithdrawBufferedIn6dec)/100));
+    const balAMUSDCD_withdrawReceiver_end = await balAMUSDC(withdrawReceiver);    
+    expect(balAMUSDCD_withdrawReceiver_end).to.equal(balAMUSDCD_withdrawReceiver_start + (dividefrom6decToUSDCcents(toWithdrawBufferedIn6dec)/100));
+
+    console.log('balAMUSDCD_withdrawReceiver_start', balAMUSDCD_withdrawReceiver_start);
+    console.log('dividefrom6decToUSDCcents(toWithdrawBufferedIn6dec)/100', dividefrom6decToUSDCcents(toWithdrawBufferedIn6dec)/100);
+    console.log('balAMUSDCD_withdrawReceiver_end', balAMUSDCD_withdrawReceiver_end);
     
     await countAllCents();
   });
@@ -1809,20 +1854,26 @@ describe("Testing Benjamins", function () {
     // passing time to accumulate interest
     await passTime(10); 
     
-    // deployer uses checkGains and withdrawGains to take out generated interest to feeReceiver address
-    const balAMUSDCD_feeReceiver_start = await balAMUSDC(feeReceiver);
+    // deployer uses checkGains and withdrawGains to take out generated interest to withdrawReceiver address
+    const balAMUSDCD_withdrawReceiver_start = await balAMUSDC(withdrawReceiver);
+    console.log('balAMUSDCD_withdrawReceiver_start', balAMUSDCD_withdrawReceiver_start); 
+    const balAMUSDCD_contract_start = await balAMUSDC(benjaminsContract.address);
+    console.log('balAMUSDCD_contract_start', balAMUSDCD_contract_start); 
+
+
     const checkedGainsIn6dec = await benjaminsContract.connect(deployerSigner).checkGains();
+    console.log('checkedGainsIn6dec', bigNumberToNumber(checkedGainsIn6dec)); 
     const checkedGainsInCents = dividefrom6decToUSDCcents(checkedGainsIn6dec);
     const roundedToCents = checkedGainsInCents - (checkedGainsInCents%1); 
 
     const toWithdrawRoundedIn6dec = multiplyFromUSDCcentsTo6dec(roundedToCents);   
-        
-    await benjaminsContract.connect(deployerSigner).withdrawGains(toWithdrawRoundedIn6dec);  
+    console.log('toWithdrawRoundedIn6dec', toWithdrawRoundedIn6dec); 
+    await benjaminsContract.connect(deployerSigner).withdrawGains(withdrawReceiver, toWithdrawRoundedIn6dec);  
     
-    
-    // xxxx fix here, AMUSDC are tricky
-    const balAMUSDCD_feeReceiver_end = await balAMUSDC(feeReceiver);    
-    expect(balAMUSDCD_feeReceiver_end).to.equal(balAMUSDCD_feeReceiver_start + (dividefrom6decToUSDCcents(toWithdrawRoundedIn6dec)/100));  
+    // rounded, AMUSDC are tricky
+    const balAMUSDCD_withdrawReceiver_end = await balAMUSDC(withdrawReceiver);   
+    console.log('balAMUSDCD_withdrawReceiver_end', balAMUSDCD_withdrawReceiver_end); 
+    expect(balAMUSDCD_withdrawReceiver_end).to.equal(balAMUSDCD_withdrawReceiver_start + (dividefrom6decToUSDCcents(toWithdrawRoundedIn6dec)/100));  
 
     // all users decrease all levels to 0 and burn all their tokens, get USDC
     for (let index = 0; index < testUserAddressesArray.length; index++) {
@@ -1852,6 +1903,11 @@ describe("Testing Benjamins", function () {
     await countAllCents(); 
 
 
+    const balAMUSDCD_withdrawReceiver_Absolute_end = await balAMUSDC(withdrawReceiver);   
+    console.log('balAMUSDCD_withdrawReceiver_Absolute_end', balAMUSDCD_withdrawReceiver_Absolute_end); 
+
+    const balAMUSDCD_contract_Absolute_end = await balAMUSDC(benjaminsContract.address);
+    console.log('balAMUSDCD_contract_Absolute_end', balAMUSDCD_contract_Absolute_end);
 
   });
   
