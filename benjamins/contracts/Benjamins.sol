@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: NONE
 pragma solidity 0.8.7;
 
+
+// File: @openzeppelin/contracts/security/ReentrancyGuard.sol
+// OpenZeppelin Contracts v4.4.1 (security/ReentrancyGuard.sol)
 /**
  * @dev Contract module that helps prevent reentrant calls to a function.
  *
@@ -60,6 +63,9 @@ abstract contract ReentrancyGuard {
     }
 }
 
+// File: @openzeppelin/contracts/utils/Context.sol
+// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)
+
 /**
  * @dev Provides information about the current execution context, including the
  * sender of the transaction and its data. While these are generally available
@@ -80,7 +86,8 @@ abstract contract Context {
     }
 }
 
-
+// File: @openzeppelin/contracts/access/Ownable.sol
+// OpenZeppelin Contracts v4.4.1 (access/Ownable.sol)
 /**
  * @dev Contract module which provides a basic access control mechanism, where
  * there is an account (an owner) that can be granted exclusive access to
@@ -151,7 +158,8 @@ abstract contract Ownable is Context {
     }
 }
 
-
+// File: @openzeppelin/contracts/security/Pausable.sol
+// OpenZeppelin Contracts v4.4.1 (security/Pausable.sol)
 /**
  * @dev Contract module which allows children to implement an emergency stop
  * mechanism that can be triggered by an authorized account.
@@ -237,7 +245,8 @@ abstract contract Pausable is Context {
     }
 }
 
-
+// File: @openzeppelin/contracts/token/ERC20/IERC20.sol
+// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
@@ -316,6 +325,8 @@ interface IERC20 {
     ) external returns (bool);
 }
 
+// File: @openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol
+// OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/IERC20Metadata.sol)
 /**
  * @dev Interface for the optional metadata functions from the ERC20 standard.
  *
@@ -339,6 +350,8 @@ interface IERC20Metadata is IERC20 {
 }
 
 
+// File: @openzeppelin/contracts/token/ERC20/ERC20.sol
+// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/ERC20.sol)
 /**
  * @dev Implementation of the {IERC20} interface.
  *
@@ -761,6 +774,7 @@ library DataTypes {
   enum InterestRateMode {NONE, STABLE, VARIABLE}
 }
 
+// File: contracts/ILendingPool.sol
 interface ILendingPool {
 	/**
 	 * @dev Emitted on deposit()
@@ -1367,7 +1381,7 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     reserveInUSDCin6dec = 0;                // upon contract creation, the reserve in USDC is 0
 
     // setting addresses for feeReceiver, USDC-, amUSDC- and Aave lending pool contracts
-    feeReceiver = 0x45d17aae23E4a7A54123D22B0e82923c57eD921E;   // todo: set to correct address
+    feeReceiver = 0xE51c8401fe1E70f78BBD3AC660692597D33dbaFF;   // todo: set to correct address
     polygonUSDC = IERC20(0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174);
     polygonAMUSDC = IERC20(0x1a13F4Ca1d028320A707D99520AbFefca3998b7F);
     polygonLendingPool = ILendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
@@ -1739,9 +1753,8 @@ contract Benjamins is Ownable, ERC20, Pausable, ReentrancyGuard {
     else {
       return 0;
     }        
-  }
+  }  
   
-  // TODO: Test more
   // Withdraw available fees and interest gains from lending pool to receiver address.
   function withdrawGains(address _receiver, uint256 _amountIn6dec) public onlyOwner {
     uint256 availableIn6dec = checkGains();

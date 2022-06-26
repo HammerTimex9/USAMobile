@@ -623,11 +623,7 @@ describe("Testing Benjamins", function () {
   // setting instances of contracts
   beforeEach(async function() {   
 
-    ({ deployer, feeReceiver, withdrawReceiver, testUser_1, testUser_2, testUser_3, testUser_4, testUser_5 } = await getNamedAccounts());
-
-    // xxxx temp
-    //console.log('feeReceiver', feeReceiver);
-    //console.log('withdrawReceiver', withdrawReceiver);
+    ({ deployer, feeReceiver, withdrawReceiver, testUser_1, testUser_2, testUser_3, testUser_4, testUser_5 } = await getNamedAccounts());   
     
     testUserAddressesArray = [];
     totalUSDCcentsEntriesArr = [];
@@ -1257,11 +1253,7 @@ describe("Testing Benjamins", function () {
     
     await expect( benjaminsContract.connect(testUser_1_Signer).burn(1000))
     .to.emit(benjaminsContract, 'Exchanged')
-    .withArgs(false, testUser_1, testUser_1, 1000, beforeFeeCalcInUSDCin6decBurn, feeInUSDCin6decBurn);  
-
-    //emit Exchanged(isMint, msg.sender, _forWhom, _amountBNJI, beforeFeeCalcInUSDCin6dec, feeRoundedDownIn6dec); 
-
-
+    .withArgs(false, testUser_1, testUser_1, 1000, beforeFeeCalcInUSDCin6decBurn, feeInUSDCin6decBurn);      
 
   });  
   
@@ -1720,7 +1712,7 @@ describe("Testing Benjamins", function () {
   });
   
    
-  it.only("Test 25. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
+  it("Test 25. Owner can use checkGains and withdrawGains to withdraw generated interest, as expected", async function () { 
     
     await countAllCents();
 
