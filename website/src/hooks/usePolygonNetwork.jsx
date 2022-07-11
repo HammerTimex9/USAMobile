@@ -3,7 +3,6 @@ import MetaMaskOnboarding from '@metamask/onboarding';
 
 import { useNetwork } from '../contexts/networkContext';
 import { useExperts } from '../contexts/expertsContext';
-
 const CHAIN_ID = 137;
 const CHAIN_NAME = 'Polygon Mainnet';
 const CURRENCY_NAME = 'Matic';
